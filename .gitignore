@@ -1,0 +1,115 @@
+# ==========================
+# Python Standard
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / Packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================
+# Virtual Environments
+# ==========================
+# Common names for virtual envs
+venv/
+.venv/
+env/
+.env/
+venv.bak/
+
+# ==========================
+# PySide6 / Qt Specifics
+# ==========================
+# QML and JavaScript cache (if using QML)
+*.qmlc
+*.jsc
+
+# Qt Creator specific (if you switch to Qt Creator occasionally)
+CMakeLists.txt.user
+*.pro.user
+*.pro.user.*
+.qmake.stash
+
+# Note: By default, we DO NOT ignore 'ui_*.py' or '*_rc.py' files.
+# These are the Python files compiled from .ui (Designer) and .qrc (Resource) files.
+# If you compile these dynamically at runtime, uncomment the lines below:
+# ui_*.py
+# *_rc.py
+
+# ==========================
+# PyInstaller
+# ==========================
+# PySide apps are often packaged using PyInstaller
+*.manifest
+*.spec
+
+# ==========================
+# IDE: JetBrains (PyCharm)
+# ==========================
+# Project-specific settings
+.idea/
+# You can comment out .idea/ above and uncomment specific lines below
+# if you want to share run configurations but hide local settings:
+# .idea/*
+# !.idea/runConfigurations/
+# !.idea/misc.xml
+# !.idea/modules.xml
+
+# ==========================
+# IDE: VS Code
+# ==========================
+.vscode/
+# Note: If you want to share launch configurations (debugging) with your team,
+# comment out '.vscode/' above and use the specific ignores below:
+# .vscode/*
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
+# .vscode/settings.json # Uncomment this if you have user-specific paths
+
+# VS Code Python extension caches
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytest_cache/
+.ruff_cache/
+
+# ==========================
+# Environment Variables
+# ==========================
+# NEVER commit your secrets/API keys
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==========================
+# OS Generated Files
+# ==========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

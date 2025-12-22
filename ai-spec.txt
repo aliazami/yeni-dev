@@ -1,0 +1,44 @@
+I'm going to start a desktop application with the following specifications:
+
+Specifications Version 0:
+1- The Application's Mission:
+    I have several jpeg images that are pages of a language learning book. Each image is for each page.
+    There are some gap-filling questions on each page. Each page has several questions and each question has several gap filling parts.
+    I have a website that shows the answers of each page. in my website the image of the page is shown and the answers of each question is placed on the right position on the image. I need the position of the gaps in pixels so that I will be able to show answers on the exact position in the html page.
+
+    Showing answers on the right place in the html page is beyond the scope of the application I'm describing here but it is necessary to know that
+    the coordinations produced by this application is directly used in the html. For example lets suppose the answer to the part 1 of question 1 is "apple".
+    this applicatin is supposed to produce a json like:
+    {
+        "words": [
+            {
+                "word": "apple",
+                "x": 100,
+                "y": 200
+            }
+        ]
+    }
+    in the above json, x and y values are the top-left corner of the text "apple" relative to the top-corner of the image. for example if the width of the image is 200px and the height is 400 pixels, the top-left point of "apple" would be place exactly in the middle of the image in the future html page.
+    I'd like to have an application that produces coordinations just by clicking on the right place on an image.
+
+2- It is Desktop application that is going to be used in macOS and windows.
+3- It is based on python language and Qt for UI.
+4- For the first vesion, the application contains only one page.
+5- The front page (the only page of the application) is devided into two parts:
+    a- A large "View" part that displays target image
+    b- A narrow toolbar on one side of the page with inputs and other UI components.
+
+6- display the image of a book page (there should be tools to select the image file.) 
+7- The application window (parent window) must be resizable.
+8- The image inside the View should be zoomable and scrollable
+9- the scrolling of the image should support scroll-bars and mouse scrolling (up, down, Shift+up: left, Shift+down: right)
+10- zooming is achieved by Ctrl+scroll: up -> zoom in, down -> zoom out
+11- The user holds Shift and clicks on a point of the image. the coordination of that point (left, top) is captured.
+12- A pre-defined text for example "1.hello" is displayed on the clicked point of the image. the top-left corner of "1.hello" is where the user has clicked. 
+13- The text label ("1.hello") moves in the View just like it is sticked to the image, it moves by scrolling and grows and shrinks by zooming.
+14- when the user holds shift and clicks on the image for the second time, the "2.hello" appears and so on.
+15- by clicking on a button in the toolbar, a json file is made in the same directory as the image file that contains coordinations.
+
+
+give me step by step instructions to setup a python-Qt application as described above.
+please ask questions if something is not clear
