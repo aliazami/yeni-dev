@@ -39,6 +39,6 @@ Specifications Version 0:
 14- when the user holds shift and clicks on the image for the second time, the "2.hello" appears and so on.
 15- by clicking on a button in the toolbar, a json file is made in the same directory as the image file that contains coordinations.
 
-
+16- editing labels: When user clicks on a place-holder, its color changes meaning it is beeing edited. the user can displace the label using arrow-keys; one pixel per strike. the user also is able to delete that label using del key.
 give me step by step instructions to setup a python-Qt application as described above.
 please ask questions if something is not clear
