@@ -42,3 +42,27 @@ Specifications Version 0:
 16- editing labels: When user clicks on a place-holder, its color changes meaning it is beeing edited. the user can displace the label using arrow-keys; one pixel per strike. the user also is able to delete that label using del key.
 give me step by step instructions to setup a python-Qt application as described above.
 please ask questions if something is not clear
+
+
+======================
+in a pySide6 project, I have the following file structure:
+```
+(venv) ➜  app git:(main) ✗ tree
+.
+├── __init__.py
+├── __pycache__
+│ ├── __init__.cpython-312.pyc
+│ └── app.cpython-312.pyc
+├── app.py
+├── core
+│ ├── __init__.py
+│ ├── app_controller.py
+│ └── project_manager.py
+└── ui
+    ├── __init__.py
+    ├── gap.py
+    ├── image_view.py
+    ├── main_window.py
+    └── toolbar.py
+```
+as you see,

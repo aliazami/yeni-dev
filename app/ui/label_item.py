@@ -1,25 +1,45 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent
+# ui/label_item.py
+
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeyEvent, QFont, QColor
 from PySide6.QtWidgets import (
     QGraphicsTextItem,
 )
+from app.core.models import LabelItemProps, CORRECTION, GAP, ACTION
+
 
 class LabelItem(QGraphicsTextItem):
-    def __init__(self, text, x, y):
-        super().__init__(text)
-        self.setPos(int(x), int(y))
+    focusInRequest = Signal(LabelItemProps)
+    focusOutRequest = Signal()
+    deleteRequest = Signal(LabelItemProps)
+
+    def __init__(self, props: LabelItemProps):
+        props.label_object = self
+
+        if props.role == GAP:
+            label = f"{props.tag}.{props.index}.{props.place_holder}"
+        elif props.role == CORRECTION:
+            label = f"{props.tag}.{props.index}.{props.place_holder}**"
+        else:
+            label = ""
+
+        super().__init__(label)
+        self.setPos(int(props.x), int(props.y))
+        self.setFont(QFont("Arial", props.font))
+        the_color = QColor(props.color)
+        self.setDefaultTextColor(the_color)
+        self.setProperty("props", props)
 
         self.setFlag(QGraphicsTextItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.setFlag(QGraphicsTextItem.GraphicsItemFlag.ItemIsFocusable, True)
-
-        self.setDefaultTextColor(Qt.GlobalColor.black)
 
     def focusInEvent(self, event):
         self.setDefaultTextColor(Qt.GlobalColor.red)
         super().focusInEvent(event)
 
     def focusOutEvent(self, event):
-        self.setDefaultTextColor(Qt.GlobalColor.black)
+        props: LabelItemProps = self.property("props")
+        self.setDefaultTextColor(props.color)
         super().focusOutEvent(event)
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -36,6 +56,7 @@ class LabelItem(QGraphicsTextItem):
         elif event.key() == Qt.Key.Key_Delete:
             scene = self.scene()
             if scene:
+                self.deleteRequest.emit(self.property("props"))
                 scene.removeItem(self)
             return
 

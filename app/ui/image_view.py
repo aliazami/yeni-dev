@@ -1,3 +1,4 @@
+# ui/image_view.py
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap, QWheelEvent
 from PySide6.QtWidgets import (

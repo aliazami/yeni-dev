@@ -1,17 +1,21 @@
+# app.py
 import sys
+from pathlib import Path
 from PySide6.QtWidgets import QApplication
 from app.ui.main_window import MainWindow
-from app.core.project_manager import ProjectManager
 from app.core.app_controller import AppController
+from PySide6.QtWidgets import (
+    QGraphicsEllipseItem,
+)
 
 class App(QApplication):
     def __init__(self, argv):
         super().__init__(argv)
         self.main_window = MainWindow()
-        self.project_manager = ProjectManager()
-        self.controller = AppController(self.project_manager, self.main_window)
-
-
+        self.controller = AppController(self.main_window)
+        current_folder = Path(__file__).resolve().parent.parent.resolve()
+        test_file = current_folder / "test.webp"
+        self.controller.load_image(test_file)
     def start(self):
         self.main_window.show()
 
