@@ -11,6 +11,7 @@ from app.core.models import ActionItemProps, CORRECTION, GAP, ACTION, ACTION_SIZ
 
 class ActionItem(QObject, QGraphicsEllipseItem):
     deleteRequest = Signal(ActionItemProps)
+
     def __init__(self, props: ActionItemProps):
         QObject.__init__(self)
         rect = QRect(0, 0, ACTION_SIZE, ACTION_SIZE)
@@ -30,31 +31,32 @@ class ActionItem(QObject, QGraphicsEllipseItem):
         self.font = QFont("Arial", 10)
         self.font.setBold(True)
 
+    def update_props(self):
+        # Pre-calculate colors to keep the paint method fast
+        bg_color = QColor("red") if new_props.selected else QColor("blue")
+        self.setBrush(QBrush(bg_color))
+
+        # Schedule the repaint
+        self.update()
 
     def paint(self, painter, option, widget=None):
         # First, let the standard paint method draw the ellipse/background
         super().paint(painter, option, widget)
 
         props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
-        bg_color = QColor("red") if props.selected else QColor("blue")
-        text_color = QColor("white")
-        # Now, draw the text on top
-        self.setBrush(QBrush(bg_color))
         painter.setFont(self.font)
-        painter.setPen(text_color)
+        painter.setPen(QColor("white"))
 
         # This one line handles the CSS flex centering logic:
         # It draws text inside the ellipse's rectangle, aligned to center.
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, props.tag)
 
     def focusInEvent(self, event):
-        props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
-        props.selected = True
+        self.set_selected(True)
         super().focusInEvent(event)
 
     def focusOutEvent(self, event):
-        props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
-        props.selected = False
+        self.set_selected(False)
         super().focusOutEvent(event)
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -82,3 +84,7 @@ class ActionItem(QObject, QGraphicsEllipseItem):
 
         super().keyPressEvent(event)
 
+    def set_selected(self, selected: bool):
+        props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
+        props.selected = selected
+        self.update_props()

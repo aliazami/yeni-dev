@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from app.ui.image_view import ImageView
 from app.ui.toolbar import Toolbar
 
+
 class MainWindow(QMainWindow):
 
     def __init__(self):
