@@ -93,5 +93,6 @@ class ImageView(QGraphicsView):
         if event.button() == Qt.MouseButton.LeftButton:
             # finalize the drawing
             self.sceneSelectionRequest.emit(self._current_rect_item.rect())
+            self.scene().removeItem(self._current_rect_item)
             self._current_rect_item = None
             self._start_point = None

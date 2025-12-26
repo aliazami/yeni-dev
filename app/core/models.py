@@ -16,6 +16,7 @@ class LabelItemProps:
         self.font = font
         self.color = color
         self.label_object = None
+        self.selected = False
 
 
 class ActionItemProps:

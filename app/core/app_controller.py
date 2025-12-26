@@ -2,7 +2,7 @@
 import json
 import os
 from pathlib import Path
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRectF
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from app.ui.main_window import MainWindow
 from app.ui.label_item import LabelItem
@@ -22,6 +22,8 @@ class AppController:
         self.main_window.toolbar.exportJsonRequested.connect(self.export_json)
         self.main_window.toolbar.button_row.roleChangeRequest.connect(self.role_change)
         self.main_window.view.sceneShiftLeftClickRequest.connect(self.add_item)
+        self.main_window.view.sceneSelectionRequest.connect(self.select_items)
+        self.main_window.view.sceneLeftClickRequest.connect(self.unselect_items)
         self.check()
 
     def load_image(self, path = None):
@@ -248,3 +250,19 @@ class AppController:
             label_props: LabelItemProps = label.property("props")
             tags_set.add(label_props.tag)
         return tags_set
+    
+    def select_items(self, rect: QRectF):
+        for item in self.actions:
+            action: ActionItem = item
+            action.set_selected_by_rect(rect)
+        for item in [*self.gaps, *self.corrections]:
+            label: LabelItem = item
+            label.set_selected_by_rect(rect)
+
+    def unselect_items(self):
+        for item in self.actions:
+            action: ActionItem = item
+            action.set_selected(False)    
+        for item in [*self.gaps, *self.corrections]:
+            label: LabelItem = item
+            label.set_selected(False)  

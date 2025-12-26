@@ -1,6 +1,6 @@
 # ui/label_item.py
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QRectF, QPointF
 from PySide6.QtGui import QKeyEvent, QFont, QColor
 from PySide6.QtWidgets import (
     QGraphicsTextItem,
@@ -34,12 +34,11 @@ class LabelItem(QGraphicsTextItem):
         self.setFlag(QGraphicsTextItem.GraphicsItemFlag.ItemIsFocusable, True)
 
     def focusInEvent(self, event):
-        self.setDefaultTextColor(Qt.GlobalColor.red)
+        self.set_selected(True)
         super().focusInEvent(event)
 
     def focusOutEvent(self, event):
-        props: LabelItemProps = self.property("props")
-        self.setDefaultTextColor(props.color)
+        self.set_selected(False)
         super().focusOutEvent(event)
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -67,3 +66,21 @@ class LabelItem(QGraphicsTextItem):
 
         super().keyPressEvent(event)
 
+    def set_selected(self, selected: bool):
+        props: LabelItemProps = self.property("props")
+        if props.selected == selected:
+            return 
+        props.selected = selected
+        color = Qt.GlobalColor.red if selected else props.color
+        self.setDefaultTextColor(color)
+
+    def set_selected_by_rect(self, rect: QRectF):
+        props: LabelItemProps = self.property("props")
+
+        if rect.contains(QPointF(props.x, props.y)):
+            self.set_selected(True)
+
+
+    def get_selected(self):
+        props: LabelItemProps = self.property("props")
+        return props.selected

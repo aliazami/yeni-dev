@@ -1,6 +1,6 @@
 # ui/label_item.py
 
-from PySide6.QtCore import Qt, Signal, QRect, QObject
+from PySide6.QtCore import Qt, Signal, QRect, QObject, QRectF, QPointF
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QGraphicsEllipseItem,
@@ -32,8 +32,9 @@ class ActionItem(QObject, QGraphicsEllipseItem):
         self.font.setBold(True)
 
     def update_props(self):
+        my_props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
         # Pre-calculate colors to keep the paint method fast
-        bg_color = QColor("red") if new_props.selected else QColor("blue")
+        bg_color = QColor("red") if my_props.selected else QColor("blue")
         self.setBrush(QBrush(bg_color))
 
         # Schedule the repaint
@@ -86,5 +87,18 @@ class ActionItem(QObject, QGraphicsEllipseItem):
 
     def set_selected(self, selected: bool):
         props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
+        if props.selected == selected:
+            return 
         props.selected = selected
         self.update_props()
+
+    def set_selected_by_rect(self, rect: QRectF):
+        props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
+
+        if rect.contains(QPointF(props.x, props.y)):
+            self.set_selected(True)
+
+
+    def get_selected(self):
+        props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
+        return props.selected
