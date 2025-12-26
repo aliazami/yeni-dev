@@ -30,6 +30,7 @@ class ActionItem(QObject, QGraphicsEllipseItem):
         # 3. Font settings
         self.font = QFont("Arial", 10)
         self.font.setBold(True)
+        self.update_props()
 
     def update_props(self):
         my_props: ActionItemProps = self.data(Qt.ItemDataRole.UserRole)
@@ -53,11 +54,13 @@ class ActionItem(QObject, QGraphicsEllipseItem):
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, props.tag)
 
     def focusInEvent(self, event):
-        self.set_selected(True)
+        print("focusInEvent")
+        # self.set_selected(True)
         super().focusInEvent(event)
 
     def focusOutEvent(self, event):
-        self.set_selected(False)
+        print("focusOutEvent")
+        # self.set_selected(False)
         super().focusOutEvent(event)
 
     def keyPressEvent(self, event: QKeyEvent):

@@ -126,12 +126,12 @@ class AppController:
         return LabelItemProps(
             x=x,
             y=y,
-            index=t.index_edit.value(),
-            place_holder=t.place_holder_edit.text(),
-            role=t.button_row.property("role"),
-            tag=t.tag_edit.text(),
-            font=t.font_edit.value(),
-            color=t.color_edit.text(),
+            index=t.index_edit.value() if t.index_edit else None,
+            place_holder=t.place_holder_edit.text() if t.place_holder_edit else None,
+            role=t.button_row.property("role") if t.button_row else None,
+            tag=t.tag_edit.text() if t.tag_edit else None,
+            font=t.font_edit.value() if t.font_edit else None,
+            color=t.color_edit.text() if t.color_edit else None,
         )
 
     def get_action_props_from_toolbar(self, x: int, y: int):
@@ -225,6 +225,8 @@ class AppController:
         return self.check()
 
     def role_change(self, role: str):
+        if not self.main_window.toolbar.index_edit:
+            return
         toolbar_prop = self.get_label_props_from_toolbar(0, 0)
         tag = toolbar_prop.tag
         indices = self.get_label_indices(role, tag)

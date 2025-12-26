@@ -64,35 +64,36 @@ class ImageView(QGraphicsView):
             x, y = int(scene_pos.x()), int(scene_pos.y())
             self.sceneShiftLeftClickRequest.emit(x, y)
             return
-        elif event.button() == Qt.MouseButton.LeftButton:
-            # Map the click position to the scene coordinates
-            self._start_point = self.mapToScene(event.pos())
-            self.sceneLeftClickRequest.emit()
-            # Create a temporary rectangle item for visual feedback during drag
-            self._current_rect_item = QGraphicsRectItem()
-            self._current_rect_item.setPen(self.pen)
-            self._current_rect_item.setBrush(QBrush(self.background_color))
+        # elif event.button() == Qt.MouseButton.LeftButton:
+        #     # Map the click position to the scene coordinates
+        #     self._start_point = self.mapToScene(event.pos())
+        #     self.sceneLeftClickRequest.emit()
+        #     # Create a temporary rectangle item for visual feedback during drag
+        #     self._current_rect_item = QGraphicsRectItem()
+        #     self._current_rect_item.setPen(self.pen)
+        #     self._current_rect_item.setBrush(QBrush(self.background_color))
 
-            # Add it to the scene immediately so we see it while dragging
-            self.scene().addItem(self._current_rect_item)
+        #     # Add it to the scene immediately so we see it while dragging
+        #     self.scene().addItem(self._current_rect_item)
+        #     return
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        if self._current_rect_item is not None:
-            # Current mouse position in scene coordinates
-            current_point = self.mapToScene(event.pos())
+    # def mouseMoveEvent(self, event):
+    #     if self._current_rect_item is not None:
+    #         # Current mouse position in scene coordinates
+    #         current_point = self.mapToScene(event.pos())
 
-            # Calculate the rectangle dimensions
-            # .normalized() ensures the rect is valid even if dragging top-left
-            rect = QRectF(self._start_point, current_point).normalized()
+    #         # Calculate the rectangle dimensions
+    #         # .normalized() ensures the rect is valid even if dragging top-left
+    #         rect = QRectF(self._start_point, current_point).normalized()
 
-            # Update the visual item
-            self._current_rect_item.setRect(rect)
+    #         # Update the visual item
+    #         self._current_rect_item.setRect(rect)
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            # finalize the drawing
-            self.sceneSelectionRequest.emit(self._current_rect_item.rect())
-            self.scene().removeItem(self._current_rect_item)
-            self._current_rect_item = None
-            self._start_point = None
+    # def mouseReleaseEvent(self, event):
+    #     if event.button() == Qt.MouseButton.LeftButton and self._current_rect_item:
+    #         # finalize the drawing
+    #         self.sceneSelectionRequest.emit(self._current_rect_item.rect())
+    #         self.scene().removeItem(self._current_rect_item)
+    #         self._current_rect_item = None
+    #         self._start_point = None
