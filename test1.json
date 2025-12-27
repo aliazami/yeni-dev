@@ -1,0 +1,55 @@
+{
+    "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/test.webp",
+    "items": [
+        {
+            "type": "RECTANGLE",
+            "x": 0.0,
+            "y": 0.0,
+            "id": "1",
+            "rect_id": "1",
+            "rect_text": "Season",
+            "w": 65.0,
+            "h": 30.0
+        },
+        {
+            "type": "RECTANGLE",
+            "x": 0.0,
+            "y": 0.0,
+            "id": "1",
+            "rect_id": "1",
+            "rect_text": "some1",
+            "w": 64.0,
+            "h": 30.0
+        },
+        {
+            "type": "LABEL2",
+            "x": 504.0,
+            "y": 818.0,
+            "id": "1.2**"
+        },
+        {
+            "type": "LABEL",
+            "x": 448.0,
+            "y": 817.0,
+            "id": "1.2"
+        },
+        {
+            "type": "LABEL",
+            "x": 449.0,
+            "y": 782.0,
+            "id": "1.1"
+        },
+        {
+            "type": "LABEL2",
+            "x": 504.0,
+            "y": 784.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "CIRCLE",
+            "x": 387.0,
+            "y": 790.0,
+            "id": "1"
+        }
+    ]
+}

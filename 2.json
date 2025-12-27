@@ -1,0 +1,55 @@
+{
+    "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/test.webp",
+    "items": [
+        {
+            "type": "RECTANGLE",
+            "x": 747.0,
+            "y": 751.0,
+            "id": "1",
+            "rect_id": "1",
+            "rect_text": "Season",
+            "w": 80.0,
+            "h": 32.0
+        },
+        {
+            "type": "RECTANGLE",
+            "x": 673.0,
+            "y": 751.0,
+            "id": "1",
+            "rect_id": "1",
+            "rect_text": "fitiland",
+            "w": 62.0,
+            "h": 28.0
+        },
+        {
+            "type": "LABEL2",
+            "x": 497.0,
+            "y": 794.0,
+            "id": "1.2**"
+        },
+        {
+            "type": "LABEL",
+            "x": 435.0,
+            "y": 795.0,
+            "id": "1.2"
+        },
+        {
+            "type": "LABEL2",
+            "x": 496.0,
+            "y": 758.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "LABEL",
+            "x": 435.0,
+            "y": 758.0,
+            "id": "1.1"
+        },
+        {
+            "type": "CIRCLE",
+            "x": 375.0,
+            "y": 763.0,
+            "id": "1"
+        }
+    ]
+}
