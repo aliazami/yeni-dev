@@ -7,16 +7,19 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsView,
                                QGraphicsEllipseItem, QGraphicsSimpleTextItem,
                                QGraphicsTextItem, QGraphicsItem,
                                QInputDialog, QWidget, QVBoxLayout, QLabel,
-                               QMessageBox, QToolBar, QStyle)
+                               QMessageBox, QToolBar, QStyle, QDialog,
+                               QFormLayout, QLineEdit, QDialogButtonBox)
 
 # --- Constants for Item Data Keys ---
 KEY_ID = 0
 KEY_TYPE = 1
+# New constants for Rectangle specifics
+KEY_RECT_ID = 2
+KEY_RECT_TEXT = 3
 
 
-# --- Helper to Create Icons Programmatically ---
+# --- Helper to Create Icons (Unchanged) ---
 def create_icon(icon_type, color=Qt.black):
-    """Draws simple alignment icons in memory."""
     pixmap = QPixmap(32, 32)
     pixmap.fill(Qt.transparent)
     painter = QPainter(pixmap)
@@ -24,64 +27,89 @@ def create_icon(icon_type, color=Qt.black):
     painter.setBrush(QBrush(color))
 
     if icon_type == "align_left":
-        painter.drawLine(4, 4, 4, 28)
-        painter.drawRect(8, 6, 12, 6)
+        painter.drawLine(4, 4, 4, 28);
+        painter.drawRect(8, 6, 12, 6);
         painter.drawRect(8, 20, 16, 6)
-
     elif icon_type == "align_right":
-        painter.drawLine(28, 4, 28, 28)
-        painter.drawRect(12, 6, 12, 6)
+        painter.drawLine(28, 4, 28, 28);
+        painter.drawRect(12, 6, 12, 6);
         painter.drawRect(8, 20, 16, 6)
-
     elif icon_type == "align_top":
-        painter.drawLine(4, 4, 28, 4)
-        painter.drawRect(6, 8, 6, 12)
+        painter.drawLine(4, 4, 28, 4);
+        painter.drawRect(6, 8, 6, 12);
         painter.drawRect(20, 8, 6, 16)
-
     elif icon_type == "align_bottom":
-        painter.drawLine(4, 28, 28, 28)
-        painter.drawRect(6, 12, 6, 12)
+        painter.drawLine(4, 28, 28, 28);
+        painter.drawRect(6, 12, 6, 12);
         painter.drawRect(20, 8, 6, 16)
-
     elif icon_type == "dist_horz":
-        painter.drawRect(4, 10, 6, 12)
-        painter.drawRect(13, 10, 6, 12)
+        painter.drawRect(4, 10, 6, 12);
+        painter.drawRect(13, 10, 6, 12);
         painter.drawRect(22, 10, 6, 12)
-        painter.drawLine(4, 6, 28, 6)
-        painter.drawLine(4, 4, 4, 8)
+        painter.drawLine(4, 6, 28, 6);
+        painter.drawLine(4, 4, 4, 8);
         painter.drawLine(28, 4, 28, 8)
-
     elif icon_type == "dist_vert":
-        painter.drawRect(10, 4, 12, 6)
-        painter.drawRect(10, 13, 12, 6)
+        painter.drawRect(10, 4, 12, 6);
+        painter.drawRect(10, 13, 12, 6);
         painter.drawRect(10, 22, 12, 6)
-        painter.drawLine(6, 4, 6, 28)
-        painter.drawLine(4, 4, 8, 4)
+        painter.drawLine(6, 4, 6, 28);
+        painter.drawLine(4, 4, 8, 4);
         painter.drawLine(4, 28, 8, 28)
 
     painter.end()
     return QIcon(pixmap)
 
 
-# --- 1. Help Window ---
+# --- Custom Dialog for Rectangle Inputs ---
+class RectInputDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Rectangle Details")
+        self.resize(300, 150)
+
+        layout = QFormLayout(self)
+
+        self.id_input = QLineEdit()
+        self.id_input.setPlaceholderText("Enter Integer ID")
+        # Validator to ensure only integers are entered
+        # (Though we check validity in logic, strictly restricting input is good UI)
+        # However, request said "blank field", so we leave it empty initially.
+
+        self.text_input = QLineEdit()
+        self.text_input.setPlaceholderText("Enter Text")
+
+        layout.addRow("Rectangle ID (Int):", self.id_input)
+        layout.addRow("Description:", self.text_input)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        layout.addRow(buttons)
+
+    def get_data(self):
+        return self.id_input.text().strip(), self.text_input.text().strip()
+
+
+# --- Help Window ---
 class HelpWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Help")
-        self.resize(250, 220)
+        self.resize(300, 250)
         self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
         layout = QVBoxLayout()
         help_text = (
             "<b>COMMANDS:</b><br>"
-            "<b>R</b> : Draw Rectangle<br>"
             "<b>A</b> : Add Circle (Set Current ID)<br>"
-            "<b>F</b> : Add Label (Child of Current ID)<br>"
+            "<b>R</b> : Add Rectangle (Linked to Current ID)<br>"
+            "<b>F</b> : Add Label (Linked to Current ID)<br>"
             "<b>1</b> : Toggle Alignment Toolbar<br>"
             "<b>H</b> : Show Help<br>"
-            "<b>Arrows</b> : Move Item (Step=10)<br>"
-            "<b>Shift+Arrows</b> : Move Item (Step=1)<br>"
-            "<b>Del</b> : Delete Item<br>"
-            "<b>Esc</b> : Cancel / Deselect"
+            "<b>Arrows</b> : Move (Step=10)<br>"
+            "<b>Shift+Arrows</b> : Move (Step=1)<br>"
+            "<b>Del</b> : Delete Item"
         )
         label = QLabel(help_text)
         label.setTextFormat(Qt.RichText)
@@ -89,7 +117,7 @@ class HelpWindow(QWidget):
         self.setLayout(layout)
 
 
-# --- 2. The Scene ---
+# --- The Scene ---
 class EditorScene(QGraphicsScene):
     helpRequested = Signal()
     toggleToolbarRequested = Signal()
@@ -99,59 +127,13 @@ class EditorScene(QGraphicsScene):
         self.mode = 'SELECT'
         self.temp_rect_item = None
         self.start_point = None
+
         self.current_id = None
         self.pending_payload = ""
 
-        # --- Alignment Logic ---
-
-    def align_items(self, direction):
-        items = self.selectedItems()
-        if len(items) < 2: return
-
-        target = 0.0
-        if direction == 'left':
-            target = min(item.sceneBoundingRect().left() for item in items)
-        elif direction == 'right':
-            target = max(item.sceneBoundingRect().right() for item in items)
-        elif direction == 'top':
-            target = min(item.sceneBoundingRect().top() for item in items)
-        elif direction == 'bottom':
-            target = max(item.sceneBoundingRect().bottom() for item in items)
-
-        for item in items:
-            rect = item.sceneBoundingRect()
-            if direction == 'left':
-                item.moveBy(target - rect.left(), 0)
-            elif direction == 'right':
-                item.moveBy(target - rect.right(), 0)
-            elif direction == 'top':
-                item.moveBy(0, target - rect.top())
-            elif direction == 'bottom':
-                item.moveBy(0, target - rect.bottom())
-
-    def distribute_items(self, orientation):
-        items = self.selectedItems()
-        if len(items) < 3: return
-
-        if orientation == 'horz':
-            items.sort(key=lambda item: item.sceneBoundingRect().center().x())
-            start = items[0].sceneBoundingRect().center().x()
-            end = items[-1].sceneBoundingRect().center().x()
-            step = (end - start) / (len(items) - 1)
-            for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().x()
-                target_center = start + (i * step)
-                item.moveBy(target_center - current_center, 0)
-
-        elif orientation == 'vert':
-            items.sort(key=lambda item: item.sceneBoundingRect().center().y())
-            start = items[0].sceneBoundingRect().center().y()
-            end = items[-1].sceneBoundingRect().center().y()
-            step = (end - start) / (len(items) - 1)
-            for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().y()
-                target_center = start + (i * step)
-                item.moveBy(0, target_center - current_center)
+        # specific storage for rectangle creation
+        self.pending_rect_id = None
+        self.pending_rect_text = None
 
     # --- Helpers ---
     def circle_id_exists(self, target_id):
@@ -162,6 +144,20 @@ class EditorScene(QGraphicsScene):
     def label_id_exists(self, full_label):
         for item in self.items():
             if item.data(KEY_TYPE) == "LABEL" and item.data(KEY_ID) == full_label: return True
+        return False
+
+    def rect_compound_id_exists(self, compound_id):
+        # Format: {circle_id}.{rect_id}.{rect_text}
+        for item in self.items():
+            if item.data(KEY_TYPE) == "RECTANGLE":
+                # Reconstruct ID from stored data to check uniqueness
+                stored_circle_id = item.data(KEY_ID)  # Storing circle ID here to be consistent
+                stored_rect_id = item.data(KEY_RECT_ID)
+                stored_text = item.data(KEY_RECT_TEXT)
+
+                existing_compound = f"{stored_circle_id}.{stored_rect_id}.{stored_text}"
+                if existing_compound == compound_id:
+                    return True
         return False
 
     def get_next_label_int(self):
@@ -202,7 +198,54 @@ class EditorScene(QGraphicsScene):
             view.setCursor(QCursor(Qt.CrossCursor))
             self.clearSelection()
 
-    # --- Key Events (Modified for Shift+Arrow) ---
+    # --- Alignment Logic (Unchanged) ---
+    def align_items(self, direction):
+        items = self.selectedItems()
+        if len(items) < 2: return
+        target = 0.0
+        if direction == 'left':
+            target = min(item.sceneBoundingRect().left() for item in items)
+        elif direction == 'right':
+            target = max(item.sceneBoundingRect().right() for item in items)
+        elif direction == 'top':
+            target = min(item.sceneBoundingRect().top() for item in items)
+        elif direction == 'bottom':
+            target = max(item.sceneBoundingRect().bottom() for item in items)
+
+        for item in items:
+            rect = item.sceneBoundingRect()
+            if direction == 'left':
+                item.moveBy(target - rect.left(), 0)
+            elif direction == 'right':
+                item.moveBy(target - rect.right(), 0)
+            elif direction == 'top':
+                item.moveBy(0, target - rect.top())
+            elif direction == 'bottom':
+                item.moveBy(0, target - rect.bottom())
+
+    def distribute_items(self, orientation):
+        items = self.selectedItems()
+        if len(items) < 3: return
+        if orientation == 'horz':
+            items.sort(key=lambda item: item.sceneBoundingRect().center().x())
+            start = items[0].sceneBoundingRect().center().x()
+            end = items[-1].sceneBoundingRect().center().x()
+            step = (end - start) / (len(items) - 1)
+            for i, item in enumerate(items):
+                current_center = item.sceneBoundingRect().center().x()
+                target_center = start + (i * step)
+                item.moveBy(target_center - current_center, 0)
+        elif orientation == 'vert':
+            items.sort(key=lambda item: item.sceneBoundingRect().center().y())
+            start = items[0].sceneBoundingRect().center().y()
+            end = items[-1].sceneBoundingRect().center().y()
+            step = (end - start) / (len(items) - 1)
+            for i, item in enumerate(items):
+                current_center = item.sceneBoundingRect().center().y()
+                target_center = start + (i * step)
+                item.moveBy(0, target_center - current_center)
+
+    # --- Event Handling ---
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_1:
             self.toggleToolbarRequested.emit()
@@ -212,8 +255,41 @@ class EditorScene(QGraphicsScene):
             self.helpRequested.emit()
             event.accept()
 
+        # R - Rectangle
         elif event.key() == Qt.Key_R:
-            if self.mode != 'DRAWING_RECT': self.set_mode('DRAWING_RECT')
+            # 1. Check if we have a current_id
+            if not self.current_id:
+                QMessageBox.warning(None, "Error", "No Circle Selected (No Current ID). Please select a circle first.")
+                event.accept()
+                return
+
+            # 2. Show Custom Dialog
+            dialog = RectInputDialog()
+            if dialog.exec() == QDialog.Accepted:
+                r_id, r_text = dialog.get_data()
+
+                # 3. Validate Inputs
+                if not r_id.isdigit():
+                    QMessageBox.warning(None, "Error", "Rectangle ID must be an integer.")
+                    event.accept()
+                    return
+                if not r_text:
+                    QMessageBox.warning(None, "Error", "Rectangle Text cannot be empty.")
+                    event.accept()
+                    return
+
+                # 4. Check Uniqueness
+                compound_id = f"{self.current_id}.{r_id}.{r_text}"
+                if self.rect_compound_id_exists(compound_id):
+                    QMessageBox.warning(None, "Error", f"Rectangle '{compound_id}' already exists!")
+                    event.accept()
+                    return
+
+                # 5. Store Data and Switch Mode
+                self.pending_rect_id = r_id
+                self.pending_rect_text = r_text
+                self.set_mode('DRAWING_RECT')
+
             event.accept()
 
         elif event.key() == Qt.Key_A:
@@ -259,15 +335,12 @@ class EditorScene(QGraphicsScene):
             else:
                 self.clearSelection()
 
-        # --- MODIFIED: Handle Arrow Keys with Shift support ---
         elif event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
             dx, dy = 0, 0
-
-            # Check for Shift Modifier
             if event.modifiers() & Qt.ShiftModifier:
-                step = 1  # Fine movement
+                step = 1
             else:
-                step = 10  # Standard movement
+                step = 10
 
             if event.key() == Qt.Key_Left:
                 dx = -step
@@ -362,19 +435,46 @@ class EditorScene(QGraphicsScene):
             final_rect_geometry = self.temp_rect_item.rect()
             self.removeItem(self.temp_rect_item)
             self.temp_rect_item = None
+
+            # Create permanent rectangle
             if final_rect_geometry.width() > 1 and final_rect_geometry.height() > 1:
                 final_item = QGraphicsRectItem(final_rect_geometry)
                 final_item.setPen(QPen(Qt.green, 2))
                 final_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
                 final_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
+
+                # --- Store Metadata ---
+                final_item.setData(KEY_TYPE, "RECTANGLE")
+                final_item.setData(KEY_ID, self.current_id)  # Associated Circle ID
+                final_item.setData(KEY_RECT_ID, self.pending_rect_id)
+                final_item.setData(KEY_RECT_TEXT, self.pending_rect_text)
+
+                # --- Create Label Below Rectangle ---
+                label_text = f"{self.current_id}.{self.pending_rect_id}.{self.pending_rect_text}"
+                text_item = QGraphicsSimpleTextItem(label_text, parent=final_item)
+                text_item.setBrush(QBrush(Qt.white))
+                text_item.setFont(QFont("Arial", 10))
+
+                # Position Text: relative to rectangle's coordinates
+                # We place it at (Rect X, Rect Bottom + padding)
+                # Since final_item uses scene coordinates for its rect,
+                # but it is a standard rect item where pos defaults to 0,0
+                # and the rect defines the shape offset.
+                rect = final_item.rect()
+                text_item.setPos(rect.x(), rect.y() + rect.height() + 5)
+
+                # Make text click-through
+                text_item.setAcceptedMouseButtons(Qt.NoButton)
+
                 self.addItem(final_item)
+
             self.set_mode('SELECT')
             event.accept()
         else:
             super().mouseReleaseEvent(event)
 
 
-# --- 3. The Main Window ---
+# --- Main Window (Unchanged) ---
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -402,19 +502,14 @@ class MainWindow(QMainWindow):
 
         act_align_left = QAction(create_icon("align_left"), "Align Left", self)
         act_align_left.triggered.connect(lambda: self.scene.align_items('left'))
-
         act_align_right = QAction(create_icon("align_right"), "Align Right", self)
         act_align_right.triggered.connect(lambda: self.scene.align_items('right'))
-
         act_align_top = QAction(create_icon("align_top"), "Align Top", self)
         act_align_top.triggered.connect(lambda: self.scene.align_items('top'))
-
         act_align_bottom = QAction(create_icon("align_bottom"), "Align Bottom", self)
         act_align_bottom.triggered.connect(lambda: self.scene.align_items('bottom'))
-
         act_dist_horz = QAction(create_icon("dist_horz"), "Distribute Horizontally", self)
         act_dist_horz.triggered.connect(lambda: self.scene.distribute_items('horz'))
-
         act_dist_vert = QAction(create_icon("dist_vert"), "Distribute Vertically", self)
         act_dist_vert.triggered.connect(lambda: self.scene.distribute_items('vert'))
 
@@ -427,8 +522,7 @@ class MainWindow(QMainWindow):
         self.align_toolbar.addAction(act_dist_vert)
 
     def toggle_align_toolbar(self):
-        is_visible = self.align_toolbar.isVisible()
-        self.align_toolbar.setVisible(not is_visible)
+        self.align_toolbar.setVisible(not self.align_toolbar.isVisible())
 
     def show_help_window(self):
         self.help_window.show()
