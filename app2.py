@@ -24,22 +24,22 @@ def create_icon(icon_type, color=Qt.black):
     painter.setBrush(QBrush(color))
 
     if icon_type == "align_left":
-        painter.drawLine(4, 4, 4, 28)  # Vertical line
+        painter.drawLine(4, 4, 4, 28)
         painter.drawRect(8, 6, 12, 6)
         painter.drawRect(8, 20, 16, 6)
 
     elif icon_type == "align_right":
-        painter.drawLine(28, 4, 28, 28)  # Vertical line
+        painter.drawLine(28, 4, 28, 28)
         painter.drawRect(12, 6, 12, 6)
         painter.drawRect(8, 20, 16, 6)
 
     elif icon_type == "align_top":
-        painter.drawLine(4, 4, 28, 4)  # Horizontal line
+        painter.drawLine(4, 4, 28, 4)
         painter.drawRect(6, 8, 6, 12)
         painter.drawRect(20, 8, 6, 16)
 
     elif icon_type == "align_bottom":
-        painter.drawLine(4, 28, 28, 28)  # Horizontal line
+        painter.drawLine(4, 28, 28, 28)
         painter.drawRect(6, 12, 6, 12)
         painter.drawRect(20, 8, 6, 16)
 
@@ -47,7 +47,6 @@ def create_icon(icon_type, color=Qt.black):
         painter.drawRect(4, 10, 6, 12)
         painter.drawRect(13, 10, 6, 12)
         painter.drawRect(22, 10, 6, 12)
-        # distribute arrows/lines
         painter.drawLine(4, 6, 28, 6)
         painter.drawLine(4, 4, 4, 8)
         painter.drawLine(28, 4, 28, 8)
@@ -56,7 +55,6 @@ def create_icon(icon_type, color=Qt.black):
         painter.drawRect(10, 4, 12, 6)
         painter.drawRect(10, 13, 12, 6)
         painter.drawRect(10, 22, 12, 6)
-        # distribute arrows/lines
         painter.drawLine(6, 4, 6, 28)
         painter.drawLine(4, 4, 8, 4)
         painter.drawLine(4, 28, 8, 28)
@@ -65,12 +63,12 @@ def create_icon(icon_type, color=Qt.black):
     return QIcon(pixmap)
 
 
-# --- 1. Help Window (Unchanged) ---
+# --- 1. Help Window ---
 class HelpWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Help")
-        self.resize(220, 200)
+        self.resize(250, 220)
         self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
         layout = QVBoxLayout()
         help_text = (
@@ -80,7 +78,8 @@ class HelpWindow(QWidget):
             "<b>F</b> : Add Label (Child of Current ID)<br>"
             "<b>1</b> : Toggle Alignment Toolbar<br>"
             "<b>H</b> : Show Help<br>"
-            "<b>Arrows</b> : Move Item<br>"
+            "<b>Arrows</b> : Move Item (Step=10)<br>"
+            "<b>Shift+Arrows</b> : Move Item (Step=1)<br>"
             "<b>Del</b> : Delete Item<br>"
             "<b>Esc</b> : Cancel / Deselect"
         )
@@ -93,7 +92,7 @@ class HelpWindow(QWidget):
 # --- 2. The Scene ---
 class EditorScene(QGraphicsScene):
     helpRequested = Signal()
-    toggleToolbarRequested = Signal()  # New Signal for "1"
+    toggleToolbarRequested = Signal()
 
     def __init__(self, x, y, w, h, parent=None):
         super().__init__(x, y, w, h, parent)
@@ -109,7 +108,6 @@ class EditorScene(QGraphicsScene):
         items = self.selectedItems()
         if len(items) < 2: return
 
-        # 1. Calculate the target coordinate
         target = 0.0
         if direction == 'left':
             target = min(item.sceneBoundingRect().left() for item in items)
@@ -120,7 +118,6 @@ class EditorScene(QGraphicsScene):
         elif direction == 'bottom':
             target = max(item.sceneBoundingRect().bottom() for item in items)
 
-        # 2. Move items
         for item in items:
             rect = item.sceneBoundingRect()
             if direction == 'left':
@@ -136,13 +133,10 @@ class EditorScene(QGraphicsScene):
         items = self.selectedItems()
         if len(items) < 3: return
 
-        # 1. Sort items based on position
         if orientation == 'horz':
             items.sort(key=lambda item: item.sceneBoundingRect().center().x())
             start = items[0].sceneBoundingRect().center().x()
             end = items[-1].sceneBoundingRect().center().x()
-
-            # Distribute centers evenly
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
                 current_center = item.sceneBoundingRect().center().x()
@@ -153,14 +147,13 @@ class EditorScene(QGraphicsScene):
             items.sort(key=lambda item: item.sceneBoundingRect().center().y())
             start = items[0].sceneBoundingRect().center().y()
             end = items[-1].sceneBoundingRect().center().y()
-
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
                 current_center = item.sceneBoundingRect().center().y()
                 target_center = start + (i * step)
                 item.moveBy(0, target_center - current_center)
 
-    # --- Existing Helpers (Unchanged) ---
+    # --- Helpers ---
     def circle_id_exists(self, target_id):
         for item in self.items():
             if item.data(KEY_TYPE) == "CIRCLE" and item.data(KEY_ID) == target_id: return True
@@ -209,8 +202,8 @@ class EditorScene(QGraphicsScene):
             view.setCursor(QCursor(Qt.CrossCursor))
             self.clearSelection()
 
+    # --- Key Events (Modified for Shift+Arrow) ---
     def keyPressEvent(self, event):
-        # 1 - Toggle Toolbar
         if event.key() == Qt.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -266,9 +259,16 @@ class EditorScene(QGraphicsScene):
             else:
                 self.clearSelection()
 
+        # --- MODIFIED: Handle Arrow Keys with Shift support ---
         elif event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
             dx, dy = 0, 0
-            step = 10
+
+            # Check for Shift Modifier
+            if event.modifiers() & Qt.ShiftModifier:
+                step = 1  # Fine movement
+            else:
+                step = 10  # Standard movement
+
             if event.key() == Qt.Key_Left:
                 dx = -step
             elif event.key() == Qt.Key_Right:
@@ -313,7 +313,7 @@ class EditorScene(QGraphicsScene):
                 text_item.setFont(font)
                 br = text_item.boundingRect()
                 text_item.setPos(-br.width() / 2, -br.height() / 2)
-                text_item.setAcceptedMouseButtons(Qt.NoButton)  # Fix click issue
+                text_item.setAcceptedMouseButtons(Qt.NoButton)
 
                 self.addItem(ellipse)
                 self.current_id = self.pending_payload
@@ -393,15 +393,13 @@ class MainWindow(QMainWindow):
         self.scene.helpRequested.connect(self.show_help_window)
         self.scene.toggleToolbarRequested.connect(self.toggle_align_toolbar)
 
-        # --- Setup Alignment Toolbar ---
         self.create_alignment_toolbar()
 
     def create_alignment_toolbar(self):
         self.align_toolbar = QToolBar("Alignment")
         self.addToolBar(Qt.TopToolBarArea, self.align_toolbar)
-        self.align_toolbar.setHidden(True)  # Hidden by default
+        self.align_toolbar.setHidden(True)
 
-        # Actions
         act_align_left = QAction(create_icon("align_left"), "Align Left", self)
         act_align_left.triggered.connect(lambda: self.scene.align_items('left'))
 
@@ -420,7 +418,6 @@ class MainWindow(QMainWindow):
         act_dist_vert = QAction(create_icon("dist_vert"), "Distribute Vertically", self)
         act_dist_vert.triggered.connect(lambda: self.scene.distribute_items('vert'))
 
-        # Add to Toolbar
         self.align_toolbar.addAction(act_align_left)
         self.align_toolbar.addAction(act_align_right)
         self.align_toolbar.addAction(act_align_top)
