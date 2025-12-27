@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsView,
 # --- Constants for Item Data Keys ---
 KEY_ID = 0
 KEY_TYPE = 1
-# New constants for Rectangle specifics
 KEY_RECT_ID = 2
 KEY_RECT_TEXT = 3
 
@@ -61,31 +60,22 @@ def create_icon(icon_type, color=Qt.black):
     return QIcon(pixmap)
 
 
-# --- Custom Dialog for Rectangle Inputs ---
+# --- Custom Dialog for Rectangle Inputs (Unchanged) ---
 class RectInputDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Add Rectangle Details")
         self.resize(300, 150)
-
         layout = QFormLayout(self)
-
         self.id_input = QLineEdit()
         self.id_input.setPlaceholderText("Enter Integer ID")
-        # Validator to ensure only integers are entered
-        # (Though we check validity in logic, strictly restricting input is good UI)
-        # However, request said "blank field", so we leave it empty initially.
-
         self.text_input = QLineEdit()
         self.text_input.setPlaceholderText("Enter Text")
-
         layout.addRow("Rectangle ID (Int):", self.id_input)
         layout.addRow("Description:", self.text_input)
-
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-
         layout.addRow(buttons)
 
     def get_data(self):
@@ -97,7 +87,7 @@ class HelpWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Help")
-        self.resize(300, 250)
+        self.resize(300, 280)
         self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
         layout = QVBoxLayout()
         help_text = (
@@ -105,6 +95,7 @@ class HelpWindow(QWidget):
             "<b>A</b> : Add Circle (Set Current ID)<br>"
             "<b>R</b> : Add Rectangle (Linked to Current ID)<br>"
             "<b>F</b> : Add Label (Linked to Current ID)<br>"
+            "<b>G</b> : Add Label 2 (Linked to Current ID)<br>"
             "<b>1</b> : Toggle Alignment Toolbar<br>"
             "<b>H</b> : Show Help<br>"
             "<b>Arrows</b> : Move (Step=10)<br>"
@@ -131,7 +122,7 @@ class EditorScene(QGraphicsScene):
         self.current_id = None
         self.pending_payload = ""
 
-        # specific storage for rectangle creation
+        # storage for rectangle creation
         self.pending_rect_id = None
         self.pending_rect_text = None
 
@@ -146,18 +137,20 @@ class EditorScene(QGraphicsScene):
             if item.data(KEY_TYPE) == "LABEL" and item.data(KEY_ID) == full_label: return True
         return False
 
+    # New Helper for Label2 Uniqueness
+    def label2_id_exists(self, full_label):
+        for item in self.items():
+            if item.data(KEY_TYPE) == "LABEL2" and item.data(KEY_ID) == full_label: return True
+        return False
+
     def rect_compound_id_exists(self, compound_id):
-        # Format: {circle_id}.{rect_id}.{rect_text}
         for item in self.items():
             if item.data(KEY_TYPE) == "RECTANGLE":
-                # Reconstruct ID from stored data to check uniqueness
-                stored_circle_id = item.data(KEY_ID)  # Storing circle ID here to be consistent
+                stored_circle_id = item.data(KEY_ID)
                 stored_rect_id = item.data(KEY_RECT_ID)
                 stored_text = item.data(KEY_RECT_TEXT)
-
                 existing_compound = f"{stored_circle_id}.{stored_rect_id}.{stored_text}"
-                if existing_compound == compound_id:
-                    return True
+                if existing_compound == compound_id: return True
         return False
 
     def get_next_label_int(self):
@@ -170,6 +163,24 @@ class EditorScene(QGraphicsScene):
                 if lbl_text.startswith(prefix):
                     try:
                         suffix = int(lbl_text.split('.')[1])
+                        if suffix > max_val: max_val = suffix
+                    except ValueError:
+                        pass
+        return max_val + 1
+
+    # New Helper for Label2 sequence
+    def get_next_label2_int(self):
+        if not self.current_id: return 1
+        max_val = 0
+        prefix = f"{self.current_id}."
+        for item in self.items():
+            if item.data(KEY_TYPE) == "LABEL2":
+                lbl_text = item.data(KEY_ID)
+                # Format is "1.1**", so we check prefix and strip suffix
+                if lbl_text.startswith(prefix) and lbl_text.endswith("**"):
+                    try:
+                        clean_text = lbl_text.replace("**", "")
+                        suffix = int(clean_text.split('.')[1])
                         if suffix > max_val: max_val = suffix
                     except ValueError:
                         pass
@@ -211,7 +222,6 @@ class EditorScene(QGraphicsScene):
             target = min(item.sceneBoundingRect().top() for item in items)
         elif direction == 'bottom':
             target = max(item.sceneBoundingRect().bottom() for item in items)
-
         for item in items:
             rect = item.sceneBoundingRect()
             if direction == 'left':
@@ -228,20 +238,20 @@ class EditorScene(QGraphicsScene):
         if len(items) < 3: return
         if orientation == 'horz':
             items.sort(key=lambda item: item.sceneBoundingRect().center().x())
-            start = items[0].sceneBoundingRect().center().x()
+            start = items[0].sceneBoundingRect().center().x();
             end = items[-1].sceneBoundingRect().center().x()
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().x()
+                current_center = item.sceneBoundingRect().center().x();
                 target_center = start + (i * step)
                 item.moveBy(target_center - current_center, 0)
         elif orientation == 'vert':
             items.sort(key=lambda item: item.sceneBoundingRect().center().y())
-            start = items[0].sceneBoundingRect().center().y()
+            start = items[0].sceneBoundingRect().center().y();
             end = items[-1].sceneBoundingRect().center().y()
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().y()
+                current_center = item.sceneBoundingRect().center().y();
                 target_center = start + (i * step)
                 item.moveBy(0, target_center - current_center)
 
@@ -255,68 +265,74 @@ class EditorScene(QGraphicsScene):
             self.helpRequested.emit()
             event.accept()
 
-        # R - Rectangle
         elif event.key() == Qt.Key_R:
-            # 1. Check if we have a current_id
             if not self.current_id:
-                QMessageBox.warning(None, "Error", "No Circle Selected (No Current ID). Please select a circle first.")
-                event.accept()
+                QMessageBox.warning(None, "Error", "No Circle Selected.")
+                event.accept();
                 return
-
-            # 2. Show Custom Dialog
             dialog = RectInputDialog()
             if dialog.exec() == QDialog.Accepted:
                 r_id, r_text = dialog.get_data()
-
-                # 3. Validate Inputs
                 if not r_id.isdigit():
-                    QMessageBox.warning(None, "Error", "Rectangle ID must be an integer.")
-                    event.accept()
+                    QMessageBox.warning(None, "Error", "ID must be int.");
+                    event.accept();
                     return
                 if not r_text:
-                    QMessageBox.warning(None, "Error", "Rectangle Text cannot be empty.")
-                    event.accept()
+                    QMessageBox.warning(None, "Error", "Text required.");
+                    event.accept();
                     return
-
-                # 4. Check Uniqueness
                 compound_id = f"{self.current_id}.{r_id}.{r_text}"
                 if self.rect_compound_id_exists(compound_id):
-                    QMessageBox.warning(None, "Error", f"Rectangle '{compound_id}' already exists!")
-                    event.accept()
+                    QMessageBox.warning(None, "Error", "Exists!");
+                    event.accept();
                     return
-
-                # 5. Store Data and Switch Mode
-                self.pending_rect_id = r_id
+                self.pending_rect_id = r_id;
                 self.pending_rect_text = r_text
                 self.set_mode('DRAWING_RECT')
-
             event.accept()
 
         elif event.key() == Qt.Key_A:
             text, ok = QInputDialog.getText(None, "Add Circle", "Enter Unique ID:")
             if ok and text:
                 if self.circle_id_exists(text):
-                    QMessageBox.warning(None, "Error", f"ID '{text}' exists!")
+                    QMessageBox.warning(None, "Error", "Exists!")
                 else:
-                    self.pending_payload = text
-                    self.set_mode('ADD_CIRCLE')
+                    self.pending_payload = text; self.set_mode('ADD_CIRCLE')
             event.accept()
 
         elif event.key() == Qt.Key_F:
-            if not self.current_id:
-                QMessageBox.warning(None, "Error", "No Circle Selected.")
-                event.accept()
-                return
+            if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
             default_int = self.get_next_label_int()
             val, ok = QInputDialog.getInt(None, "Add Label", f"ID: {self.current_id}\nSequence:", value=default_int,
                                           minValue=1)
             if ok:
                 full_label = f"{self.current_id}.{val}"
                 if self.label_id_exists(full_label):
-                    QMessageBox.warning(None, "Error", f"Label '{full_label}' exists!")
+                    QMessageBox.warning(None, "Error", "Exists!")
+                else:
+                    self.pending_payload = full_label; self.set_mode('ADD_LABEL')
+            event.accept()
+
+        # --- G: Add Label 2 ---
+        elif event.key() == Qt.Key_G:
+            if not self.current_id:
+                QMessageBox.warning(None, "Error", "No Circle Selected.")
+                event.accept()
+                return
+
+            # Calculate next sequence for Label 2
+            default_int = self.get_next_label2_int()
+            val, ok = QInputDialog.getInt(None, "Add Label 2",
+                                          f"Current ID: {self.current_id}\nNext Label2 Sequence:",
+                                          value=default_int, minValue=1)
+            if ok:
+                # Format: {id}.{val}**
+                full_label = f"{self.current_id}.{val}**"
+                if self.label2_id_exists(full_label):
+                    QMessageBox.warning(None, "Error", f"Label2 '{full_label}' already exists!")
                 else:
                     self.pending_payload = full_label
-                    self.set_mode('ADD_LABEL')
+                    self.set_mode('ADD_LABEL2')
             event.accept()
 
         elif event.key() == Qt.Key_Delete:
@@ -328,9 +344,7 @@ class EditorScene(QGraphicsScene):
 
         elif event.key() == Qt.Key_Escape:
             if self.mode != 'SELECT':
-                if self.temp_rect_item:
-                    self.removeItem(self.temp_rect_item)
-                    self.temp_rect_item = None
+                if self.temp_rect_item: self.removeItem(self.temp_rect_item); self.temp_rect_item = None
                 self.set_mode('SELECT')
             else:
                 self.clearSelection()
@@ -341,7 +355,6 @@ class EditorScene(QGraphicsScene):
                 step = 1
             else:
                 step = 10
-
             if event.key() == Qt.Key_Left:
                 dx = -step
             elif event.key() == Qt.Key_Right:
@@ -350,7 +363,6 @@ class EditorScene(QGraphicsScene):
                 dy = -step
             elif event.key() == Qt.Key_Down:
                 dy = step
-
             items = self.selectedItems()
             if items:
                 for item in items: item.moveBy(dx, dy)
@@ -407,6 +419,25 @@ class EditorScene(QGraphicsScene):
                 self.set_mode('SELECT')
                 event.accept()
 
+            # --- Label 2 Creation ---
+            elif self.mode == 'ADD_LABEL2':
+                pos = event.scenePos()
+                text_item = QGraphicsTextItem(self.pending_payload)
+
+                # Different Color (Cyan)
+                text_item.setDefaultTextColor(QColor("#00FFFF"))
+                text_item.setFont(QFont("Arial", 14, QFont.Bold))  # Bold to distinguish further
+                text_item.setPos(pos)
+                text_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
+
+                # Metadata
+                text_item.setData(KEY_ID, self.pending_payload)
+                text_item.setData(KEY_TYPE, "LABEL2")
+
+                self.addItem(text_item)
+                self.set_mode('SELECT')
+                event.accept()
+
             else:
                 items_at_pos = self.items(event.scenePos())
                 clicked_circle = None
@@ -435,39 +466,27 @@ class EditorScene(QGraphicsScene):
             final_rect_geometry = self.temp_rect_item.rect()
             self.removeItem(self.temp_rect_item)
             self.temp_rect_item = None
-
-            # Create permanent rectangle
             if final_rect_geometry.width() > 1 and final_rect_geometry.height() > 1:
                 final_item = QGraphicsRectItem(final_rect_geometry)
                 final_item.setPen(QPen(Qt.green, 2))
                 final_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
                 final_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
 
-                # --- Store Metadata ---
                 final_item.setData(KEY_TYPE, "RECTANGLE")
-                final_item.setData(KEY_ID, self.current_id)  # Associated Circle ID
+                final_item.setData(KEY_ID, self.current_id)
                 final_item.setData(KEY_RECT_ID, self.pending_rect_id)
                 final_item.setData(KEY_RECT_TEXT, self.pending_rect_text)
 
-                # --- Create Label Below Rectangle ---
                 label_text = f"{self.current_id}.{self.pending_rect_id}.{self.pending_rect_text}"
                 text_item = QGraphicsSimpleTextItem(label_text, parent=final_item)
                 text_item.setBrush(QBrush(Qt.white))
                 text_item.setFont(QFont("Arial", 10))
 
-                # Position Text: relative to rectangle's coordinates
-                # We place it at (Rect X, Rect Bottom + padding)
-                # Since final_item uses scene coordinates for its rect,
-                # but it is a standard rect item where pos defaults to 0,0
-                # and the rect defines the shape offset.
                 rect = final_item.rect()
                 text_item.setPos(rect.x(), rect.y() + rect.height() + 5)
-
-                # Make text click-through
                 text_item.setAcceptedMouseButtons(Qt.NoButton)
 
                 self.addItem(final_item)
-
             self.set_mode('SELECT')
             event.accept()
         else:
