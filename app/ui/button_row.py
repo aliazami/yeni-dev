@@ -18,7 +18,7 @@ class ButtonRow(QWidget):
         # This group ensures only one button is 'checked' at a time
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
-        self.setProperty("role", GAP)
+        self.setProperty("role", "")
         # 3. Create Buttons
         roles = {"A": ACTION, "C": CORRECTION, "G": GAP}
 
