@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsView,
                                QGraphicsEllipseItem, QGraphicsSimpleTextItem,
                                QGraphicsTextItem, QGraphicsItem, QGraphicsPixmapItem,
                                QInputDialog, QWidget, QVBoxLayout, QLabel,
-                               QMessageBox, QToolBar, QStyle, QDialog,
+                               QMessageBox, QToolBar, QDialog,
                                QFormLayout, QLineEdit, QDialogButtonBox,
                                QFileDialog)
 
@@ -110,41 +110,41 @@ class SetBackgroundCommand(QUndoCommand):
 #              GUI COMPONENTS
 # ==========================================
 
-def create_icon(icon_type, color=Qt.black):
+def create_icon(icon_type, color=Qt.GlobalColor.black):
     pixmap = QPixmap(32, 32)
-    pixmap.fill(Qt.transparent)
+    pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)
     painter.setPen(QPen(color, 2))
     painter.setBrush(QBrush(color))
     if icon_type == "align_left":
-        painter.drawLine(4, 4, 4, 28);
-        painter.drawRect(8, 6, 12, 6);
+        painter.drawLine(4, 4, 4, 28)
+        painter.drawRect(8, 6, 12, 6)
         painter.drawRect(8, 20, 16, 6)
     elif icon_type == "align_right":
-        painter.drawLine(28, 4, 28, 28);
-        painter.drawRect(12, 6, 12, 6);
+        painter.drawLine(28, 4, 28, 28)
+        painter.drawRect(12, 6, 12, 6)
         painter.drawRect(8, 20, 16, 6)
     elif icon_type == "align_top":
-        painter.drawLine(4, 4, 28, 4);
-        painter.drawRect(6, 8, 6, 12);
+        painter.drawLine(4, 4, 28, 4)
+        painter.drawRect(6, 8, 6, 12)
         painter.drawRect(20, 8, 6, 16)
     elif icon_type == "align_bottom":
-        painter.drawLine(4, 28, 28, 28);
-        painter.drawRect(6, 12, 6, 12);
+        painter.drawLine(4, 28, 28, 28)
+        painter.drawRect(6, 12, 6, 12)
         painter.drawRect(20, 8, 6, 16)
     elif icon_type == "dist_horz":
-        painter.drawRect(4, 10, 6, 12);
-        painter.drawRect(13, 10, 6, 12);
+        painter.drawRect(4, 10, 6, 12)
+        painter.drawRect(13, 10, 6, 12)
         painter.drawRect(22, 10, 6, 12)
-        painter.drawLine(4, 6, 28, 6);
-        painter.drawLine(4, 4, 4, 8);
+        painter.drawLine(4, 6, 28, 6)
+        painter.drawLine(4, 4, 4, 8)
         painter.drawLine(28, 4, 28, 8)
     elif icon_type == "dist_vert":
-        painter.drawRect(10, 4, 12, 6);
-        painter.drawRect(10, 13, 12, 6);
+        painter.drawRect(10, 4, 12, 6)
+        painter.drawRect(10, 13, 12, 6)
         painter.drawRect(10, 22, 12, 6)
-        painter.drawLine(6, 4, 6, 28);
-        painter.drawLine(4, 4, 8, 4);
+        painter.drawLine(6, 4, 6, 28)
+        painter.drawLine(4, 4, 8, 4)
         painter.drawLine(4, 28, 8, 28)
     painter.end()
     return QIcon(pixmap)
@@ -162,7 +162,7 @@ class RectInputDialog(QDialog):
         self.text_input.setPlaceholderText("Enter Text")
         layout.addRow("Rectangle ID (Int):", self.id_input)
         layout.addRow("Description:", self.text_input)
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addRow(buttons)
@@ -176,7 +176,7 @@ class HelpWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Help")
         self.resize(300, 320)
-        self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
         layout = QVBoxLayout()
         help_text = (
             "<b>COMMANDS:</b><br>"
@@ -193,7 +193,7 @@ class HelpWindow(QWidget):
             "<b>1</b> : Toggle Alignment Toolbar<br>"
         )
         label = QLabel(help_text)
-        label.setTextFormat(Qt.RichText)
+        label.setTextFormat(Qt.TextFormat.RichText)
         layout.addWidget(label)
         self.setLayout(layout)
 
@@ -233,7 +233,7 @@ class EditorScene(QGraphicsScene):
         if self.background_item:
             self.removeItem(self.background_item)
         rect = QGraphicsRectItem(0, 0, self.default_w, self.default_h)
-        rect.setPen(QPen(Qt.NoPen))
+        rect.setPen(QPen(Qt.PenStyle.NoPen))
         rect.setBrush(QBrush(QColor("#333")))
         rect.setZValue(-1000)
         self.addItem(rect)
@@ -266,7 +266,7 @@ class EditorScene(QGraphicsScene):
                 # Create Pixmap Background
                 new_bg = QGraphicsPixmapItem(pixmap)
                 new_bg.setZValue(-1000)
-                new_bg.setAcceptedMouseButtons(Qt.NoButton)
+                new_bg.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
                 self.addItem(new_bg)
 
                 # Update State
@@ -278,7 +278,7 @@ class EditorScene(QGraphicsScene):
         if not loaded_bg:
             # Create Default Rect Background
             rect = QGraphicsRectItem(0, 0, self.default_w, self.default_h)
-            rect.setPen(QPen(Qt.NoPen))
+            rect.setPen(QPen(Qt.PenStyle.NoPen))
             rect.setBrush(QBrush(QColor("#333")))
             rect.setZValue(-1000)
             self.addItem(rect)
@@ -312,41 +312,41 @@ class EditorScene(QGraphicsScene):
         radius = 25
         ellipse = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
         ellipse.setPos(pos)
-        ellipse.setPen(QPen(Qt.black, 2))
-        ellipse.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
+        ellipse.setPen(QPen(Qt.GlobalColor.black, 2))
+        ellipse.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         ellipse.setData(KEY_ID, text)
         ellipse.setData(KEY_TYPE, "CIRCLE")
 
         t = QGraphicsSimpleTextItem(text, parent=ellipse)
-        t.setFont(QFont("Arial", 12, QFont.Bold))
+        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         br = t.boundingRect()
         t.setPos(-br.width() / 2, -br.height() / 2)
-        t.setAcceptedMouseButtons(Qt.NoButton)
+        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.addItem(ellipse)
 
     def restore_label(self, pos, text):
         t = QGraphicsTextItem(text)
-        t.setDefaultTextColor(Qt.white);
+        t.setDefaultTextColor(Qt.GlobalColor.white)
         t.setFont(QFont("Arial", 14))
         t.setPos(pos)
-        t.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-        t.setData(KEY_ID, text);
+        t.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        t.setData(KEY_ID, text)
         t.setData(KEY_TYPE, "LABEL")
         self.addItem(t)
 
     def restore_label2(self, pos, text):
         t = QGraphicsTextItem(text)
-        t.setDefaultTextColor(QColor("#00FFFF"));
-        t.setFont(QFont("Arial", 14, QFont.Bold))
+        t.setDefaultTextColor(QColor("#00FFFF"))
+        t.setFont(QFont("Arial", 14, QFont.Weight.Bold))
         t.setPos(pos)
-        t.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-        t.setData(KEY_ID, text);
+        t.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        t.setData(KEY_ID, text)
         t.setData(KEY_TYPE, "LABEL2")
         self.addItem(t)
 
     def restore_rectangle(self, pos, circle_id, rect_id, rect_text):
         # We need to recreate the geometry. Since we don't save width/height in requirement,
-        # we can assume standard size or we should have saved it.
+        # we can assume standard size, or we should have saved it.
         # Requirement 6 says: "finished drawing a rectangle".
         # To strictly follow "restore state", we *should* save width/height.
         # However, for this demo, I will default to a 100x100 rect if w/h isn't saved.
@@ -360,9 +360,9 @@ class EditorScene(QGraphicsScene):
     def restore_rectangle_with_size(self, pos, circle_id, rect_id, rect_text, w, h):
         rect_item = QGraphicsRectItem(0, 0, w, h)
         rect_item.setPos(pos)
-        rect_item.setPen(QPen(Qt.green, 2))
+        rect_item.setPen(QPen(Qt.GlobalColor.green, 2))
         rect_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
-        rect_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
+        rect_item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         rect_item.setData(KEY_TYPE, "RECTANGLE")
         rect_item.setData(KEY_ID, circle_id)
         rect_item.setData(KEY_RECT_ID, rect_id)
@@ -370,10 +370,10 @@ class EditorScene(QGraphicsScene):
 
         lbl = f"{circle_id}.{rect_id}.{rect_text}"
         t = QGraphicsSimpleTextItem(lbl, parent=rect_item)
-        t.setBrush(QBrush(Qt.white));
+        t.setBrush(QBrush(Qt.GlobalColor.white))
         t.setFont(QFont("Arial", 10))
         t.setPos(0, h + 5)
-        t.setAcceptedMouseButtons(Qt.NoButton)
+        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.addItem(rect_item)
 
     # --- UPDATED Serialize to include Rect Size ---
@@ -407,7 +407,7 @@ class EditorScene(QGraphicsScene):
         if pixmap.isNull(): return
         new_bg = QGraphicsPixmapItem(pixmap)
         new_bg.setZValue(-1000)
-        new_bg.setAcceptedMouseButtons(Qt.NoButton)
+        new_bg.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         if record_undo:
             cmd = SetBackgroundCommand(self, new_bg, self.background_item, file_path, "Import Image")
             self.undo_stack.push(cmd)
@@ -418,11 +418,13 @@ class EditorScene(QGraphicsScene):
             self.background_path = file_path
             self.setSceneRect(QRectF(pixmap.rect()))
 
-    # --- Commands Logic (Move, Align, etc - same as before) ---
+    # --- Commands Logic (Move, Align, etc. - same as before) ---
     def push_background_image(self, file_path):
         self.set_image_background(file_path, record_undo=True)
 
     def calculate_move_command(self, items, dx, dy):
+        if self:
+            pass
         move_data = {}
         for item in items:
             start_pos = item.pos()
@@ -465,22 +467,22 @@ class EditorScene(QGraphicsScene):
         if len(items) < 3: return
         move_data = {}
         if orientation == 'horz':
-            items.sort(key=lambda item: item.sceneBoundingRect().center().x())
-            start = items[0].sceneBoundingRect().center().x();
+            items.sort(key=lambda this_item: this_item.sceneBoundingRect().center().x())
+            start = items[0].sceneBoundingRect().center().x()
             end = items[-1].sceneBoundingRect().center().x()
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().x();
+                current_center = item.sceneBoundingRect().center().x()
                 target_center = start + (i * step)
                 dx = target_center - current_center
                 if abs(dx) > 0.1: move_data[item] = (item.pos(), QPointF(item.pos().x() + dx, item.pos().y()))
         elif orientation == 'vert':
-            items.sort(key=lambda item: item.sceneBoundingRect().center().y())
-            start = items[0].sceneBoundingRect().center().y();
+            items.sort(key=lambda this_item: this_item.sceneBoundingRect().center().y())
+            start = items[0].sceneBoundingRect().center().y()
             end = items[-1].sceneBoundingRect().center().y()
             step = (end - start) / (len(items) - 1)
             for i, item in enumerate(items):
-                current_center = item.sceneBoundingRect().center().y();
+                current_center = item.sceneBoundingRect().center().y()
                 target_center = start + (i * step)
                 dy = target_center - current_center
                 if abs(dy) > 0.1: move_data[item] = (item.pos(), QPointF(item.pos().x(), item.pos().y() + dy))
@@ -511,7 +513,7 @@ class EditorScene(QGraphicsScene):
 
     def get_next_label_int(self):
         if not self.current_id: return 1
-        max_val = 0;
+        max_val = 0
         prefix = f"{self.current_id}."
         for item in self.items():
             if item.data(KEY_TYPE) == "LABEL":
@@ -525,7 +527,7 @@ class EditorScene(QGraphicsScene):
 
     def get_next_label2_int(self):
         if not self.current_id: return 1
-        max_val = 0;
+        max_val = 0
         prefix = f"{self.current_id}."
         for item in self.items():
             if item.data(KEY_TYPE) == "LABEL2":
@@ -542,50 +544,51 @@ class EditorScene(QGraphicsScene):
             if item.data(KEY_TYPE) == "CIRCLE":
                 item_id = item.data(KEY_ID)
                 if item_id == self.current_id:
-                    item.setBrush(QBrush(QColor("#4488FF")));
-                    item.setPen(QPen(Qt.black, 2))
+                    item.setBrush(QBrush(QColor("#4488FF")))
+                    item.setPen(QPen(Qt.GlobalColor.black, 2))
                 else:
-                    item.setBrush(QBrush(Qt.yellow));
-                    item.setPen(QPen(Qt.black, 2))
+                    item.setBrush(QBrush(Qt.GlobalColor.yellow))
+                    item.setPen(QPen(Qt.GlobalColor.black, 2))
 
     def set_mode(self, mode):
         self.mode = mode
         if not self.views(): return
         view = self.views()[0]
         if mode == 'SELECT':
-            view.setDragMode(QGraphicsView.RubberBandDrag);
-            view.setCursor(QCursor(Qt.ArrowCursor))
+            view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+            view.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         else:
-            view.setDragMode(QGraphicsView.NoDrag);
-            view.setCursor(QCursor(Qt.CrossCursor))
+            view.setDragMode(QGraphicsView.DragMode.NoDrag)
+            view.setCursor(QCursor(Qt.CursorShape.CrossCursor))
             self.clearSelection()
 
     # --- Events ---
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_1:
+        if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit(); event.accept()
-        elif event.key() == Qt.Key_H:
-            self.helpRequested.emit(); event.accept()
-        elif event.key() == Qt.Key_I:
+        elif event.key() == Qt.Key.Key_H:
+            self.helpRequested.emit()
+            event.accept()
+        elif event.key() == Qt.Key.Key_I:
             file_path, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.jpg *.jpeg *.webp)")
             if file_path: self.push_background_image(file_path)
             event.accept()
-        elif event.key() == Qt.Key_R:
+        elif event.key() == Qt.Key.Key_R:
             if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
             dialog = RectInputDialog()
-            if dialog.exec() == QDialog.Accepted:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
                 r_id, r_text = dialog.get_data()
                 if not r_id.isdigit(): QMessageBox.warning(None, "Error", "ID must be int."); event.accept(); return
                 if not r_text: QMessageBox.warning(None, "Error", "Text required."); event.accept(); return
                 if self.rect_compound_id_exists(f"{self.current_id}.{r_id}.{r_text}"):
-                    QMessageBox.warning(None, "Error", "Exists!");
-                    event.accept();
+                    QMessageBox.warning(None, "Error", "Exists!")
+                    event.accept()
                     return
-                self.pending_rect_id = r_id;
+                self.pending_rect_id = r_id
                 self.pending_rect_text = r_text
                 self.set_mode('DRAWING_RECT')
             event.accept()
-        elif event.key() == Qt.Key_A:
+        elif event.key() == Qt.Key.Key_A:
             text, ok = QInputDialog.getText(None, "Add Circle", "Enter Unique ID:")
             if ok and text:
                 if self.circle_id_exists(text):
@@ -593,7 +596,7 @@ class EditorScene(QGraphicsScene):
                 else:
                     self.pending_payload = text; self.set_mode('ADD_CIRCLE')
             event.accept()
-        elif event.key() == Qt.Key_F:
+        elif event.key() == Qt.Key.Key_F:
             if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
             default_int = self.get_next_label_int()
             val, ok = QInputDialog.getInt(None, "Add Label", f"Sequence:", value=default_int, minValue=1)
@@ -604,7 +607,7 @@ class EditorScene(QGraphicsScene):
                 else:
                     self.pending_payload = full; self.set_mode('ADD_LABEL')
             event.accept()
-        elif event.key() == Qt.Key_G:
+        elif event.key() == Qt.Key.Key_G:
             if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
             default_int = self.get_next_label2_int()
             val, ok = QInputDialog.getInt(None, "Add Label 2", f"Sequence:", value=default_int, minValue=1)
@@ -615,7 +618,7 @@ class EditorScene(QGraphicsScene):
                 else:
                     self.pending_payload = full; self.set_mode('ADD_LABEL2')
             event.accept()
-        elif event.key() == Qt.Key_Delete:
+        elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             if items:
                 for item in items:
@@ -623,22 +626,22 @@ class EditorScene(QGraphicsScene):
                 self.undo_stack.push(RemoveItemsCommand(self, items))
                 self.refresh_circle_colors()
             event.accept()
-        elif event.key() == Qt.Key_Escape:
+        elif event.key() == Qt.Key.Key_Escape:
             if self.mode != 'SELECT':
                 if self.temp_rect_item: self.removeItem(self.temp_rect_item); self.temp_rect_item = None
                 self.set_mode('SELECT')
             else:
                 self.clearSelection()
-        elif event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
-            step = 1 if event.modifiers() & Qt.ShiftModifier else 10
+        elif event.key() in (Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down):
+            step = 1 if event.modifiers() & Qt.KeyboardModifier.ShiftModifier else 10
             dx, dy = 0, 0
-            if event.key() == Qt.Key_Left:
+            if event.key() == Qt.Key.Key_Left:
                 dx = -step
-            elif event.key() == Qt.Key_Right:
+            elif event.key() == Qt.Key.Key_Right:
                 dx = step
-            elif event.key() == Qt.Key_Up:
+            elif event.key() == Qt.Key.Key_Up:
                 dy = -step
-            elif event.key() == Qt.Key_Down:
+            elif event.key() == Qt.Key.Key_Down:
                 dy = step
             items = self.selectedItems()
             if items:
@@ -651,11 +654,11 @@ class EditorScene(QGraphicsScene):
             super().keyPressEvent(event)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             if self.mode == 'DRAWING_RECT':
                 self.start_point = event.scenePos()
                 self.temp_rect_item = QGraphicsRectItem()
-                self.temp_rect_item.setPen(QPen(Qt.red, 2, Qt.DashLine))
+                self.temp_rect_item.setPen(QPen(Qt.GlobalColor.red, 2, Qt.PenStyle.DashLine))
                 self.temp_rect_item.setBrush(QBrush(QColor(255, 0, 0, 50)))
                 self.addItem(self.temp_rect_item)
                 self.temp_rect_item.setRect(QRectF(self.start_point, self.start_point))
@@ -666,39 +669,39 @@ class EditorScene(QGraphicsScene):
                 if self.mode == 'ADD_CIRCLE':
                     radius = 25
                     ellipse = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
-                    ellipse.setPos(pos);
-                    ellipse.setPen(QPen(Qt.black, 2))
+                    ellipse.setPos(pos)
+                    ellipse.setPen(QPen(Qt.GlobalColor.black, 2))
                     ellipse.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-                    ellipse.setData(KEY_ID, self.pending_payload);
+                    ellipse.setData(KEY_ID, self.pending_payload)
                     ellipse.setData(KEY_TYPE, "CIRCLE")
                     text = QGraphicsSimpleTextItem(self.pending_payload, parent=ellipse)
-                    text.setFont(QFont("Arial", 12, QFont.Bold))
-                    br = text.boundingRect();
+                    text.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+                    br = text.boundingRect()
                     text.setPos(-br.width() / 2, -br.height() / 2)
-                    text.setAcceptedMouseButtons(Qt.NoButton)
-                    new_item = ellipse;
+                    text.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+                    new_item = ellipse
                     self.current_id = self.pending_payload
                 elif self.mode == 'ADD_LABEL':
                     text = QGraphicsTextItem(self.pending_payload)
-                    text.setDefaultTextColor(Qt.white);
+                    text.setDefaultTextColor(Qt.GlobalColor.white)
                     text.setFont(QFont("Arial", 14))
-                    text.setPos(pos);
+                    text.setPos(pos)
                     text.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-                    text.setData(KEY_ID, self.pending_payload);
+                    text.setData(KEY_ID, self.pending_payload)
                     text.setData(KEY_TYPE, "LABEL")
                     new_item = text
                 elif self.mode == 'ADD_LABEL2':
                     text = QGraphicsTextItem(self.pending_payload)
-                    text.setDefaultTextColor(QColor("#00FFFF"));
-                    text.setFont(QFont("Arial", 14, QFont.Bold))
-                    text.setPos(pos);
+                    text.setDefaultTextColor(QColor("#00FFFF"))
+                    text.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+                    text.setPos(pos)
                     text.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-                    text.setData(KEY_ID, self.pending_payload);
+                    text.setData(KEY_ID, self.pending_payload)
                     text.setData(KEY_TYPE, "LABEL2")
                     new_item = text
                 if new_item:
                     self.undo_stack.push(AddItemsCommand(self, new_item, f"Add {self.mode}"))
-                    self.refresh_circle_colors();
+                    self.refresh_circle_colors()
                     self.set_mode('SELECT')
                 event.accept()
             else:
@@ -711,7 +714,7 @@ class EditorScene(QGraphicsScene):
                 for item in items_at_pos:
                     if item.data(KEY_TYPE) == "CIRCLE": clicked_circle = item; break
                 if clicked_circle:
-                    self.current_id = clicked_circle.data(KEY_ID);
+                    self.current_id = clicked_circle.data(KEY_ID)
                     self.refresh_circle_colors()
         else:
             super().mousePressEvent(event)
@@ -726,7 +729,7 @@ class EditorScene(QGraphicsScene):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.mode == 'DRAWING_RECT' and event.button() == Qt.LeftButton and self.temp_rect_item:
+        if self.mode == 'DRAWING_RECT' and event.button() == Qt.MouseButton.LeftButton and self.temp_rect_item:
             # 1. Get the geometry of the drawn dashed rectangle
             geo = self.temp_rect_item.rect()
 
@@ -744,7 +747,7 @@ class EditorScene(QGraphicsScene):
                 final_item.setPos(geo.x(), geo.y())
                 # --- FIX END ---
 
-                final_item.setPen(QPen(Qt.green, 2))
+                final_item.setPen(QPen(Qt.GlobalColor.green, 2))
                 final_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
                 final_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
 
@@ -755,13 +758,13 @@ class EditorScene(QGraphicsScene):
 
                 lbl = f"{self.current_id}.{self.pending_rect_id}.{self.pending_rect_text}"
                 t = QGraphicsSimpleTextItem(lbl, parent=final_item)
-                t.setBrush(QBrush(Qt.white))
+                t.setBrush(QBrush(Qt.GlobalColor.white))
                 t.setFont(QFont("Arial", 10))
 
                 # Position text relative to the new (0,0) based rect
                 r = final_item.rect()
                 t.setPos(r.x(), r.y() + r.height() + 5)
-                t.setAcceptedMouseButtons(Qt.NoButton)
+                t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
                 self.addItem(final_item)
                 self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
@@ -769,7 +772,7 @@ class EditorScene(QGraphicsScene):
             self.set_mode('SELECT')
             event.accept()
 
-        elif self.mode == 'SELECT' and event.button() == Qt.LeftButton:
+        elif self.mode == 'SELECT' and event.button() == Qt.MouseButton.LeftButton:
             super().mouseReleaseEvent(event)
             if self.drag_start_positions:
                 move_data = {}
@@ -798,10 +801,10 @@ class MainWindow(QMainWindow):
 
         self.scene = EditorScene(0, 0, 1000, 800)
         self.view = QGraphicsView(self.scene)
-        self.view.setRenderHint(QPainter.Antialiasing)
-        self.view.setDragMode(QGraphicsView.RubberBandDrag)
+        self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self.setCentralWidget(self.view)
-
+        self.align_toolbar = None
         self.help_window = HelpWindow()
         self.scene.helpRequested.connect(self.show_help_window)
         self.scene.toggleToolbarRequested.connect(self.toggle_align_toolbar)
@@ -812,7 +815,7 @@ class MainWindow(QMainWindow):
     def create_actions(self):
         # File Menu Actions
         save_act = QAction("Save", self)
-        save_act.setShortcut(QKeySequence.Save)  # Ctrl+S
+        save_act.setShortcut(QKeySequence.StandardKey.Save)  # Ctrl+S
         save_act.triggered.connect(self.save_file)
         self.addAction(save_act)
 
@@ -823,51 +826,51 @@ class MainWindow(QMainWindow):
         self.addAction(save_as_act)
 
         open_act = QAction("Open", self)
-        open_act.setShortcut(QKeySequence.Open)  # Ctrl+O
+        open_act.setShortcut(QKeySequence.StandardKey.Open)  # Ctrl+O
         open_act.triggered.connect(self.open_file)
         self.addAction(open_act)
 
         # Undo/Redo
         undo_act = self.scene.undo_stack.createUndoAction(self, "Undo")
-        undo_act.setShortcut(QKeySequence.Undo)
+        undo_act.setShortcut(QKeySequence.StandardKey.Undo)
         self.addAction(undo_act)
 
         redo_act = self.scene.undo_stack.createRedoAction(self, "Redo")
-        redo_act.setShortcut(QKeySequence.Redo)
+        redo_act.setShortcut(QKeySequence.StandardKey.Redo)
         self.addAction(redo_act)
 
     def create_alignment_toolbar(self):
         self.align_toolbar = QToolBar("Alignment")
-        self.addToolBar(Qt.TopToolBarArea, self.align_toolbar)
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.align_toolbar)
         self.align_toolbar.setHidden(True)
 
-        act_left = QAction(create_icon("align_left"), "Left", self);
+        act_left = QAction(create_icon("align_left"), "Left", self)
         act_left.triggered.connect(lambda: self.scene.align_items('left'))
-        act_right = QAction(create_icon("align_right"), "Right", self);
+        act_right = QAction(create_icon("align_right"), "Right", self)
         act_right.triggered.connect(lambda: self.scene.align_items('right'))
-        act_top = QAction(create_icon("align_top"), "Top", self);
+        act_top = QAction(create_icon("align_top"), "Top", self)
         act_top.triggered.connect(lambda: self.scene.align_items('top'))
-        act_btm = QAction(create_icon("align_bottom"), "Bottom", self);
+        act_btm = QAction(create_icon("align_bottom"), "Bottom", self)
         act_btm.triggered.connect(lambda: self.scene.align_items('bottom'))
-        act_d_h = QAction(create_icon("dist_horz"), "Dist H", self);
+        act_d_h = QAction(create_icon("dist_horz"), "Dist H", self)
         act_d_h.triggered.connect(lambda: self.scene.distribute_items('horz'))
-        act_d_v = QAction(create_icon("dist_vert"), "Dist V", self);
+        act_d_v = QAction(create_icon("dist_vert"), "Dist V", self)
         act_d_v.triggered.connect(lambda: self.scene.distribute_items('vert'))
 
-        self.align_toolbar.addAction(act_left);
+        self.align_toolbar.addAction(act_left)
         self.align_toolbar.addAction(act_right)
-        self.align_toolbar.addAction(act_top);
+        self.align_toolbar.addAction(act_top)
         self.align_toolbar.addAction(act_btm)
         self.align_toolbar.addSeparator()
-        self.align_toolbar.addAction(act_d_h);
+        self.align_toolbar.addAction(act_d_h)
         self.align_toolbar.addAction(act_d_v)
 
     def toggle_align_toolbar(self):
         self.align_toolbar.setVisible(not self.align_toolbar.isVisible())
 
     def show_help_window(self):
-        self.help_window.show();
-        self.help_window.raise_();
+        self.help_window.show()
+        self.help_window.raise_()
         self.help_window.activateWindow()
 
     # --- File IO Logic ---
