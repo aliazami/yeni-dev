@@ -242,39 +242,6 @@ class EditorScene(QGraphicsScene):
         self.setSceneRect(0, 0, self.default_w, self.default_h)
 
     # --- Serialization Logic ---
-    def serialize_scene(self):
-        data = {
-            "background_image": self.background_path,
-            "items": []
-        }
-
-        for item in self.items():
-            # Skip temp items or background
-            if item == self.background_item or item == self.temp_rect_item:
-                continue
-
-            # Skip child items (Text inside shapes), we rebuild them from parents
-            if item.parentItem() is not None:
-                continue
-
-            item_type = item.data(KEY_TYPE)
-            if not item_type: continue
-
-            item_data = {
-                "type": item_type,
-                "x": item.pos().x(),
-                "y": item.pos().y(),
-                "id": item.data(KEY_ID)
-            }
-
-            if item_type == "RECTANGLE":
-                item_data["rect_id"] = item.data(KEY_RECT_ID)
-                item_data["rect_text"] = item.data(KEY_RECT_TEXT)
-
-            data["items"].append(item_data)
-
-        return data
-
     def deserialize_scene(self, data):
         # 1. Clear everything (C++ objects are deleted)
         self.clear()
@@ -433,32 +400,6 @@ class EditorScene(QGraphicsScene):
 
             data["items"].append(item_data)
         return data
-
-    def deserialize_scene(self, data):
-        self.clear();
-        self.undo_stack.clear();
-        self.current_id = None
-
-        bg_path = data.get("background_image")
-        if bg_path and os.path.exists(bg_path):
-            self.set_image_background(bg_path, record_undo=False)
-        else:
-            self.init_default_background()
-
-        for item_data in data.get("items", []):
-            itype = item_data["type"]
-            pos = QPointF(item_data["x"], item_data["y"])
-            iid = item_data["id"]
-            if itype == "CIRCLE":
-                self.restore_circle(pos, iid)
-            elif itype == "LABEL":
-                self.restore_label(pos, iid)
-            elif itype == "LABEL2":
-                self.restore_label2(pos, iid)
-            elif itype == "RECTANGLE":
-                self.restore_rectangle_with_size(pos, iid, item_data["rect_id"], item_data["rect_text"],
-                                                 item_data.get("w", 100), item_data.get("h", 100))
-        self.refresh_circle_colors()
 
     # --- Background Logic ---
     def set_image_background(self, file_path, record_undo=True):

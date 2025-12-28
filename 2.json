@@ -2,14 +2,64 @@
     "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/test.webp",
     "items": [
         {
-            "type": "RECTANGLE",
-            "x": 747.0,
-            "y": 751.0,
-            "id": "1",
-            "rect_id": "1",
-            "rect_text": "Season",
-            "w": 80.0,
-            "h": 32.0
+            "type": "LABEL2",
+            "x": 534.0,
+            "y": 1002.0,
+            "id": "2.2**"
+        },
+        {
+            "type": "LABEL2",
+            "x": 526.0,
+            "y": 928.0,
+            "id": "2.1**"
+        },
+        {
+            "type": "LABEL",
+            "x": 464.0,
+            "y": 1000.0,
+            "id": "2.2"
+        },
+        {
+            "type": "LABEL",
+            "x": 458.0,
+            "y": 926.0,
+            "id": "2.1"
+        },
+        {
+            "type": "CIRCLE",
+            "x": 381.0,
+            "y": 924.0,
+            "id": "2"
+        },
+        {
+            "type": "CIRCLE",
+            "x": 375.0,
+            "y": 763.0,
+            "id": "1"
+        },
+        {
+            "type": "LABEL",
+            "x": 435.0,
+            "y": 758.0,
+            "id": "1.1"
+        },
+        {
+            "type": "LABEL2",
+            "x": 496.0,
+            "y": 758.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "LABEL",
+            "x": 435.0,
+            "y": 795.0,
+            "id": "1.2"
+        },
+        {
+            "type": "LABEL2",
+            "x": 497.0,
+            "y": 794.0,
+            "id": "1.2**"
         },
         {
             "type": "RECTANGLE",
@@ -22,34 +72,14 @@
             "h": 28.0
         },
         {
-            "type": "LABEL2",
-            "x": 497.0,
-            "y": 794.0,
-            "id": "1.2**"
-        },
-        {
-            "type": "LABEL",
-            "x": 435.0,
-            "y": 795.0,
-            "id": "1.2"
-        },
-        {
-            "type": "LABEL2",
-            "x": 496.0,
-            "y": 758.0,
-            "id": "1.1**"
-        },
-        {
-            "type": "LABEL",
-            "x": 435.0,
-            "y": 758.0,
-            "id": "1.1"
-        },
-        {
-            "type": "CIRCLE",
-            "x": 375.0,
-            "y": 763.0,
-            "id": "1"
+            "type": "RECTANGLE",
+            "x": 747.0,
+            "y": 751.0,
+            "id": "1",
+            "rect_id": "1",
+            "rect_text": "Season",
+            "w": 80.0,
+            "h": 32.0
         }
     ]
 }
