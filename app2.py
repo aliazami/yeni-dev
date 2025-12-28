@@ -20,6 +20,12 @@ KEY_TYPE = 1
 KEY_RECT_ID = 2
 KEY_RECT_TEXT = 3
 
+SETTINGS = {
+    "colors": {
+        "icon": Qt.GlobalColor.black,
+    }
+}
+
 
 # ==========================================
 #              UNDO COMMANDS
@@ -110,7 +116,7 @@ class SetBackgroundCommand(QUndoCommand):
 #              GUI COMPONENTS
 # ==========================================
 
-def create_icon(icon_type, color=Qt.GlobalColor.black):
+def create_icon(icon_type, color=SETTINGS["colors"]["icon"]):
     pixmap = QPixmap(32, 32)
     pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)
@@ -939,9 +945,13 @@ class MainWindow(QMainWindow):
             print(f"Saved to {path}")
         except Exception as e:
             QMessageBox.critical(self, "Save Error", str(e))
+        self._open_file(path)
 
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Scene", "", "JSON Files (*.json)")
+        self._open_file(file_path)
+
+    def _open_file(self, file_path):
         if file_path:
             try:
                 with open(file_path, 'r') as f:
