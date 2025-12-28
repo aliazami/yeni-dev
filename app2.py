@@ -380,9 +380,11 @@ class EditorScene(QGraphicsScene):
     def serialize_scene(self):
         data = {"background_image": self.background_path, "items": []}
         for item in self.items():
-            if item == self.background_item or item == self.temp_rect_item or item.parentItem(): continue
+            if item == self.background_item or item == self.temp_rect_item or item.parentItem():
+                continue
             item_type = item.data(KEY_TYPE)
-            if not item_type: continue
+            if not item_type:
+                continue
 
             item_data = {
                 "type": item_type,
@@ -404,7 +406,8 @@ class EditorScene(QGraphicsScene):
     # --- Background Logic ---
     def set_image_background(self, file_path, record_undo=True):
         pixmap = QPixmap(file_path)
-        if pixmap.isNull(): return
+        if pixmap.isNull():
+            return
         new_bg = QGraphicsPixmapItem(pixmap)
         new_bg.setZValue(-1000)
         new_bg.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
@@ -412,7 +415,8 @@ class EditorScene(QGraphicsScene):
             cmd = SetBackgroundCommand(self, new_bg, self.background_item, file_path, "Import Image")
             self.undo_stack.push(cmd)
         else:
-            if self.background_item: self.removeItem(self.background_item)
+            if self.background_item:
+                self.removeItem(self.background_item)
             self.addItem(new_bg)
             self.background_item = new_bg
             self.background_path = file_path
@@ -434,7 +438,8 @@ class EditorScene(QGraphicsScene):
 
     def align_items(self, direction):
         items = self.selectedItems()
-        if len(items) < 2: return
+        if len(items) < 2:
+            return
         target = 0.0
         if direction == 'left':
             target = min(item.sceneBoundingRect().left() for item in items)
@@ -460,11 +465,13 @@ class EditorScene(QGraphicsScene):
                 dy = target - rect.bottom()
             if dx != 0 or dy != 0:
                 move_data[item] = (start_pos, QPointF(start_pos.x() + dx, start_pos.y() + dy))
-        if move_data: self.undo_stack.push(MoveItemsCommand(self, move_data, f"Align {direction}"))
+        if move_data:
+            self.undo_stack.push(MoveItemsCommand(self, move_data, f"Align {direction}"))
 
     def distribute_items(self, orientation):
         items = self.selectedItems()
-        if len(items) < 3: return
+        if len(items) < 3:
+            return
         move_data = {}
         if orientation == 'horz':
             items.sort(key=lambda this_item: this_item.sceneBoundingRect().center().x())
@@ -475,7 +482,8 @@ class EditorScene(QGraphicsScene):
                 current_center = item.sceneBoundingRect().center().x()
                 target_center = start + (i * step)
                 dx = target_center - current_center
-                if abs(dx) > 0.1: move_data[item] = (item.pos(), QPointF(item.pos().x() + dx, item.pos().y()))
+                if abs(dx) > 0.1:
+                    move_data[item] = (item.pos(), QPointF(item.pos().x() + dx, item.pos().y()))
         elif orientation == 'vert':
             items.sort(key=lambda this_item: this_item.sceneBoundingRect().center().y())
             start = items[0].sceneBoundingRect().center().y()
@@ -485,34 +493,41 @@ class EditorScene(QGraphicsScene):
                 current_center = item.sceneBoundingRect().center().y()
                 target_center = start + (i * step)
                 dy = target_center - current_center
-                if abs(dy) > 0.1: move_data[item] = (item.pos(), QPointF(item.pos().x(), item.pos().y() + dy))
-        if move_data: self.undo_stack.push(MoveItemsCommand(self, move_data, f"Distribute {orientation}"))
+                if abs(dy) > 0.1:
+                    move_data[item] = (item.pos(), QPointF(item.pos().x(), item.pos().y() + dy))
+        if move_data:
+            self.undo_stack.push(MoveItemsCommand(self, move_data, f"Distribute {orientation}"))
 
     # --- Helpers (Unchanged) ---
     def circle_id_exists(self, target_id):
         for item in self.items():
-            if item.data(KEY_TYPE) == "CIRCLE" and item.data(KEY_ID) == target_id: return True
+            if item.data(KEY_TYPE) == "CIRCLE" and item.data(KEY_ID) == target_id:
+                return True
         return False
 
     def label_id_exists(self, full_label):
         for item in self.items():
-            if item.data(KEY_TYPE) == "LABEL" and item.data(KEY_ID) == full_label: return True
+            if item.data(KEY_TYPE) == "LABEL" and item.data(KEY_ID) == full_label:
+                return True
         return False
 
     def label2_id_exists(self, full_label):
         for item in self.items():
-            if item.data(KEY_TYPE) == "LABEL2" and item.data(KEY_ID) == full_label: return True
+            if item.data(KEY_TYPE) == "LABEL2" and item.data(KEY_ID) == full_label:
+                return True
         return False
 
     def rect_compound_id_exists(self, compound_id):
         for item in self.items():
             if item.data(KEY_TYPE) == "RECTANGLE":
                 existing = f"{item.data(KEY_ID)}.{item.data(KEY_RECT_ID)}.{item.data(KEY_RECT_TEXT)}"
-                if existing == compound_id: return True
+                if existing == compound_id:
+                    return True
         return False
 
     def get_next_label_int(self):
-        if not self.current_id: return 1
+        if not self.current_id:
+            return 1
         max_val = 0
         prefix = f"{self.current_id}."
         for item in self.items():
@@ -526,7 +541,8 @@ class EditorScene(QGraphicsScene):
         return max_val + 1
 
     def get_next_label2_int(self):
-        if not self.current_id: return 1
+        if not self.current_id:
+            return 1
         max_val = 0
         prefix = f"{self.current_id}."
         for item in self.items():
@@ -552,7 +568,8 @@ class EditorScene(QGraphicsScene):
 
     def set_mode(self, mode):
         self.mode = mode
-        if not self.views(): return
+        if not self.views():
+            return
         view = self.views()[0]
         if mode == 'SELECT':
             view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
@@ -565,21 +582,32 @@ class EditorScene(QGraphicsScene):
     # --- Events ---
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_1:
-            self.toggleToolbarRequested.emit(); event.accept()
+            self.toggleToolbarRequested.emit()
+            event.accept()
         elif event.key() == Qt.Key.Key_H:
             self.helpRequested.emit()
             event.accept()
         elif event.key() == Qt.Key.Key_I:
             file_path, _ = QFileDialog.getOpenFileName(None, "Open Image", "", "Images (*.png *.jpg *.jpeg *.webp)")
-            if file_path: self.push_background_image(file_path)
+            if file_path:
+                self.push_background_image(file_path)
             event.accept()
         elif event.key() == Qt.Key.Key_R:
-            if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
+            if not self.current_id:
+                QMessageBox.warning(None, "Error", "No Circle Selected.")
+                event.accept()
+                return
             dialog = RectInputDialog()
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 r_id, r_text = dialog.get_data()
-                if not r_id.isdigit(): QMessageBox.warning(None, "Error", "ID must be int."); event.accept(); return
-                if not r_text: QMessageBox.warning(None, "Error", "Text required."); event.accept(); return
+                if not r_id.isdigit():
+                    QMessageBox.warning(None, "Error", "ID must be int.")
+                    event.accept()
+                    return
+                if not r_text:
+                    QMessageBox.warning(None, "Error", "Text required.")
+                    event.accept()
+                    return
                 if self.rect_compound_id_exists(f"{self.current_id}.{r_id}.{r_text}"):
                     QMessageBox.warning(None, "Error", "Exists!")
                     event.accept()
@@ -594,10 +622,14 @@ class EditorScene(QGraphicsScene):
                 if self.circle_id_exists(text):
                     QMessageBox.warning(None, "Error", "Exists!")
                 else:
-                    self.pending_payload = text; self.set_mode('ADD_CIRCLE')
+                    self.pending_payload = text
+                    self.set_mode('ADD_CIRCLE')
             event.accept()
         elif event.key() == Qt.Key.Key_F:
-            if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
+            if not self.current_id:
+                QMessageBox.warning(None, "Error", "No Circle Selected.")
+                event.accept()
+                return
             default_int = self.get_next_label_int()
             val, ok = QInputDialog.getInt(None, "Add Label", f"Sequence:", value=default_int, minValue=1)
             if ok:
@@ -605,10 +637,14 @@ class EditorScene(QGraphicsScene):
                 if self.label_id_exists(full):
                     QMessageBox.warning(None, "Error", "Exists!")
                 else:
-                    self.pending_payload = full; self.set_mode('ADD_LABEL')
+                    self.pending_payload = full
+                    self.set_mode('ADD_LABEL')
             event.accept()
         elif event.key() == Qt.Key.Key_G:
-            if not self.current_id: QMessageBox.warning(None, "Error", "No Circle Selected."); event.accept(); return
+            if not self.current_id:
+                QMessageBox.warning(None, "Error", "No Circle Selected.")
+                event.accept()
+                return
             default_int = self.get_next_label2_int()
             val, ok = QInputDialog.getInt(None, "Add Label 2", f"Sequence:", value=default_int, minValue=1)
             if ok:
@@ -616,19 +652,23 @@ class EditorScene(QGraphicsScene):
                 if self.label2_id_exists(full):
                     QMessageBox.warning(None, "Error", "Exists!")
                 else:
-                    self.pending_payload = full; self.set_mode('ADD_LABEL2')
+                    self.pending_payload = full
+                    self.set_mode('ADD_LABEL2')
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             if items:
                 for item in items:
-                    if item.data(KEY_TYPE) == "CIRCLE" and item.data(KEY_ID) == self.current_id: self.current_id = None
+                    if item.data(KEY_TYPE) == "CIRCLE" and item.data(KEY_ID) == self.current_id:
+                        self.current_id = None
                 self.undo_stack.push(RemoveItemsCommand(self, items))
                 self.refresh_circle_colors()
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
             if self.mode != 'SELECT':
-                if self.temp_rect_item: self.removeItem(self.temp_rect_item); self.temp_rect_item = None
+                if self.temp_rect_item:
+                    self.removeItem(self.temp_rect_item)
+                    self.temp_rect_item = None
                 self.set_mode('SELECT')
             else:
                 self.clearSelection()
@@ -712,7 +752,9 @@ class EditorScene(QGraphicsScene):
                 items_at_pos = self.items(event.scenePos())
                 clicked_circle = None
                 for item in items_at_pos:
-                    if item.data(KEY_TYPE) == "CIRCLE": clicked_circle = item; break
+                    if item.data(KEY_TYPE) == "CIRCLE":
+                        clicked_circle = item
+                        break
                 if clicked_circle:
                     self.current_id = clicked_circle.data(KEY_ID)
                     self.refresh_circle_colors()
@@ -779,7 +821,9 @@ class EditorScene(QGraphicsScene):
                 moved = False
                 for item, start_pos in self.drag_start_positions.items():
                     end_pos = item.pos()
-                    if start_pos != end_pos: moved = True; move_data[item] = (start_pos, end_pos)
+                    if start_pos != end_pos:
+                        moved = True
+                        move_data[item] = (start_pos, end_pos)
                 if moved:
                     for item, (start, end) in move_data.items(): item.setPos(start)
                     self.undo_stack.push(MoveItemsCommand(self, move_data, "Mouse Drag"))
