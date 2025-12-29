@@ -1,0 +1,129 @@
+# app/main_window.py
+import json
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPainter, QAction, QKeySequence
+from PySide6.QtWidgets import (QMainWindow, QGraphicsView, QMessageBox, QToolBar, QFileDialog)
+from app.utils import create_icon
+from app.scene import EditorScene
+from app.dialogs import HelpWindow
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.resize(1000, 800)
+        self.setWindowTitle("Interactive Graphics Editor (Save/Load)")
+        self.current_file_path = None  # State for file handling
+
+        self.scene = EditorScene(0, 0, 1000, 800)
+        self.view = QGraphicsView(self.scene)
+        self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setCentralWidget(self.view)
+        self.align_toolbar = None
+        self.help_window = HelpWindow()
+        self.scene.helpRequested.connect(self.show_help_window)
+        self.scene.toggleToolbarRequested.connect(self.toggle_align_toolbar)
+
+        self.create_alignment_toolbar()
+        self.create_actions()
+
+    def create_actions(self):
+        # File Menu Actions
+        save_act = QAction("Save", self)
+        save_act.setShortcut(QKeySequence.StandardKey.Save)  # Ctrl+S
+        save_act.triggered.connect(self.save_file)
+        self.addAction(save_act)
+
+        save_as_act = QAction("Save As...", self)
+        # Ctrl+Shift+S is standard for Save As
+        save_as_act.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        save_as_act.triggered.connect(self.save_file_as)
+        self.addAction(save_as_act)
+
+        open_act = QAction("Open", self)
+        open_act.setShortcut(QKeySequence.StandardKey.Open)  # Ctrl+O
+        open_act.triggered.connect(self.open_file)
+        self.addAction(open_act)
+
+        # Undo/Redo
+        undo_act = self.scene.undo_stack.createUndoAction(self, "Undo")
+        undo_act.setShortcut(QKeySequence.StandardKey.Undo)
+        self.addAction(undo_act)
+
+        redo_act = self.scene.undo_stack.createRedoAction(self, "Redo")
+        redo_act.setShortcut(QKeySequence.StandardKey.Redo)
+        self.addAction(redo_act)
+
+    def create_alignment_toolbar(self):
+        self.align_toolbar = QToolBar("Alignment")
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.align_toolbar)
+        self.align_toolbar.setHidden(True)
+
+        act_left = QAction(create_icon("align_left"), "Left", self)
+        act_left.triggered.connect(lambda: self.scene.align_items('left'))
+        act_right = QAction(create_icon("align_right"), "Right", self)
+        act_right.triggered.connect(lambda: self.scene.align_items('right'))
+        act_top = QAction(create_icon("align_top"), "Top", self)
+        act_top.triggered.connect(lambda: self.scene.align_items('top'))
+        act_btm = QAction(create_icon("align_bottom"), "Bottom", self)
+        act_btm.triggered.connect(lambda: self.scene.align_items('bottom'))
+        act_d_h = QAction(create_icon("dist_horz"), "Dist H", self)
+        act_d_h.triggered.connect(lambda: self.scene.distribute_items('horz'))
+        act_d_v = QAction(create_icon("dist_vert"), "Dist V", self)
+        act_d_v.triggered.connect(lambda: self.scene.distribute_items('vert'))
+
+        self.align_toolbar.addAction(act_left)
+        self.align_toolbar.addAction(act_right)
+        self.align_toolbar.addAction(act_top)
+        self.align_toolbar.addAction(act_btm)
+        self.align_toolbar.addSeparator()
+        self.align_toolbar.addAction(act_d_h)
+        self.align_toolbar.addAction(act_d_v)
+
+    def toggle_align_toolbar(self):
+        self.align_toolbar.setVisible(not self.align_toolbar.isVisible())
+
+    def show_help_window(self):
+        self.help_window.show()
+        self.help_window.raise_()
+        self.help_window.activateWindow()
+
+    # --- File IO Logic ---
+
+    def save_file(self):
+        if self.current_file_path:
+            self._write_to_file(self.current_file_path)
+        else:
+            self.save_file_as()
+
+    def save_file_as(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Scene", "", "JSON Files (*.json)")
+        if file_path:
+            self.current_file_path = file_path
+            self._write_to_file(file_path)
+
+    def _write_to_file(self, path):
+        try:
+            data = self.scene.serialize_scene()
+            with open(path, 'w') as f:
+                json.dump(data, f, indent=4)
+            print(f"Saved to {path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", str(e))
+        self._open_file(path)
+
+    def open_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Scene", "", "JSON Files (*.json)")
+        self._open_file(file_path)
+
+    def _open_file(self, file_path):
+        if file_path:
+            try:
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+                self.scene.deserialize_scene(data)
+                self.current_file_path = file_path
+                print(f"Loaded from {file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Load Error", str(e))
+
