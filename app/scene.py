@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QRectF, Signal, QPointF
 from PySide6.QtGui import (QBrush, QPen, QColor, QCursor, QFont, QPixmap, QUndoStack)
 from PySide6.QtWidgets import (QGraphicsView,
                                QGraphicsScene, QGraphicsRectItem,
-                               QGraphicsEllipseItem, QGraphicsSimpleTextItem,
+                               QGraphicsSimpleTextItem,
                                QGraphicsTextItem, QGraphicsItem, QGraphicsPixmapItem,
                                QInputDialog, QMessageBox, QDialog,
                                QFileDialog)
@@ -16,6 +16,8 @@ from app.commands import (
     AddItemsCommand, MoveItemsCommand, RemoveItemsCommand, SetBackgroundCommand
 )
 from app.dialogs import RectInputDialog
+from app.part_item import PartItem
+from app.word_boundary_item import WordBoundaryItem
 
 
 # ==========================================
@@ -112,37 +114,22 @@ class EditorScene(QGraphicsScene):
         for item_data in data.get("items", []):
             itype = item_data["type"]
             pos = QPointF(item_data["x"], item_data["y"])
-            iid = item_data["id"]
+            iid = item_data.get("id")
 
             if itype == "CIRCLE":
-                self.restore_circle(pos, iid)
+                part_item = PartItem.from_dict(item_data)
+                self.addItem(part_item)
             elif itype == "LABEL":
                 self.restore_label(pos, iid)
             elif itype == "LABEL2":
                 self.restore_label2(pos, iid)
             elif itype == "RECTANGLE":
-                w = item_data.get("w", 100)
-                h = item_data.get("h", 50)
-                self.restore_rectangle_with_size(pos, iid, item_data["rect_id"], item_data["rect_text"], w, h)
+                word_boundary_item = WordBoundaryItem.from_dict(item_data)
+                self.addItem(word_boundary_item)
 
         self.refresh_circle_colors()
 
     # --- Restoration Helpers ---
-    def restore_circle(self, pos, text):
-        radius = 25
-        ellipse = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
-        ellipse.setPos(pos)
-        ellipse.setPen(QPen(Qt.GlobalColor.black, 2))
-        ellipse.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        ellipse.setData(KEY_ID, text)
-        ellipse.setData(KEY_TYPE, "CIRCLE")
-
-        t = QGraphicsSimpleTextItem(text, parent=ellipse)
-        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        br = t.boundingRect()
-        t.setPos(-br.width() / 2, -br.height() / 2)
-        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-        self.addItem(ellipse)
 
     def restore_label(self, pos, text):
         t = QGraphicsTextItem(text)
@@ -164,37 +151,6 @@ class EditorScene(QGraphicsScene):
         t.setData(KEY_TYPE, "LABEL2")
         self.addItem(t)
 
-    def restore_rectangle(self, pos, circle_id, rect_id, rect_text):
-        # We need to recreate the geometry. Since we don't save width/height in requirement,
-        # we can assume standard size, or we should have saved it.
-        # Requirement 6 says: "finished drawing a rectangle".
-        # To strictly follow "restore state", we *should* save width/height.
-        # However, for this demo, I will default to a 100x100 rect if w/h isn't saved.
-        # *Self-correction*: The rect geometry defines pos.
-        # QGraphicsRectItem geometry is (x, y, w, h).
-        # When user draws, they define a Rect.
-        # In `serialize`, I only saved x,y (pos). I missed width/height.
-        # FIX: Let's update `serialize_scene` to save width/height for rectangles.
-        pass  # Logic handled in updated serialize_scene below
-
-    def restore_rectangle_with_size(self, pos, circle_id, rect_id, rect_text, w, h):
-        rect_item = QGraphicsRectItem(0, 0, w, h)
-        rect_item.setPos(pos)
-        rect_item.setPen(QPen(Qt.GlobalColor.green, 2))
-        rect_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
-        rect_item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
-        rect_item.setData(KEY_TYPE, "RECTANGLE")
-        rect_item.setData(KEY_ID, circle_id)
-        rect_item.setData(KEY_RECT_ID, rect_id)
-        rect_item.setData(KEY_RECT_TEXT, rect_text)
-
-        lbl = f"{circle_id}.{rect_id}.{rect_text}"
-        t = QGraphicsSimpleTextItem(lbl, parent=rect_item)
-        t.setBrush(QBrush(Qt.GlobalColor.white))
-        t.setFont(QFont("Arial", 10))
-        t.setPos(0, h + 5)
-        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-        self.addItem(rect_item)
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
@@ -202,10 +158,10 @@ class EditorScene(QGraphicsScene):
         for item in self.items():
             if item == self.background_item or item == self.temp_rect_item or item.parentItem():
                 continue
+
             item_type = item.data(KEY_TYPE)
             if not item_type:
                 continue
-
             item_data = {
                 "type": item_type,
                 "x": item.pos().x(),
@@ -219,7 +175,8 @@ class EditorScene(QGraphicsScene):
                 r = item.rect()
                 item_data["w"] = r.width()
                 item_data["h"] = r.height()
-
+            if isinstance(item, PartItem):
+                item_data = item.to_dict()
             data["items"].append(item_data)
         return data
 
@@ -377,14 +334,10 @@ class EditorScene(QGraphicsScene):
 
     def refresh_circle_colors(self):
         for item in self.items():
-            if item.data(KEY_TYPE) == "CIRCLE":
+            if isinstance(item, PartItem):
                 item_id = item.data(KEY_ID)
-                if item_id == self.current_id:
-                    item.setBrush(QBrush(QColor("#4488FF")))
-                    item.setPen(QPen(Qt.GlobalColor.black, 2))
-                else:
-                    item.setBrush(QBrush(Qt.GlobalColor.yellow))
-                    item.setPen(QPen(Qt.GlobalColor.black, 2))
+                is_active = item_id == self.current_id
+                item.set_active(is_active)
 
     def set_mode(self, mode):
         self.mode = mode
@@ -527,19 +480,7 @@ class EditorScene(QGraphicsScene):
                 pos = event.scenePos()
                 new_item = None
                 if self.mode == 'ADD_CIRCLE':
-                    radius = 25
-                    ellipse = QGraphicsEllipseItem(-radius, -radius, radius * 2, radius * 2)
-                    ellipse.setPos(pos)
-                    ellipse.setPen(QPen(Qt.GlobalColor.black, 2))
-                    ellipse.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-                    ellipse.setData(KEY_ID, self.pending_payload)
-                    ellipse.setData(KEY_TYPE, "CIRCLE")
-                    text = QGraphicsSimpleTextItem(self.pending_payload, parent=ellipse)
-                    text.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-                    br = text.boundingRect()
-                    text.setPos(-br.width() / 2, -br.height() / 2)
-                    text.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-                    new_item = ellipse
+                    new_item = PartItem(item_id=self.pending_payload, pos=pos)
                     self.current_id = self.pending_payload
                 elif self.mode == 'ADD_LABEL':
                     text = QGraphicsTextItem(self.pending_payload)
@@ -600,34 +541,14 @@ class EditorScene(QGraphicsScene):
             self.temp_rect_item = None
 
             if geo.width() > 1 and geo.height() > 1:
-                # --- FIX START ---
-                # Instead of QGraphicsRectItem(geo), we create it at 0,0 with the correct size...
-                final_item = QGraphicsRectItem(0, 0, geo.width(), geo.height())
-
-                # ...and then Move the item itself to the coordinates.
-                # This ensures item.pos() returns the real X/Y, not 0.0
-                final_item.setPos(geo.x(), geo.y())
-                # --- FIX END ---
-
-                final_item.setPen(QPen(Qt.GlobalColor.green, 2))
-                final_item.setBrush(QBrush(QColor(0, 255, 0, 100)))
-                final_item.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable)
-
-                final_item.setData(KEY_TYPE, "RECTANGLE")
-                final_item.setData(KEY_ID, self.current_id)
-                final_item.setData(KEY_RECT_ID, self.pending_rect_id)
-                final_item.setData(KEY_RECT_TEXT, self.pending_rect_text)
-
-                lbl = f"{self.current_id}.{self.pending_rect_id}.{self.pending_rect_text}"
-                t = QGraphicsSimpleTextItem(lbl, parent=final_item)
-                t.setBrush(QBrush(Qt.GlobalColor.white))
-                t.setFont(QFont("Arial", 10))
-
-                # Position text relative to the new (0,0) based rect
-                r = final_item.rect()
-                t.setPos(r.x(), r.y() + r.height() + 5)
-                t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-
+                final_item = WordBoundaryItem(
+                    part_id=self.current_id,
+                    item_id=self.pending_rect_id,
+                    word=self.pending_rect_text,
+                    pos=QPointF(0, 0),
+                    w=geo.width(),
+                    h=geo.height(),
+                )
                 self.addItem(final_item)
                 self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
 
