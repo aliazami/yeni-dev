@@ -1,13 +1,12 @@
 # app/commands.py
 from PySide6.QtGui import QUndoCommand
 from PySide6.QtCore import QRectF
-from PySide6.QtWidgets import (
-    QGraphicsPixmapItem
-)
+from PySide6.QtWidgets import QGraphicsPixmapItem
 
 # ==========================================
 #              UNDO COMMANDS
 # ==========================================
+
 
 class AddItemsCommand(QUndoCommand):
     def __init__(self, scene, items, description="Add Items"):
@@ -59,7 +58,9 @@ class MoveItemsCommand(QUndoCommand):
 
 
 class SetBackgroundCommand(QUndoCommand):
-    def __init__(self, scene, new_bg_item, old_bg_item, path, description="Change Background"):
+    def __init__(
+        self, scene, new_bg_item, old_bg_item, path, description="Change Background"
+    ):
         super().__init__(description)
         self.scene = scene
         self.new_bg = new_bg_item
@@ -88,4 +89,3 @@ class SetBackgroundCommand(QUndoCommand):
                 self.scene.setSceneRect(QRectF(self.old_bg.pixmap().rect()))
             else:
                 self.scene.setSceneRect(0, 0, 1000, 800)
-

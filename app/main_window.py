@@ -2,10 +2,17 @@
 import json
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QAction, QKeySequence
-from PySide6.QtWidgets import (QMainWindow, QGraphicsView, QMessageBox, QToolBar, QFileDialog)
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QGraphicsView,
+    QMessageBox,
+    QToolBar,
+    QFileDialog,
+)
 from app.utils import create_icon
 from app.scene import EditorScene
 from app.dialogs import HelpWindow
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -60,17 +67,17 @@ class MainWindow(QMainWindow):
         self.align_toolbar.setHidden(True)
 
         act_left = QAction(create_icon("align_left"), "Left", self)
-        act_left.triggered.connect(lambda: self.scene.align_items('left'))
+        act_left.triggered.connect(lambda: self.scene.align_items("left"))
         act_right = QAction(create_icon("align_right"), "Right", self)
-        act_right.triggered.connect(lambda: self.scene.align_items('right'))
+        act_right.triggered.connect(lambda: self.scene.align_items("right"))
         act_top = QAction(create_icon("align_top"), "Top", self)
-        act_top.triggered.connect(lambda: self.scene.align_items('top'))
+        act_top.triggered.connect(lambda: self.scene.align_items("top"))
         act_btm = QAction(create_icon("align_bottom"), "Bottom", self)
-        act_btm.triggered.connect(lambda: self.scene.align_items('bottom'))
+        act_btm.triggered.connect(lambda: self.scene.align_items("bottom"))
         act_d_h = QAction(create_icon("dist_horz"), "Dist H", self)
-        act_d_h.triggered.connect(lambda: self.scene.distribute_items('horz'))
+        act_d_h.triggered.connect(lambda: self.scene.distribute_items("horz"))
         act_d_v = QAction(create_icon("dist_vert"), "Dist V", self)
-        act_d_v.triggered.connect(lambda: self.scene.distribute_items('vert'))
+        act_d_v.triggered.connect(lambda: self.scene.distribute_items("vert"))
 
         self.align_toolbar.addAction(act_left)
         self.align_toolbar.addAction(act_right)
@@ -97,7 +104,9 @@ class MainWindow(QMainWindow):
             self.save_file_as()
 
     def save_file_as(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save Scene", "", "JSON Files (*.json)")
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Scene", "", "JSON Files (*.json)"
+        )
         if file_path:
             self.current_file_path = file_path
             self._write_to_file(file_path)
@@ -105,7 +114,7 @@ class MainWindow(QMainWindow):
     def _write_to_file(self, path):
         try:
             data = self.scene.serialize_scene()
-            with open(path, 'w') as f:
+            with open(path, "w") as f:
                 json.dump(data, f, indent=4)
             print(f"Saved to {path}")
         except Exception as e:
@@ -113,17 +122,18 @@ class MainWindow(QMainWindow):
         self._open_file(path)
 
     def open_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Scene", "", "JSON Files (*.json)")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Open Scene", "", "JSON Files (*.json)"
+        )
         self._open_file(file_path)
 
     def _open_file(self, file_path):
         if file_path:
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     data = json.load(f)
                 self.scene.deserialize_scene(data)
                 self.current_file_path = file_path
                 print(f"Loaded from {file_path}")
             except Exception as e:
                 QMessageBox.critical(self, "Load Error", str(e))
-

@@ -1,5 +1,5 @@
-
 from abc import abstractmethod
+
 
 class ISerializable:
     """Mixin for items that can be saved/loaded."""

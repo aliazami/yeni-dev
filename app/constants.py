@@ -16,7 +16,5 @@ SETTINGS = {
     "colors": {
         "icon": Qt.GlobalColor.black,
     },
-    "part_item": {
-        "radius": 25.0
-    }
+    "part_item": {"radius": 25.0},
 }

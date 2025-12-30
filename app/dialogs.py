@@ -1,7 +1,13 @@
 # app/dialogs.py
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QDialog,QFormLayout, QLineEdit, QDialogButtonBox,
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QDialog,
+    QFormLayout,
+    QLineEdit,
+    QDialogButtonBox,
 )
 
 # ==========================================
@@ -21,7 +27,9 @@ class RectInputDialog(QDialog):
         self.text_input.setPlaceholderText("Enter Text")
         layout.addRow("Rectangle ID (Int):", self.id_input)
         layout.addRow("Description:", self.text_input)
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addRow(buttons)
