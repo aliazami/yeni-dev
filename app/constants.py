@@ -3,13 +3,14 @@ from PySide6.QtCore import Qt
 
 
 # --- Constants ---
-KEY_ID = 0
+KEY_PART_ID = 0
 KEY_TYPE = 1
 KEY_RECT_ID = 2
 KEY_RECT_TEXT = 3
 
 PART_ITEM = "CIRCLE"
 WORD_BOUNDARY_ITEM = "RECTANGLE"
+GAP_ITEM = "LABEL"
 
 
 SETTINGS = {

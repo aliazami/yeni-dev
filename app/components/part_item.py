@@ -6,13 +6,13 @@ from PySide6.QtWidgets import (
     QGraphicsItem,
     QGraphicsSimpleTextItem,
 )
-from app.constants import SETTINGS, KEY_ID, KEY_TYPE, PART_ITEM
-from app.models import ISerializable
+from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM
+from app.models import ISerializable, IPartItem
 
 
-class PartItem(QGraphicsEllipseItem, ISerializable):
+class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
 
-    def __init__(self, item_id: str, pos: QPointF):
+    def __init__(self, part_id: str, pos: QPointF):
         radius = SETTINGS["part_item"]["radius"]
         super().__init__(-radius, -radius, 2 * radius, 2 * radius)
         self.setPos(pos)
@@ -21,9 +21,9 @@ class PartItem(QGraphicsEllipseItem, ISerializable):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
-        self.setData(KEY_ID, item_id)
+        self.setData(KEY_PART_ID, part_id)
         self.setData(KEY_TYPE, PART_ITEM)
-        t = QGraphicsSimpleTextItem(item_id, parent=self)
+        t = QGraphicsSimpleTextItem(part_id, parent=self)
         t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         br = t.boundingRect()
         t.setPos(-br.width() / 2, -br.height() / 2)
@@ -42,11 +42,14 @@ class PartItem(QGraphicsEllipseItem, ISerializable):
             "type": PART_ITEM,
             "x": self.pos().x(),
             "y": self.pos().y(),
-            "id": self.data(KEY_ID),
+            "id": self.data(KEY_PART_ID),
         }
+
+    def part_id(self) -> str:
+        return self.data(KEY_PART_ID)
 
     @classmethod
     def from_dict(cls, data: dict):
         pos = QPointF(data["x"], data["y"])
         iid = data["id"]
-        return cls(item_id=iid, pos=pos)
+        return cls(part_id=iid, pos=pos)

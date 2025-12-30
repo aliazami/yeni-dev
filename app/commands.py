@@ -1,7 +1,5 @@
 # app/commands.py
 from PySide6.QtGui import QUndoCommand
-from PySide6.QtCore import QRectF
-from PySide6.QtWidgets import QGraphicsPixmapItem
 
 # ==========================================
 #              UNDO COMMANDS
