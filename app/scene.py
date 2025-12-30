@@ -16,8 +16,9 @@ from app.commands import (
     AddItemsCommand, MoveItemsCommand, RemoveItemsCommand, SetBackgroundCommand
 )
 from app.dialogs import RectInputDialog
-from app.part_item import PartItem
-from app.word_boundary_item import WordBoundaryItem
+from app.components.part_item import PartItem
+from app.components.default_background import DefaultBackground
+from app.components.word_boundary_item import WordBoundaryItem
 
 
 # ==========================================
@@ -54,12 +55,8 @@ class EditorScene(QGraphicsScene):
     def init_default_background(self):
         if self.background_item:
             self.removeItem(self.background_item)
-        rect = QGraphicsRectItem(0, 0, self.default_w, self.default_h)
-        rect.setPen(QPen(Qt.PenStyle.NoPen))
-        rect.setBrush(QBrush(QColor("#333")))
-        rect.setZValue(-1000)
-        self.addItem(rect)
-        self.background_item = rect
+        background = DefaultBackground(self.default_w, self.default_h)
+        self.background_item = background
         self.background_path = None
         self.setSceneRect(0, 0, self.default_w, self.default_h)
 
@@ -168,13 +165,8 @@ class EditorScene(QGraphicsScene):
                 "y": item.pos().y(),
                 "id": item.data(KEY_ID)
             }
-            if item_type == "RECTANGLE":
-                item_data["rect_id"] = item.data(KEY_RECT_ID)
-                item_data["rect_text"] = item.data(KEY_RECT_TEXT)
-                # Save Dimensions
-                r = item.rect()
-                item_data["w"] = r.width()
-                item_data["h"] = r.height()
+            if isinstance(item, WordBoundaryItem):
+                item_data = item.to_dict()
             if isinstance(item, PartItem):
                 item_data = item.to_dict()
             data["items"].append(item_data)
@@ -545,7 +537,7 @@ class EditorScene(QGraphicsScene):
                     part_id=self.current_id,
                     item_id=self.pending_rect_id,
                     word=self.pending_rect_text,
-                    pos=QPointF(0, 0),
+                    pos=QPointF(geo.x(), geo.y()),
                     w=geo.width(),
                     h=geo.height(),
                 )

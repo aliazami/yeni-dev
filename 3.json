@@ -1,0 +1,33 @@
+{
+    "background_image": "C:/Users/aliaz/yeni-dev/020.jpg",
+    "items": [
+        {
+            "type": "LABEL2",
+            "x": 792.0,
+            "y": 117.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "LABEL",
+            "x": 729.0,
+            "y": 116.0,
+            "id": "1.1"
+        },
+        {
+            "type": "CIRCLE",
+            "x": 332.0,
+            "y": 269.0,
+            "id": "1"
+        },
+        {
+            "type": "RECTANGLE",
+            "part_id": "1",
+            "item_id": "1",
+            "word": "qqqw",
+            "w": 278.0,
+            "h": 68.0,
+            "x": 384.0,
+            "y": 145.0
+        }
+    ]
+}
