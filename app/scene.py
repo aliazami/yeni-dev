@@ -1,14 +1,12 @@
 # app/scene.py
-import os
 from PySide6.QtCore import Qt, QRectF, Signal, QPointF
-from PySide6.QtGui import QBrush, QPen, QColor, QCursor, QFont, QPixmap, QUndoStack
+from PySide6.QtGui import QBrush, QPen, QColor, QCursor, QFont, QUndoStack
 from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
     QGraphicsRectItem,
     QGraphicsTextItem,
     QGraphicsItem,
-    QGraphicsPixmapItem,
     QInputDialog,
     QMessageBox,
     QDialog,
@@ -20,11 +18,10 @@ from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
     RemoveItemsCommand,
-    SetBackgroundCommand,
 )
 from app.dialogs import RectInputDialog
 from app.components.part_item import PartItem
-from app.components.default_background import DefaultBackground
+from app.components.background import Background
 from app.components.word_boundary_item import WordBoundaryItem
 
 
@@ -53,20 +50,9 @@ class EditorScene(QGraphicsScene):
         self.drag_start_positions = {}
 
         # Background Management
-        self.background_item = None
-        self.background_path = None  # Store path for JSON saving
-        self.default_w = w
-        self.default_h = h
+        self.background_item = Background()
+        self.set_background()
 
-        self.init_default_background()
-
-    def init_default_background(self):
-        if self.background_item:
-            self.removeItem(self.background_item)
-        background = DefaultBackground(self.default_w, self.default_h)
-        self.background_item = background
-        self.background_path = None
-        self.setSceneRect(0, 0, self.default_w, self.default_h)
 
     # --- Serialization Logic ---
     def deserialize_scene(self, data):
@@ -75,7 +61,6 @@ class EditorScene(QGraphicsScene):
         self.undo_stack.clear()
 
         # Reset Python references to avoid accessing deleted C++ objects
-        self.background_item = None
         self.temp_rect_item = None
         self.current_id = None
 
@@ -85,35 +70,7 @@ class EditorScene(QGraphicsScene):
         # This avoids calling removeItem() on a deleted object.
 
         bg_path = data.get("background_image")
-        loaded_bg = False
-
-        if bg_path and os.path.exists(bg_path):
-            pixmap = QPixmap(bg_path)
-            if not pixmap.isNull():
-                # Create Pixmap Background
-                new_bg = QGraphicsPixmapItem(pixmap)
-                new_bg.setZValue(-1000)
-                new_bg.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-                self.addItem(new_bg)
-
-                # Update State
-                self.background_item = new_bg
-                self.background_path = bg_path
-                self.setSceneRect(QRectF(pixmap.rect()))
-                loaded_bg = True
-
-        if not loaded_bg:
-            # Create Default Rect Background
-            rect = QGraphicsRectItem(0, 0, self.default_w, self.default_h)
-            rect.setPen(QPen(Qt.PenStyle.NoPen))
-            rect.setBrush(QBrush(QColor("#333")))
-            rect.setZValue(-1000)
-            self.addItem(rect)
-
-            # Update State
-            self.background_item = rect
-            self.background_path = None
-            self.setSceneRect(0, 0, self.default_w, self.default_h)
+        self.set_background(bg_path)
 
         # 3. Restore Items
         for item_data in data.get("items", []):
@@ -164,7 +121,8 @@ class EditorScene(QGraphicsScene):
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        data = {"background_image": self.background_path, "items": []}
+        background_path = self.background_item.to_dict() if self.background_item else None
+        data = {"background_image": background_path, "items": []}
         for item in self.items():
             if (
                 item == self.background_item
@@ -188,31 +146,6 @@ class EditorScene(QGraphicsScene):
                 item_data = item.to_dict()
             data["items"].append(item_data)
         return data
-
-    # --- Background Logic ---
-    def set_image_background(self, file_path, record_undo=True):
-        pixmap = QPixmap(file_path)
-        if pixmap.isNull():
-            return
-        new_bg = QGraphicsPixmapItem(pixmap)
-        new_bg.setZValue(-1000)
-        new_bg.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-        if record_undo:
-            cmd = SetBackgroundCommand(
-                self, new_bg, self.background_item, file_path, "Import Image"
-            )
-            self.undo_stack.push(cmd)
-        else:
-            if self.background_item:
-                self.removeItem(self.background_item)
-            self.addItem(new_bg)
-            self.background_item = new_bg
-            self.background_path = file_path
-            self.setSceneRect(QRectF(pixmap.rect()))
-
-    # --- Commands Logic (Move, Align, etc. - same as before) ---
-    def push_background_image(self, file_path):
-        self.set_image_background(file_path, record_undo=True)
 
     def calculate_move_command(self, items, dx, dy):
         if self:
@@ -389,7 +322,7 @@ class EditorScene(QGraphicsScene):
                 None, "Open Image", "", "Images (*.png *.jpg *.jpeg *.webp)"
             )
             if file_path:
-                self.push_background_image(file_path)
+                self.set_background(file_path)
             event.accept()
         elif event.key() == Qt.Key.Key_R:
             if not self.current_id:
@@ -625,3 +558,11 @@ class EditorScene(QGraphicsScene):
                 self.drag_start_positions = {}
         else:
             super().mouseReleaseEvent(event)
+
+    def set_background(self, file_path = None):
+        if self.background_item and self.background_item in self.items():
+            self.removeItem(self.background_item)
+        self.background_item = Background(file_path)
+        rect = QRectF(self.background_item.pixmap().rect())
+        self.addItem(self.background_item)
+        self.setSceneRect(rect)

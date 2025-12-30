@@ -2,40 +2,30 @@
     "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/test.webp",
     "items": [
         {
-            "type": "LABEL2",
-            "x": 501.0,
-            "y": 912.0,
-            "id": "2.1**"
-        },
-        {
-            "type": "LABEL",
-            "x": 457.0,
-            "y": 911.0,
-            "id": "2.1"
-        },
-        {
             "type": "CIRCLE",
-            "x": 407.0,
-            "y": 932.0,
-            "id": "2"
+            "x": 434.0,
+            "y": 698.0,
+            "id": "1"
         },
         {
-            "type": "LABEL2",
-            "x": 513.0,
-            "y": 800.0,
-            "id": "1.2**"
+            "type": "RECTANGLE",
+            "part_id": "1",
+            "item_id": "1",
+            "word": "fitiland",
+            "w": 84.0,
+            "h": 39.0,
+            "x": 652.0,
+            "y": 747.0
         },
         {
-            "type": "LABEL2",
-            "x": 511.0,
-            "y": 762.0,
-            "id": "1.1**"
-        },
-        {
-            "type": "LABEL",
-            "x": 464.0,
-            "y": 798.0,
-            "id": "1.2"
+            "type": "RECTANGLE",
+            "part_id": "1",
+            "item_id": "1",
+            "word": "Season",
+            "w": 64.0,
+            "h": 28.0,
+            "x": 747.0,
+            "y": 754.0
         },
         {
             "type": "LABEL",
@@ -44,30 +34,40 @@
             "id": "1.1"
         },
         {
-            "type": "RECTANGLE",
-            "x": 747.0,
-            "y": 754.0,
-            "part_id": "1",
-            "item_id": "1",
-            "word": "Season",
-            "w": 64.0,
-            "h": 28.0
+            "type": "LABEL",
+            "x": 464.0,
+            "y": 798.0,
+            "id": "1.2"
         },
         {
-            "type": "RECTANGLE",
-            "x": 652.0,
-            "y": 747.0,
-            "part_id": "1",
-            "item_id": "1",
-            "word": "fitiland",
-            "w": 84.0,
-            "h": 39.0
+            "type": "LABEL2",
+            "x": 511.0,
+            "y": 762.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "LABEL2",
+            "x": 513.0,
+            "y": 800.0,
+            "id": "1.2**"
         },
         {
             "type": "CIRCLE",
-            "x": 409.0,
-            "y": 768.0,
-            "id": "1"
+            "x": 407.0,
+            "y": 932.0,
+            "id": "2"
+        },
+        {
+            "type": "LABEL",
+            "x": 457.0,
+            "y": 911.0,
+            "id": "2.1"
+        },
+        {
+            "type": "LABEL2",
+            "x": 501.0,
+            "y": 912.0,
+            "id": "2.1**"
         }
     ]
 }

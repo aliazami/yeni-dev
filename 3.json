@@ -1,33 +1,35 @@
 {
-    "background_image": "C:/Users/aliaz/yeni-dev/020.jpg",
+    "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/020.jpg",
     "items": [
         {
-            "type": "LABEL2",
-            "x": 792.0,
-            "y": 117.0,
-            "id": "1.1**"
-        },
-        {
-            "type": "LABEL",
-            "x": 729.0,
-            "y": 116.0,
-            "id": "1.1"
-        },
-        {
             "type": "CIRCLE",
-            "x": 332.0,
-            "y": 269.0,
+            "x": 144.0,
+            "y": 139.0,
             "id": "1"
         },
         {
-            "type": "RECTANGLE",
-            "part_id": "1",
-            "item_id": "1",
-            "word": "qqqw",
-            "w": 278.0,
-            "h": 68.0,
-            "x": 384.0,
-            "y": 145.0
+            "type": "LABEL",
+            "x": 191.0,
+            "y": 124.0,
+            "id": "1.1"
+        },
+        {
+            "type": "LABEL",
+            "x": 188.0,
+            "y": 162.0,
+            "id": "1.2"
+        },
+        {
+            "type": "LABEL2",
+            "x": 355.0,
+            "y": 210.0,
+            "id": "1.1**"
+        },
+        {
+            "type": "LABEL2",
+            "x": 282.0,
+            "y": 94.0,
+            "id": "1.2**"
         }
     ]
 }

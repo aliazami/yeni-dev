@@ -18,3 +18,5 @@ SETTINGS = {
     },
     "part_item": {"radius": 25.0},
 }
+
+Z_ORDER_BACKGROUND = -1000
