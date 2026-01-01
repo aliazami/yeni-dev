@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 )
 from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM
 from app.models import ISerializable, IPartItem, TPartItem
-
+from app.helpers.utils import ignore
 
 class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
 
@@ -62,15 +62,10 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
 
     @classmethod
     def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
+        ignore([part_id, kwargs])
         text, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
         if ok and text:
-            int_part_id = None
-            try:
-                int_part_id = int(part_id)
-            except ValueError:
-                pass
-            part_id = str(int_part_id + 1) if int_part_id else ""
-            pre_item = TPartItem(PART_ITEM, part_id)
+            pre_item = TPartItem(PART_ITEM, text)
             if cls.has_item(items, pre_item):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False

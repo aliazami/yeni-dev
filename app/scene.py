@@ -14,11 +14,12 @@ from app.commands import (
     MoveItemsCommand,
     RemoveItemsCommand,
 )
+
+from app.models import ISerializable
 from app.components.part_item import PartItem
 from app.components.background import Background
 from app.components.word_boundary_item import WordBoundaryItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
-from app.helpers.scene_serialize_helper import deserialize_scene_helper, serialize_scene_helper
 from app.helpers.scene_misc_helper import calculate_move_command
 
 
@@ -49,11 +50,52 @@ class EditorScene(QGraphicsScene):
 
     # --- Serialization Logic ---
     def deserialize_scene(self, data):
-        deserialize_scene_helper(self, data)
+        # 1. Clear everything (C++ objects are deleted)
+        self.clear()
+        self.undo_stack.clear()
+
+        # Reset Python references to avoid accessing deleted C++ objects
+        self.temp_rect_item = None
+        self.current_part = None
+
+        # 2. Restore Background EXPLICITLY
+        # We manually create the background here instead of calling helper methods
+        # like set_image_background() or init_default_background().
+        # This avoids calling removeItem() on a deleted object.
+
+        bg_path = data.get("background_image")
+        self.set_background(bg_path)
+
+        # 3. Restore Items
+        for item_data in data.get("items", []):
+            itype = item_data["type"]
+
+            if itype == "CIRCLE":
+                part_item = PartItem.from_dict(item_data)
+                self.addItem(part_item)
+            elif itype == "LABEL":
+                gap_item = GapItem.from_dict(item_data)
+                self.addItem(gap_item)
+            elif itype == "RECTANGLE":
+                word_boundary_item = WordBoundaryItem.from_dict(item_data)
+                self.addItem(word_boundary_item)
+
+        self.refresh_active_items()
+
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        serialize_scene_helper(self)
+        background_path = (
+            self.background_item.file_path() if self.background_item else None
+        )
+        data = {"background_image": background_path, "items": []}
+        for item in self.items():
+            if isinstance(item, ISerializable):
+                serializable = item
+                item_data = serializable.to_dict()
+                data["items"].append(item_data)
+
+        return data
 
     def align_items(self, direction):
         move_data = align_items_helper(self.selectedItems(), direction)
@@ -231,7 +273,7 @@ class EditorScene(QGraphicsScene):
                 pos = QPointF(geo.x(), geo.y())
                 w = geo.width()
                 h = geo.height()
-                final_item = WordBoundaryItem.create_item(pos, h, w)
+                final_item = WordBoundaryItem.create_item(pos, w, h)
                 self.addItem(final_item)
                 self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
 

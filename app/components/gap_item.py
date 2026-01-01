@@ -62,9 +62,9 @@ class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem):
         if not part_id:
             QMessageBox.warning(None, "Error", "No Circle Selected.")
             return False
-        default_int = cls.get_max_qn(items, part_id)
+        default_int = cls.get_max_qn(items, part_id) + 1
         qn, ok = QInputDialog.getInt(
-            None, "Add Label", "Sequence:", value=default_int, minValue=1
+            None, "Add Gap Item", "Sequence:", value=default_int, minValue=1
         )
         if ok:
             pre_item = TQuestionItem(GAP_ITEM, part_id, qn)

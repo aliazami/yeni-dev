@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QFileDialog,
 )
-from app.utils import create_icon
+from app.helpers.utils import create_icon
 from app.scene import EditorScene
 from app.dialogs import HelpWindow
 

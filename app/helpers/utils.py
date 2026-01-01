@@ -42,3 +42,7 @@ def create_icon(icon_type, color=SETTINGS["colors"]["icon"]):
         painter.drawLine(4, 28, 8, 28)
     painter.end()
     return QIcon(pixmap)
+
+def ignore(var):
+    if var:
+        pass
