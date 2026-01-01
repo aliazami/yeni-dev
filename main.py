@@ -3,8 +3,6 @@ from PySide6.QtWidgets import QApplication
 from app.main_window import MainWindow
 
 
-
-
 # ==========================================
 #              MAIN WINDOW
 # ==========================================

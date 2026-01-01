@@ -1,23 +1,30 @@
 # app/word_boundary_item.py
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem, QMessageBox, QDialog
 from app.constants import (
     KEY_PART_ID,
-    KEY_TYPE,
+    KEY_TYPE, KEY_QN,
     WORD_BOUNDARY_ITEM,
 )
-from app.models import ISerializable, IQuestionItem
+from app.models import ISerializable, IQuestionItem, TQuestionItem
+from app.dialogs import RectInputDialog
 
-_QUESTION_NUMBER = 5
-_WORD = 6
+KEY_WORD = 6
+
 
 class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
 
     def __init__(
-        self, part_id: str, qn: int, word: str, pos: QPointF, w: float, h: float
+        self, item: TQuestionItem, pos: QPointF, w: float, h: float
     ):
         super().__init__(0, 0, w, h)
+        word = item.kwargs["word"]
+        self.setData(KEY_TYPE, WORD_BOUNDARY_ITEM)
+        self.setData(KEY_PART_ID, item.part_id)
+        self.setData(KEY_QN, item.qn)
+        self.setData(KEY_WORD, word)
+
         self.setPos(pos)
         self.setPen(QPen(Qt.GlobalColor.green, 2))
         self.setBrush(QBrush(QColor(0, 255, 0, 100)))
@@ -25,42 +32,42 @@ class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
-        self.setData(KEY_TYPE, WORD_BOUNDARY_ITEM)
-        self.setData(KEY_PART_ID, part_id)
-        self.setData(_QUESTION_NUMBER, qn)
-        self.setData(_WORD, word)
 
-        lbl = f"{part_id}.{qn}.{word}"
+        lbl = f"{item.part_id}.{item.qn}.{word}"
         t = QGraphicsSimpleTextItem(lbl, parent=self)
         t.setBrush(QBrush(Qt.GlobalColor.white))
         t.setFont(QFont("Arial", 10))
         t.setPos(0, h + 5)
         t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
+    @property
+    def item_type(self) -> str:
+        return self.data(KEY_TYPE)
+
+    @property
+    def part_id(self) -> str:
+        return self.data(KEY_PART_ID)
+
+    @property
+    def qn(self) -> int:
+        return self.data(KEY_QN)
+
+    @property
+    def uid(self) -> str:
+        return f"{self.item_type}::{self.part_id}::{self.qn}"
+
     def to_dict(self) -> dict:
         r = self.rect()
         return {
             "type": WORD_BOUNDARY_ITEM,
-            "part_id": self.data(KEY_PART_ID),
-            "qn": self.data(_QUESTION_NUMBER),
-            "word": self.data(_WORD),
+            "part_id": self.part_id,
+            "qn": self.qn,
+            "word": self.word,
             "w": r.width(),
             "h": r.height(),
             "x": self.pos().x(),
             "y": self.pos().y(),
         }
-
-    def part_id(self) -> str:
-        return self.data(KEY_PART_ID)
-
-    def qn(self) -> int:
-        return self.data(_QUESTION_NUMBER)
-
-    def word(self):
-        return self.data(_WORD)
-
-    def is_me(self, part_id, qn, word):
-        return self.is_my_question(part_id, qn) and self.word() == word
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -70,4 +77,40 @@ class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
         word = data["word"]
         h = data["h"]
         w = data["w"]
-        return cls(part_id, qn, word, pos, w, h)
+        item = TQuestionItem(WORD_BOUNDARY_ITEM, part_id, qn, word=word)
+        return cls(item, pos, w, h)
+
+    @property
+    def word(self):
+        return self.data(KEY_WORD)
+
+    @classmethod
+    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
+        if not part_id:
+            QMessageBox.warning(None, "Error", "No Circle Selected.")
+            return False
+
+        dialog = RectInputDialog()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            qn, word = dialog.get_data()
+            if not qn.isdigit():
+                QMessageBox.warning(None, "Error", "ID must be int.")
+                return False
+
+            if not word:
+                QMessageBox.warning(None, "Error", "Text required.")
+                return False
+
+            pre_item = TQuestionItem(WORD_BOUNDARY_ITEM, part_id, qn, word=word)
+            if cls.has_item(items, pre_item):
+                QMessageBox.warning(None, "Error", "Exists!")
+                return False
+
+            cls._pre_item = pre_item
+            return True
+
+        return False
+
+    @classmethod
+    def create_item(cls, pos: QPointF, w: float, h: float):
+        return WordBoundaryItem(cls._pre_item, pos, w, h) if cls._pre_item else None

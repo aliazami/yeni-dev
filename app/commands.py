@@ -53,4 +53,3 @@ class MoveItemsCommand(QUndoCommand):
     def undo(self):
         for item, (start, end) in self.move_data.items():
             item.setPos(start)
-
