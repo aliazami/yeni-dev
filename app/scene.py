@@ -162,6 +162,10 @@ class EditorScene(QGraphicsScene):
                 if self.temp_rect_item:
                     self.removeItem(self.temp_rect_item)
                     self.temp_rect_item = None
+
+                for item in self.items():
+                    if isinstance(item, IRepeatable):
+                        item.cancel_repeating()
                 self.set_mode("SELECT")
             else:
                 self.clearSelection()

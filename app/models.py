@@ -1,6 +1,8 @@
 from abc import abstractmethod
-from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog
 from PySide6.QtCore import QPointF
+from app.constants import T_QUESTION_ITEM
+from app.helpers.utils import get_next
 
 
 class ISerializable:
@@ -57,20 +59,18 @@ class IPartItem:
     _pre_item = None
 
     @property
+    def uid(self) -> str:
+        return f"{self.item_type}::{self.part_id}"
+
+    @property
     @abstractmethod
     def part_id(self) -> str:
-        """Returns the dictionary representation of the item."""
         pass
 
     @property
     @abstractmethod
     def item_type(self) -> str:
         """Returns the dictionary representation of the item."""
-        pass
-
-    @property
-    @abstractmethod
-    def uid(self) -> str:
         pass
 
     @classmethod
@@ -88,12 +88,14 @@ class IPartItem:
         return False
 
     @classmethod
-    @abstractmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
         pass
 
 
 class IQuestionItem(IPartItem):
+
+    def uid(self) -> str:
+        return f"{self.item_type}::{self.part_id}::{self.qn}"
 
     @property
     @abstractmethod
@@ -109,6 +111,53 @@ class IQuestionItem(IPartItem):
                 max_qn = max(max_qn, item.qn)
         return max_qn
 
+    @classmethod
+    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
+        if not part_id:
+            QMessageBox.warning(None, "Error", "No Circle Selected.")
+            return False
+        default_int = cls.get_max_qn(items, part_id) + 1
+        qn, ok = QInputDialog.getInt(
+            None, "Add Gap Item", "Sequence:", value=default_int, minValue=1
+        )
+        if ok:
+            if qn > 999 and qn % 1000 == 0:
+                cls._is_repeating = True
+                qn = qn / 1000
+            pre_item = TQuestionItem(T_QUESTION_ITEM, part_id, qn)
+            if cls.has_item(items, pre_item):
+                QMessageBox.warning(None, "Error", "Exists!")
+                return False
+
+            else:
+                cls._pre_item = pre_item
+                return True
+
+        return False
+
+
+class IRepeatableQuestionItem(IRepeatable, IQuestionItem):
+
+    @property
+    def part_id(self) -> str:
+        return ""
+
+    @property
+    def item_type(self) -> str:
+        return ""
+
+    @property
+    def qn(self) -> int:
+        return 0
+
+    @classmethod
+    def repeat(cls):
+        index = cls._pre_item.qn
+        part_id = cls._pre_item.part_id
+        qn = int(get_next(str(index)))
+        next_pre_item = TQuestionItem(T_QUESTION_ITEM, part_id, qn)
+        cls._pre_item = next_pre_item
+
 
 class TPartItem(IPartItem):
 
@@ -117,12 +166,12 @@ class TPartItem(IPartItem):
         self._item_type = item_type
 
     @property
-    def part_id(self) -> str:
-        return self._part_id
-
-    @property
     def item_type(self) -> str:
         return self._item_type
+
+    @property
+    def part_id(self) -> str:
+        return self._part_id
 
     @property
     def uid(self) -> str:
@@ -152,10 +201,6 @@ class TQuestionItem(IQuestionItem):
     @property
     def qn(self) -> int:
         return int(self._qn)
-
-    @property
-    def uid(self) -> str:
-        return f"{self._item_type}::{self._part_id}::{self._qn}"
 
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):

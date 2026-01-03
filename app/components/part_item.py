@@ -43,10 +43,6 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
     def part_id(self) -> str:
         return self.data(KEY_PART_ID)
 
-    @property
-    def uid(self) -> str:
-        return f"{self.item_type}::{self.part_id}"
-
     def to_dict(self) -> dict:
         return {
             "type": PART_ITEM,
@@ -88,14 +84,17 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
         for item in part_items:
             if item.part_id == part_id and not item.is_active:
                 item.setData(KEY_IS_ACTIVE, part_id)
+                cls._active_item = part_id
                 item._refresh_ui(True)
             elif item.part_id != part_id and item.is_active:
                 item.setData(KEY_IS_ACTIVE, "")
+                cls._active_item = ""
                 item._refresh_ui(False)
 
     @property
     def is_active(self):
         return self.data(KEY_IS_ACTIVE)
+
 
     def _refresh_ui(self, active):
         if active:

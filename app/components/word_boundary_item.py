@@ -1,14 +1,13 @@
 # app/word_boundary_item.py
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem, QMessageBox, QDialog
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem
 from app.constants import (
     KEY_PART_ID,
     KEY_TYPE, KEY_QN,
     WORD_BOUNDARY_ITEM,
 )
 from app.models import ISerializable, IQuestionItem, TQuestionItem
-from app.dialogs import RectInputDialog
 
 KEY_WORD = 6
 
@@ -52,10 +51,6 @@ class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
     def qn(self) -> int:
         return self.data(KEY_QN)
 
-    @property
-    def uid(self) -> str:
-        return f"{self.item_type}::{self.part_id}::{self.qn}"
-
     def to_dict(self) -> dict:
         r = self.rect()
         return {
@@ -83,33 +78,6 @@ class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
     @property
     def word(self):
         return self.data(KEY_WORD)
-
-    @classmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
-        if not part_id:
-            QMessageBox.warning(None, "Error", "No Circle Selected.")
-            return False
-
-        dialog = RectInputDialog()
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            qn, word = dialog.get_data()
-            if not qn.isdigit():
-                QMessageBox.warning(None, "Error", "ID must be int.")
-                return False
-
-            if not word:
-                QMessageBox.warning(None, "Error", "Text required.")
-                return False
-
-            pre_item = TQuestionItem(WORD_BOUNDARY_ITEM, part_id, qn, word=word)
-            if cls.has_item(items, pre_item):
-                QMessageBox.warning(None, "Error", "Exists!")
-                return False
-
-            cls._pre_item = pre_item
-            return True
-
-        return False
 
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
