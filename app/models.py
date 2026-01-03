@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog
+from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog, QGraphicsRectItem
 from PySide6.QtCore import QPointF
-from app.constants import T_QUESTION_ITEM
+from app.constants import T_QUESTION_ITEM, KEY_TYPE, KEY_QN, KEY_PART_ID, KEY_IS_ACTIVE
 from app.helpers.utils import get_next
 
 
@@ -37,25 +37,7 @@ class IRepeatable:
         pass
 
 
-class IActive:
-    _active_item = None
-
-    @classmethod
-    def get_active_item(cls):
-        return cls._active_item
-
-    @classmethod
-    @abstractmethod
-    def set_active_item(cls, items: list, **kwargs):
-        pass
-
-    @property
-    @abstractmethod
-    def is_active(self) -> str:
-        pass
-
-
-class IPartItem:
+class IPartItem(QGraphicsRectItem):
     _pre_item = None
 
     @property
@@ -63,15 +45,12 @@ class IPartItem:
         return f"{self.item_type}::{self.part_id}"
 
     @property
-    @abstractmethod
     def part_id(self) -> str:
-        pass
+        return self.data(KEY_PART_ID)
 
     @property
-    @abstractmethod
     def item_type(self) -> str:
-        """Returns the dictionary representation of the item."""
-        pass
+        return self.data(KEY_TYPE)
 
     @classmethod
     def has_item(cls, items: list[QGraphicsItem], temp_item) -> bool:
@@ -92,16 +71,31 @@ class IPartItem:
         pass
 
 
+class IActivePartItem(IPartItem):
+    _active_item = None
+
+    @classmethod
+    def get_active_item(cls):
+        return cls._active_item
+
+    @classmethod
+    @abstractmethod
+    def set_active_item(cls, items: list, **kwargs):
+        pass
+
+    @property
+    def is_active(self) -> str:
+        return self.data(KEY_IS_ACTIVE)
+
+
 class IQuestionItem(IPartItem):
 
     def uid(self) -> str:
         return f"{self.item_type}::{self.part_id}::{self.qn}"
 
     @property
-    @abstractmethod
     def qn(self) -> int:
-        """Returns the dictionary representation of the item."""
-        pass
+        return self.data(KEY_QN)
 
     @classmethod
     def get_max_qn(cls, items: list[QGraphicsItem], part_id: str) -> int:
