@@ -2,6 +2,7 @@ from abc import abstractmethod
 from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import QPointF
 
+
 class ISerializable:
     """Mixin for items that can be saved/loaded."""
 
@@ -14,6 +15,41 @@ class ISerializable:
     @abstractmethod
     def from_dict(cls, data: dict):
         """Creates an instance of the class from a dictionary."""
+        pass
+
+
+class IRepeatable:
+    _is_repeating = False
+
+    @property
+    def is_repeating(self) -> bool:
+        return self._is_repeating
+    
+    @classmethod
+    def cancel_repeating(cls):
+        cls._is_repeating = False
+
+    @classmethod
+    @abstractmethod
+    def repeat(cls):
+        pass
+
+
+class IActive:
+    _active_item = None
+
+    @classmethod
+    def get_active_item(cls):
+        return cls._active_item
+
+    @classmethod
+    @abstractmethod
+    def set_active_item(cls, items: list, **kwargs):
+        pass
+
+    @property
+    @abstractmethod
+    def is_active(self) -> str:
         pass
 
 
@@ -51,11 +87,11 @@ class IPartItem:
     def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
         return False
 
-
     @classmethod
     @abstractmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
         pass
+
 
 class IQuestionItem(IPartItem):
 
@@ -97,7 +133,6 @@ class TPartItem(IPartItem):
         return cls._pre_item
 
 
-
 class TQuestionItem(IQuestionItem):
 
     def __init__(self, item_type: str, part_id: str, qn: int, **kwargs):
@@ -116,7 +151,7 @@ class TQuestionItem(IQuestionItem):
 
     @property
     def qn(self) -> int:
-        return self._qn
+        return int(self._qn)
 
     @property
     def uid(self) -> str:

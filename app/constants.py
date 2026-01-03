@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt
 KEY_PART_ID = 0
 KEY_TYPE = 1
 KEY_QN = 2
+KEY_IS_ACTIVE = 3
 
 
 PART_ITEM = "CIRCLE"

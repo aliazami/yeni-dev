@@ -15,7 +15,7 @@ from app.commands import (
     RemoveItemsCommand,
 )
 
-from app.models import ISerializable
+from app.models import ISerializable, IRepeatable
 from app.components.part_item import PartItem
 from app.components.background import Background
 from app.components.word_boundary_item import WordBoundaryItem
@@ -42,7 +42,7 @@ class EditorScene(QGraphicsScene):
         self.start_point = None
         self.drag_start_positions = {}
 
-        self.current_part = None
+        # self.current_part = None
 
         # Background Management
         self.background_item = Background()
@@ -56,7 +56,7 @@ class EditorScene(QGraphicsScene):
 
         # Reset Python references to avoid accessing deleted C++ objects
         self.temp_rect_item = None
-        self.current_part = None
+        # self.current_part = None
 
         # 2. Restore Background EXPLICITLY
         # We manually create the background here instead of calling helper methods
@@ -79,9 +79,6 @@ class EditorScene(QGraphicsScene):
             elif itype == "RECTANGLE":
                 word_boundary_item = WordBoundaryItem.from_dict(item_data)
                 self.addItem(word_boundary_item)
-
-        self.refresh_active_items()
-
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
@@ -108,14 +105,6 @@ class EditorScene(QGraphicsScene):
             self.undo_stack.push(
                 MoveItemsCommand(self, move_data, f"Distribute {orientation}")
             )
-
-
-    def refresh_active_items(self):
-        for item in self.items():
-            if isinstance(item, PartItem):
-                item_id = item.part_id
-                is_active = item_id == self.current_part
-                item.set_active(is_active)
 
     def set_mode(self, mode):
         self.mode = mode
@@ -146,7 +135,7 @@ class EditorScene(QGraphicsScene):
                 self.set_background(file_path)
             event.accept()
         elif event.key() == Qt.Key.Key_R:
-            if WordBoundaryItem.pre_create(self.items(), self.current_part):
+            if WordBoundaryItem.pre_create(self.items(), PartItem.get_active_item()):
                 self.set_mode("DRAWING_RECT")
             event.accept()
         elif event.key() == Qt.Key.Key_A:
@@ -154,7 +143,7 @@ class EditorScene(QGraphicsScene):
                 self.set_mode("ADD_CIRCLE")
             event.accept()
         elif event.key() == Qt.Key.Key_F:
-            if GapItem.pre_create(self.items(), self.current_part):
+            if GapItem.pre_create(self.items(), PartItem.get_active_item()):
                 self.set_mode("ADD_LABEL")
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
@@ -163,11 +152,10 @@ class EditorScene(QGraphicsScene):
                 for item in items:
                     if (
                         isinstance(item, PartItem)
-                        and item.part_id == self.current_part
+                        and item.part_id == PartItem.get_active_item()
                     ):
-                        self.current_part = None
+                        PartItem.set_active_item(self.part_items, part_id="")
                 self.undo_stack.push(RemoveItemsCommand(self, items))
-                self.refresh_active_items()
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
             if self.mode != "SELECT":
@@ -220,15 +208,21 @@ class EditorScene(QGraphicsScene):
                 new_item = None
                 if self.mode == "ADD_CIRCLE":
                     new_item = PartItem.create_item(pos, 0, 0)
-                    self.current_part = new_item.part_id
+                    PartItem.set_active_item(self.part_items, part_id=new_item.part_id)
+
                 elif self.mode == "ADD_LABEL":
                     new_item = GapItem.create_item(pos, 0, 0)
                 if new_item:
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
                     )
-                    self.refresh_active_items()
-                    self.set_mode("SELECT")
+                    if isinstance(new_item, IRepeatable):
+                        if new_item.is_repeating:
+                            new_item.repeat()
+                        else:
+                            self.set_mode("SELECT")
+                    else:
+                        self.set_mode("SELECT")
                 event.accept()
             else:
                 super().mousePressEvent(event)
@@ -239,9 +233,7 @@ class EditorScene(QGraphicsScene):
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
                     if isinstance(item, PartItem):
-                        part_item = item
-                        self.current_part = part_item.part_id
-                        self.refresh_active_items()
+                        PartItem.set_active_item(self.part_items, part_id=item.part_id)
                         break
 
         else:
@@ -307,3 +299,7 @@ class EditorScene(QGraphicsScene):
         rect = QRectF(self.background_item.pixmap().rect())
         self.addItem(self.background_item)
         self.setSceneRect(rect)
+
+    @property
+    def part_items(self):
+        return [item for item in self.items() if isinstance(item, PartItem)]

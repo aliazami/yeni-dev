@@ -1,12 +1,14 @@
 from PySide6.QtWidgets import QGraphicsTextItem
 
-from app.models import ISerializable, IQuestionItem, TQuestionItem
+from app.models import ISerializable, IQuestionItem, TQuestionItem, IRepeatable
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog
 from app.constants import KEY_PART_ID, KEY_TYPE, GAP_ITEM, KEY_QN
+from app.helpers.utils import get_next
 
-class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem):
+
+class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem, IRepeatable):
 
     def __init__(self, item: TQuestionItem, pos: QPointF):
         tag = f"{item.part_id}.{item.qn}"
@@ -15,14 +17,14 @@ class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem):
         self.setData(KEY_QN, item.qn)
         self.setData(KEY_TYPE, GAP_ITEM)
 
-        self.setDefaultTextColor(Qt.GlobalColor.white)
+        self.setDefaultTextColor(Qt.GlobalColor.black)
+        self.setHtml(f"<div style=\"background-color: lightblue;\">{tag}</div>")
         self.setFont(QFont("Arial", 14))
         self.setPos(pos)
         self.setFlags(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
-
 
     @property
     def item_type(self) -> str:
@@ -67,6 +69,9 @@ class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem):
             None, "Add Gap Item", "Sequence:", value=default_int, minValue=1
         )
         if ok:
+            if qn > 999 and qn % 1000 == 0:
+                cls._is_repeating = True
+                qn = qn / 1000
             pre_item = TQuestionItem(GAP_ITEM, part_id, qn)
             if cls.has_item(items, pre_item):
                 QMessageBox.warning(None, "Error", "Exists!")
@@ -81,3 +86,11 @@ class GapItem(QGraphicsTextItem, ISerializable, IQuestionItem):
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
         return GapItem(cls._pre_item, pos) if cls._pre_item else None
+
+    @classmethod
+    def repeat(cls):
+        index = cls._pre_item.qn
+        part_id = cls._pre_item.part_id
+        qn = int(get_next(str(index)))
+        next_pre_item = TQuestionItem(GAP_ITEM, part_id, qn)
+        cls._pre_item = next_pre_item

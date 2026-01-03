@@ -8,11 +8,13 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM
-from app.models import ISerializable, IPartItem, TPartItem
+from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM, KEY_IS_ACTIVE
+from app.models import ISerializable, IPartItem, TPartItem, IActive
 from app.helpers.utils import ignore
 
-class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
+
+class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
+    _current_part_id = ""
 
     def __init__(self, item: TPartItem, pos: QPointF):
         radius = SETTINGS["part_item"]["radius"]
@@ -31,6 +33,7 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
         br = t.boundingRect()
         t.setPos(-br.width() / 2, -br.height() / 2)
         t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+        self._refresh_ui(False)
 
     @property
     def item_type(self) -> str:
@@ -51,7 +54,6 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
             "y": self.pos().y(),
             "id": self.data(KEY_PART_ID),
         }
-
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -79,11 +81,26 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem):
     def create_item(cls, pos: QPointF, w: float, h: float):
         return PartItem(cls._pre_item, pos) if cls._pre_item else None
 
-    def set_active(self, active: bool):
+    @classmethod
+    def set_active_item(cls, items: list, **kwargs):
+        part_items: list[PartItem] = items
+        part_id = kwargs["part_id"]
+        for item in part_items:
+            if item.part_id == part_id and not item.is_active:
+                item.setData(KEY_IS_ACTIVE, part_id)
+                item._refresh_ui(True)
+            elif item.part_id != part_id and item.is_active:
+                item.setData(KEY_IS_ACTIVE, "")
+                item._refresh_ui(False)
+
+    @property
+    def is_active(self):
+        return self.data(KEY_IS_ACTIVE)
+
+    def _refresh_ui(self, active):
         if active:
             self.setBrush(QBrush(QColor("#4488FF")))
             self.setPen(QPen(Qt.GlobalColor.black, 2))
         else:
             self.setBrush(QBrush(Qt.GlobalColor.yellow))
             self.setPen(QPen(Qt.GlobalColor.black, 2))
-
