@@ -4,24 +4,24 @@ from PySide6.QtGui import QPen, QFont, QBrush, QColor
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem
 from app.constants import (
     KEY_PART_ID,
-    KEY_TYPE, KEY_QN,
+    KEY_TYPE, KEY_QUESTION_NUMBER,
     WORD_BOUNDARY_ITEM,
 )
-from app.models import ISerializable, IQuestionItem, TQuestionItem
+from app.models import RectanglePartItem
 
 KEY_WORD = 6
 
 
-class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
+class WordBoundaryItem(RectanglePartItem):
 
     def __init__(
-        self, item: TQuestionItem, pos: QPointF, w: float, h: float
+        self, item: part_id: str, pos: QPointF, w: float, h: float
     ):
         super().__init__(0, 0, w, h)
         word = item.kwargs["word"]
         self.setData(KEY_TYPE, WORD_BOUNDARY_ITEM)
         self.setData(KEY_PART_ID, item.part_id)
-        self.setData(KEY_QN, item.qn)
+        self.setData(KEY_QUESTION_NUMBER, item.qn)
         self.setData(KEY_WORD, word)
 
         self.setPos(pos)
@@ -49,7 +49,7 @@ class WordBoundaryItem(QGraphicsRectItem, ISerializable, IQuestionItem):
 
     @property
     def qn(self) -> int:
-        return self.data(KEY_QN)
+        return self.data(KEY_QUESTION_NUMBER)
 
     def to_dict(self) -> dict:
         r = self.rect()

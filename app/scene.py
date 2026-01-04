@@ -70,13 +70,13 @@ class EditorScene(QGraphicsScene):
         for item_data in data.get("items", []):
             itype = item_data["type"]
 
-            if itype == "CIRCLE":
+            if itype == "PART_ITEM":
                 part_item = PartItem.from_dict(item_data)
                 self.addItem(part_item)
-            elif itype == "LABEL":
+            elif itype == "GAP_ITEM":
                 gap_item = GapItem.from_dict(item_data)
                 self.addItem(gap_item)
-            elif itype == "RECTANGLE":
+            elif itype == "WORD_BOUNDARY_ITEM":
                 word_boundary_item = WordBoundaryItem.from_dict(item_data)
                 self.addItem(word_boundary_item)
 

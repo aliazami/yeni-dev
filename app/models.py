@@ -1,60 +1,105 @@
 from abc import abstractmethod
 from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog, QGraphicsRectItem
 from PySide6.QtCore import QPointF
-from app.constants import T_QUESTION_ITEM, KEY_TYPE, KEY_QN, KEY_PART_ID, KEY_IS_ACTIVE
+from app.constants import KEY_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, KEY_IS_ACTIVE, SCOPE_QUESTION, \
+    KEY_KWARGS, SCOPE_PART, PRE_ITEM
 from app.helpers.utils import get_next
 
 
-class ISerializable:
-    """Mixin for items that can be saved/loaded."""
-
-    @abstractmethod
-    def to_dict(self) -> dict:
-        """Returns the dictionary representation of the item."""
-        pass
-
-    @classmethod
-    @abstractmethod
-    def from_dict(cls, data: dict):
-        """Creates an instance of the class from a dictionary."""
-        pass
+class PlatFormConfig:
+    def __init__(self, serializable, sizable, repeatable, activable, scope):
+        self.serializable = serializable
+        self.sizable = sizable
+        self.repeatable =repeatable
+        self.activable = activable
+        self.scope = scope
 
 
-class IRepeatable:
-    _is_repeating = False
+class PlatformState:
+    is_repeating = False
+    is_active = False
+    active_item_uid = ""
+
+class PreItem:
+    def __init__(self, part_type, part_id, **kwargs):
+        self.part_type = part_type
+        self.part_id = part_id
+        self.kwargs = kwargs
 
     @property
-    def is_repeating(self) -> bool:
-        return self._is_repeating
-    
-    @classmethod
-    def cancel_repeating(cls):
-        cls._is_repeating = False
+    def question_number(self):
+        return self.kwargs.get("qn")
 
-    @classmethod
-    @abstractmethod
-    def repeat(cls):
-        pass
-
-
-class IPartItem(QGraphicsRectItem):
-    _pre_item = None
 
     @property
     def uid(self) -> str:
-        return f"{self.item_type}::{self.part_id}"
+        item_uid = f"{self.part_type}::{self.part_id}"
+        if self.question_number > 0:
+            item_uid = f"{item_uid}::{self.question_number}"
+
+        return item_uid
+
+
+
+class PlatformData:
+    pre_item: PreItem | None = None
+
+
+class RectanglePartItem(QGraphicsRectItem):
+    platform_config: PlatFormConfig | None = None
+    platform_state = PlatformState()
+    platform_data = PlatformData()
+
+    def __init__(self, part_type: str, part_id: str, pos: QPointF, **kwargs):
+        w = kwargs.get("w") or 5
+        h = kwargs.get("h") or 5
+        super().__init__(pos.x(), pos.y(), w, h)
+        self.setData(KEY_PART_ID, part_id)
+        self.setData(KEY_TYPE, part_type)
+        self.setData(KEY_KWARGS, kwargs)
+        question_number = kwargs.get("qn")
+        if question_number:
+            self.setData(KEY_QUESTION_NUMBER, question_number)
+
+
+    # ====== part item identity =======
+    @property
+    def uid(self) -> str:
+        if self.platform_config.scope == SCOPE_QUESTION:
+            return f"{self.part_type}::{self.part_id}::{self.question_number}"
+        return f"{self.part_type}::{self.part_id}"
 
     @property
     def part_id(self) -> str:
         return self.data(KEY_PART_ID)
 
     @property
-    def item_type(self) -> str:
+    def part_type(self) -> str:
         return self.data(KEY_TYPE)
+
+    def is_me(self, **kwargs) -> bool:
+        part_type = kwargs.get("part_type")
+        part_id = kwargs.get("part_id")
+        if self.part_type != part_type or self.part_id != part_id:
+            return False
+
+        if self.platform_config.scope in [SCOPE_PART]:
+            return True
+
+        if self.platform_config.scope in [SCOPE_QUESTION]:
+            return self.question_number == kwargs.get("qn")
+
+        return False
 
     @classmethod
     def has_item(cls, items: list[QGraphicsItem], temp_item) -> bool:
-        if not isinstance(temp_item, IPartItem):
+        if isinstance(temp_item, PreItem):
+            return any(
+                isinstance(item, cls) and item.uid == temp_item.uid
+                for item in items
+            )
+
+        if not isinstance(temp_item, RectanglePartItem):
             return False
 
         return any(
@@ -62,144 +107,124 @@ class IPartItem(QGraphicsRectItem):
             for item in items
         )
 
-    @classmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
-        return False
+    # ====== question items ======
+    @property
+    def question_number(self) -> int | None:
+        if self.platform_config.scope in [SCOPE_QUESTION]:
+            return self.data(KEY_QUESTION_NUMBER)
+        return None
 
     @classmethod
-    def create_item(cls, pos: QPointF, w: float, h: float):
+    def get_max_question_number(cls, items: list[QGraphicsItem], part_id: str) -> int | None:
+        if cls.platform_config.scope in [SCOPE_QUESTION]:
+            max_qn = 0
+            for item in items:
+                if isinstance(item, cls) and item.part_id == part_id:
+                    max_qn = max(max_qn, item.question_number)
+            return max_qn
+
+        return None
+
+    # ======= item creation =======
+    @classmethod
+    @abstractmethod
+    def pre_create(cls, items: list[QGraphicsItem], part_id: str) -> bool:
         pass
-
-
-class IActivePartItem(IPartItem):
-    _active_item = None
-
-    @classmethod
-    def get_active_item(cls):
-        return cls._active_item
 
     @classmethod
     @abstractmethod
-    def set_active_item(cls, items: list, **kwargs):
+    def create_item(cls, pos: QPointF, w: float, h: float):
         pass
 
-    @property
-    def is_active(self) -> str:
-        return self.data(KEY_IS_ACTIVE)
-
-
-class IQuestionItem(IPartItem):
-
-    def uid(self) -> str:
-        return f"{self.item_type}::{self.part_id}::{self.qn}"
-
-    @property
-    def qn(self) -> int:
-        return self.data(KEY_QN)
-
-    @classmethod
-    def get_max_qn(cls, items: list[QGraphicsItem], part_id: str) -> int:
-        max_qn = 0
-        for item in items:
-            if isinstance(item, cls) and item.part_id == part_id:
-                max_qn = max(max_qn, item.qn)
-        return max_qn
+    # ======= item serialization =======
+    def to_dict(self) -> dict | None:
+        if not self.platform_config.serializable:
+            return None
+        item_dict = {
+            "part_type": self.part_type,
+            "x": self.pos().x(),
+            "y": self.pos().y(),
+            "part_id": self.part_id,
+        }
+        if self.platform_config.sizable:
+            item_dict["w"] = self.rect().width()
+            item_dict["h"] = self.rect().height()
+        if self.platform_config.scope in [SCOPE_QUESTION]:
+            item_dict["qn"] = self.question_number
+        return item_dict
 
     @classmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
-        if not part_id:
-            QMessageBox.warning(None, "Error", "No Circle Selected.")
-            return False
-        default_int = cls.get_max_qn(items, part_id) + 1
-        qn, ok = QInputDialog.getInt(
-            None, "Add Gap Item", "Sequence:", value=default_int, minValue=1
-        )
-        if ok:
-            if qn > 999 and qn % 1000 == 0:
-                cls._is_repeating = True
-                qn = qn / 1000
-            pre_item = TQuestionItem(T_QUESTION_ITEM, part_id, qn)
-            if cls.has_item(items, pre_item):
-                QMessageBox.warning(None, "Error", "Exists!")
-                return False
+    def from_dict(cls, data: dict):
+        if not cls.platform_config.serializable:
+            return
+        pos = QPointF(data["x"], data["y"])
+        part_type = data["part_type"]
+        part_id = data["part_id"]
 
-            else:
-                cls._pre_item = pre_item
-                return True
+        return cls(part_type, part_id, pos)
 
-        return False
+    # ======= item repeating =======
+    @classmethod
+    def is_repeating(cls) -> bool | None:
+        if not cls.platform_config.repeatable:
+            return None
+        return cls.platform_state.is_repeating
 
-
-class IRepeatableQuestionItem(IRepeatable, IQuestionItem):
-
-    @property
-    def part_id(self) -> str:
-        return ""
-
-    @property
-    def item_type(self) -> str:
-        return ""
-
-    @property
-    def qn(self) -> int:
-        return 0
+    @classmethod
+    def cancel_repeating(cls):
+        if not cls.platform_config.repeatable:
+            return None
+        cls.platform_state.is_repeating = False
 
     @classmethod
     def repeat(cls):
-        index = cls._pre_item.qn
-        part_id = cls._pre_item.part_id
-        qn = int(get_next(str(index)))
-        next_pre_item = TQuestionItem(T_QUESTION_ITEM, part_id, qn)
-        cls._pre_item = next_pre_item
+        if not cls.platform_config.repeatable:
+            return None
+        pre_item: PreItem = cls.platform_data.pre_item
+        if not pre_item:
+            return
 
+        part_id = pre_item.part_id
+        part_type = pre_item.part_type
+        kwargs = pre_item.kwargs
+        if cls.platform_config.scope in [SCOPE_PART]:
+            part_id = get_next(part_id)
+        elif cls.platform_config.scope in [SCOPE_QUESTION]:
+            last_qn = pre_item.question_number
+            qn = int(get_next(str(last_qn)))
+            kwargs["qn"] = qn
+        cls.platform_data.pre_item = PreItem(part_type, part_id, **kwargs)
 
-class TPartItem(IPartItem):
+    # ======= item UI =======
+    @abstractmethod
+    def _refresh_ui(self, active):
+        pass
 
-    def __init__(self, item_type: str, part_id: str):
-        self._part_id = part_id
-        self._item_type = item_type
-
+    # ======= item active state =======
     @property
-    def item_type(self) -> str:
-        return self._item_type
-
-    @property
-    def part_id(self) -> str:
-        return self._part_id
-
-    @property
-    def uid(self) -> str:
-        return f"{self._item_type}::{self._part_id}"
+    def is_active(self) -> str | None:
+        if not self.platform_config.activable:
+            return None
+        return self.data(KEY_IS_ACTIVE)
 
     @classmethod
-    def create_item(cls, pos: QPointF, w: float, h: float):
-        return cls._pre_item
-
-
-class TQuestionItem(IQuestionItem):
-
-    def __init__(self, item_type: str, part_id: str, qn: int, **kwargs):
-        self._part_id = part_id
-        self._qn = qn
-        self._item_type = item_type
-        self._kwargs = kwargs
-
-    @property
-    def part_id(self) -> str:
-        return self._part_id
-
-    @property
-    def item_type(self) -> str:
-        return self._item_type
-
-    @property
-    def qn(self) -> int:
-        return int(self._qn)
+    def get_active_item_uid(cls) -> str | None:
+        if not cls.platform_config.activable:
+            return None
+        return cls.platform_state.active_item_uid
 
     @classmethod
-    def create_item(cls, pos: QPointF, w: float, h: float):
-        return cls._pre_item
-
-    @property
-    def kwargs(self):
-        return self._kwargs
+    def set_active_item(cls, items: list, **kwargs):
+        if not cls.platform_config.activable:
+            return None
+        part_items: list[RectanglePartItem] = items
+        for item in part_items:
+            part_id = kwargs["part_id"]
+            if item.is_me(**kwargs) and not item.is_active:
+                item.setData(KEY_IS_ACTIVE, item.uid)
+                cls.platform_state.active_item_uid = item.uid
+                item._refresh_ui(True)
+            elif item.part_id != part_id and item.is_active:
+                item.setData(KEY_IS_ACTIVE, "")
+                cls._active_item = ""
+                item._refresh_ui(False)

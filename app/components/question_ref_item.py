@@ -2,7 +2,7 @@
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem
 from PySide6.QtGui import QPen, QFont
 from PySide6.QtCore import Qt, QPointF
-from app.constants import SETTINGS, KEY_TYPE, KEY_PART_ID, KEY_QN, QUESTION_REF_ITEM
+from app.constants import SETTINGS, KEY_TYPE, KEY_PART_ID, KEY_QUESTION_NUMBER, QUESTION_REF_ITEM
 from app.models import IQuestionItem, TQuestionItem
 
 
@@ -14,7 +14,7 @@ class QuestionRefItem(QGraphicsRectItem, IQuestionItem):
         super().__init__(-w, -h / 2, w, h)
         self.setData(KEY_PART_ID, QUESTION_REF_ITEM)
         self.setData(KEY_PART_ID, item.part_id)
-        self.setData(KEY_QN, item.qn)
+        self.setData(KEY_QUESTION_NUMBER, item.qn)
         self.setPos(pos)
         self.setPen(QPen(Qt.GlobalColor.black, 2))
         self.setFlags(
@@ -38,7 +38,7 @@ class QuestionRefItem(QGraphicsRectItem, IQuestionItem):
 
     @property
     def qn(self):
-        return self.data(KEY_QN)
+        return self.data(KEY_QUESTION_NUMBER)
 
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):

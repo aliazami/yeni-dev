@@ -2,24 +2,30 @@
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor
 from PySide6.QtWidgets import (
-    QGraphicsEllipseItem,
     QGraphicsItem,
     QGraphicsSimpleTextItem,
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM, KEY_IS_ACTIVE
-from app.models import ISerializable, IPartItem, TPartItem, IActive
+from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM, SCOPE_PART
 from app.helpers.utils import ignore
+from app.models import RectanglePartItem, PreItem, PlatFormConfig
 
 
-class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
-    _current_part_id = ""
-
-    def __init__(self, item: TPartItem, pos: QPointF):
+class PartItem(RectanglePartItem):
+    platform_config = PlatFormConfig(
+        serializable=True,
+        sizable=False,
+        activable=True,
+        repeatable=True,
+        scope=SCOPE_PART,
+    )
+    def __init__(self, part_id: str, pos: QPointF):
         radius = SETTINGS["part_item"]["radius"]
-        super().__init__(-radius, -radius, 2 * radius, 2 * radius)
-        self.setData(KEY_PART_ID, item.part_id)
+        draw_pos = QPointF(-radius, -radius)
+        w = h = 2 * radius
+        super().__init__(PART_ITEM, part_id, draw_pos, w=w, h=h)
+        self.setData(KEY_PART_ID, part_id)
         self.setData(KEY_TYPE, PART_ITEM)
 
         self.setPos(pos)
@@ -28,42 +34,19 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
-        t = QGraphicsSimpleTextItem(item.part_id, parent=self)
+        t = QGraphicsSimpleTextItem(part_id, parent=self)
         t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         br = t.boundingRect()
         t.setPos(-br.width() / 2, -br.height() / 2)
         t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self._refresh_ui(False)
 
-    @property
-    def item_type(self) -> str:
-        return self.data(KEY_TYPE)
-
-    @property
-    def part_id(self) -> str:
-        return self.data(KEY_PART_ID)
-
-    def to_dict(self) -> dict:
-        return {
-            "type": PART_ITEM,
-            "x": self.pos().x(),
-            "y": self.pos().y(),
-            "id": self.data(KEY_PART_ID),
-        }
 
     @classmethod
-    def from_dict(cls, data: dict):
-        pos = QPointF(data["x"], data["y"])
-        part_id = data["part_id"]
-        item = TPartItem(PART_ITEM, part_id)
-        return cls(item, pos)
-
-    @classmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str, **kwargs) -> bool:
-        ignore([part_id, kwargs])
+    def pre_create(cls, items: list[QGraphicsItem], part_id: str) -> bool:
         text, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
         if ok and text:
-            pre_item = TPartItem(PART_ITEM, text)
+            pre_item = PreItem(part_type=PART_ITEM, part_id=text)
             if cls.has_item(items, pre_item):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
@@ -75,26 +58,9 @@ class PartItem(QGraphicsEllipseItem, ISerializable, IPartItem, IActive):
 
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
-        return PartItem(cls._pre_item, pos) if cls._pre_item else None
-
-    @classmethod
-    def set_active_item(cls, items: list, **kwargs):
-        part_items: list[PartItem] = items
-        part_id = kwargs["part_id"]
-        for item in part_items:
-            if item.part_id == part_id and not item.is_active:
-                item.setData(KEY_IS_ACTIVE, part_id)
-                cls._active_item = part_id
-                item._refresh_ui(True)
-            elif item.part_id != part_id and item.is_active:
-                item.setData(KEY_IS_ACTIVE, "")
-                cls._active_item = ""
-                item._refresh_ui(False)
-
-    @property
-    def is_active(self):
-        return self.data(KEY_IS_ACTIVE)
-
+        ignore([w, h])
+        pre_item = cls.platform_data.pre_item
+        return PartItem(pre_item.part_id, pos) if pre_item else None
 
     def _refresh_ui(self, active):
         if active:
