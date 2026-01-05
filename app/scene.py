@@ -17,7 +17,7 @@ from app.commands import (
 
 from app.components.part_item import PartItem
 from app.components.background import Background
-from app.components.word_boundary_item import WordBoundaryItem
+from app.components.word_boundary_part_item import WordBoundaryItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command
 from app.constants import PART_ITEM

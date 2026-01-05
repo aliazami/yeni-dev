@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM, SCOPE_PART
+from app.constants import SETTINGS, PART_ITEM, SCOPE_PART
 from app.helpers.utils import ignore
 from app.models import RectanglePartItem, PreItem, PlatFormConfig
 
@@ -21,22 +21,17 @@ class PartItem(RectanglePartItem):
         scope=SCOPE_PART,
     )
 
-    def __init__(self, part_id: str, pos: QPointF):
+    def __init__(self, part_id: str, pos: QPointF, **kwargs):
         setting = SETTINGS["question_ref_item"]
         size = setting["size"]
         draw_pos = QPointF(-size / 2, -size / 2)
-        super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting)
+        super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting, **kwargs)
         self.setPos(pos)
         self.setPen(QPen(Qt.GlobalColor.black, 2))
         self.setFlags(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
-        t = QGraphicsSimpleTextItem(part_id, parent=self)
-        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        br = t.boundingRect()
-        t.setPos(-br.width() / 2, -br.height() / 2)
-        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self._refresh_ui(False)
 
     @classmethod
@@ -65,3 +60,12 @@ class PartItem(RectanglePartItem):
         ignore([w, h])
         pre_item = cls.platform_data.pre_item
         return PartItem(pre_item.part_id, pos) if pre_item else None
+
+    def _refresh_ui(self, active):
+        super()._refresh_ui(active)
+        self.scene().clear()
+        t = QGraphicsSimpleTextItem(self.part_id, parent=self)
+        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        br = t.boundingRect()
+        t.setPos(-br.width() / 2, -br.height() / 2)
+        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)

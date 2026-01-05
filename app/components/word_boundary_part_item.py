@@ -1,27 +1,29 @@
-# app/word_boundary_item.py
+# app/word_boundary_part_item.py
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QFont, QBrush, QColor
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleTextItem
-from app.constants import (
-    KEY_PART_ID,
-    KEY_TYPE, KEY_QUESTION_NUMBER,
-    WORD_BOUNDARY_ITEM,
+from PySide6.QtWidgets import (
+    QGraphicsItem,
+    QGraphicsSimpleTextItem,
+    QInputDialog,
+    QMessageBox,
 )
-from app.models import RectanglePartItem
+from app.constants import SETTINGS, WORD_BOUNDARY_PART_ITEM, SCOPE_PART, KEY_WORD
+from app.helpers.utils import ignore
+from app.models import RectanglePartItem, PreItem, PlatFormConfig
 
-KEY_WORD = 6
 
-
-class WordBoundaryItem(RectanglePartItem):
-
-    def __init__(
-        self, item: part_id: str, pos: QPointF, w: float, h: float
-    ):
-        super().__init__(0, 0, w, h)
-        word = item.kwargs["word"]
-        self.setData(KEY_TYPE, WORD_BOUNDARY_ITEM)
-        self.setData(KEY_PART_ID, item.part_id)
-        self.setData(KEY_QUESTION_NUMBER, item.qn)
+class WordBoundaryPartItem(RectanglePartItem):
+    platform_config = PlatFormConfig(
+        serializable=True,
+        sizable=True,
+        activable=False,
+        repeatable=True,
+        scope=SCOPE_PART,
+    )
+    def __init__(self, part_id: str, pos: QPointF, **kwargs):
+        kwargs["setting"] = SETTINGS["word_boundary_part_item"]
+        super().__init__(WORD_BOUNDARY_PART_ITEM, part_id, pos, **kwargs)
+        word = kwargs["word"]
         self.setData(KEY_WORD, word)
 
         self.setPos(pos)
@@ -82,3 +84,12 @@ class WordBoundaryItem(RectanglePartItem):
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
         return WordBoundaryItem(cls._pre_item, pos, w, h) if cls._pre_item else None
+
+    def _refresh_ui(self, active):
+        super()._refresh_ui(active)
+        self.r
+        t = QGraphicsSimpleTextItem(self.part_id, parent=self)
+        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        br = t.boundingRect()
+        t.setPos(-br.width() / 2, -br.height() / 2)
+        t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)

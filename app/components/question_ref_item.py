@@ -20,11 +20,11 @@ class QuestionRefItem(RectanglePartItem):
         scope=SCOPE_PART,
     )
 
-    def __init__(self, part_id: str, pos: QPointF):
+    def __init__(self, part_id: str, pos: QPointF, **kwargs):
         setting = SETTINGS["question_ref_item"]
         size = setting["size"]
         draw_pos = QPointF(-size / 2, -size / 2)
-        super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting)
+        super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting, **kwargs)
         self.setPos(pos)
         self.setPen(QPen(Qt.GlobalColor.black, 2))
         self.setFlags(
