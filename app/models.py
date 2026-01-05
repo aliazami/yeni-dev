@@ -1,8 +1,10 @@
 from abc import abstractmethod
-from PySide6.QtWidgets import QGraphicsItem, QMessageBox, QInputDialog, QGraphicsRectItem
-from PySide6.QtCore import QPointF
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsRectItem
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QColor, QBrush, QPen
 from app.constants import KEY_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, KEY_IS_ACTIVE, SCOPE_QUESTION, \
-    KEY_KWARGS, SCOPE_PART, PRE_ITEM
+    KEY_KWARGS, SCOPE_PART, KEY_STYLE_BORDER_COLOR_ACTIVE, KEY_STYLE_BORDER_COLOR_INACTIVE, \
+    KEY_STYLE_BG_COLOR_INACTIVE, KEY_STYLE_BG_COLOR_ACTIVE
 from app.helpers.utils import get_next
 
 
@@ -10,7 +12,7 @@ class PlatFormConfig:
     def __init__(self, serializable, sizable, repeatable, activable, scope):
         self.serializable = serializable
         self.sizable = sizable
-        self.repeatable =repeatable
+        self.repeatable = repeatable
         self.activable = activable
         self.scope = scope
 
@@ -19,6 +21,7 @@ class PlatformState:
     is_repeating = False
     is_active = False
     active_item_uid = ""
+
 
 class PreItem:
     def __init__(self, part_type, part_id, **kwargs):
@@ -30,7 +33,6 @@ class PreItem:
     def question_number(self):
         return self.kwargs.get("qn")
 
-
     @property
     def uid(self) -> str:
         item_uid = f"{self.part_type}::{self.part_id}"
@@ -38,7 +40,6 @@ class PreItem:
             item_uid = f"{item_uid}::{self.question_number}"
 
         return item_uid
-
 
 
 class PlatformData:
@@ -51,16 +52,18 @@ class RectanglePartItem(QGraphicsRectItem):
     platform_data = PlatformData()
 
     def __init__(self, part_type: str, part_id: str, pos: QPointF, **kwargs):
-        w = kwargs.get("w") or 5
-        h = kwargs.get("h") or 5
+        w = kwargs.get("w") or kwargs.get("size") or 5
+        h = kwargs.get("h") or kwargs.get("size") or 5
         super().__init__(pos.x(), pos.y(), w, h)
         self.setData(KEY_PART_ID, part_id)
         self.setData(KEY_TYPE, part_type)
         self.setData(KEY_KWARGS, kwargs)
-        question_number = kwargs.get("qn")
-        if question_number:
-            self.setData(KEY_QUESTION_NUMBER, question_number)
-
+        setting = kwargs.get("setting")
+        if isinstance(setting, dict):
+            self.setData(KEY_STYLE_BG_COLOR_ACTIVE, setting.get("bg_color_active", "#00D4FF"))
+            self.setData(KEY_STYLE_BG_COLOR_INACTIVE, setting.get("bg_color_inactive", "#B0E9F5"))
+            self.setData(KEY_STYLE_BORDER_COLOR_ACTIVE, setting.get("border_color_active", "#00D4FF"))
+            self.setData(KEY_STYLE_BORDER_COLOR_INACTIVE, setting.get("border_color_inactive", "#B0E9F5"))
 
     # ====== part item identity =======
     @property
@@ -196,9 +199,13 @@ class RectanglePartItem(QGraphicsRectItem):
         cls.platform_data.pre_item = PreItem(part_type, part_id, **kwargs)
 
     # ======= item UI =======
-    @abstractmethod
     def _refresh_ui(self, active):
-        pass
+        if active:
+            self.setBrush(QBrush(QColor(self.data(KEY_STYLE_BG_COLOR_ACTIVE))))
+            self.setPen(QPen(QColor(self.data(KEY_STYLE_BORDER_COLOR_ACTIVE)), 2))
+        else:
+            self.setBrush(QBrush(QColor(self.data(KEY_STYLE_BG_COLOR_INACTIVE))))
+            self.setPen(QPen(QColor(self.data(KEY_STYLE_BORDER_COLOR_INACTIVE)), 2))
 
     # ======= item active state =======
     @property

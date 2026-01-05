@@ -8,20 +8,20 @@ from PySide6.QtWidgets import (
     QFileDialog,
 )
 
-from app.components.gap_item import GapItem
+from app.components.question_ref_item import QuestionRefItem
 from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
     RemoveItemsCommand,
 )
 
-from app.models import ISerializable, IRepeatable
 from app.components.part_item import PartItem
 from app.components.background import Background
 from app.components.word_boundary_item import WordBoundaryItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command
-
+from app.constants import PART_ITEM
+from app.models import RectanglePartItem
 
 # ==========================================
 #                THE SCENE
@@ -68,17 +68,17 @@ class EditorScene(QGraphicsScene):
 
         # 3. Restore Items
         for item_data in data.get("items", []):
-            itype = item_data["type"]
+            itype = item_data["item-type"]
 
-            if itype == "PART_ITEM":
+            if itype == PART_ITEM:
                 part_item = PartItem.from_dict(item_data)
                 self.addItem(part_item)
-            elif itype == "GAP_ITEM":
-                gap_item = GapItem.from_dict(item_data)
-                self.addItem(gap_item)
-            elif itype == "WORD_BOUNDARY_ITEM":
-                word_boundary_item = WordBoundaryItem.from_dict(item_data)
-                self.addItem(word_boundary_item)
+            # elif itype == GAP_I:
+            #     gap_item = GapItem.from_dict(item_data)
+            #     self.addItem(gap_item)
+            # elif itype == "WORD_BOUNDARY_ITEM":
+            #     word_boundary_item = WordBoundaryItem.from_dict(item_data)
+            #     self.addItem(word_boundary_item)
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
@@ -87,7 +87,7 @@ class EditorScene(QGraphicsScene):
         )
         data = {"background_image": background_path, "items": []}
         for item in self.items():
-            if isinstance(item, ISerializable):
+            if isinstance(item, RectanglePartItem) and item.platform_config.serializable:
                 serializable = item
                 item_data = serializable.to_dict()
                 data["items"].append(item_data)
@@ -134,16 +134,16 @@ class EditorScene(QGraphicsScene):
             if file_path:
                 self.set_background(file_path)
             event.accept()
-        elif event.key() == Qt.Key.Key_R:
-            if WordBoundaryItem.pre_create(self.items(), PartItem.get_active_item()):
-                self.set_mode("DRAWING_RECT")
-            event.accept()
+        # elif event.key() == Qt.Key.Key_R:
+        #     if WordBoundaryItem.pre_create(self.items(), PartItem.get_active_item()):
+        #         self.set_mode("DRAWING_RECT")
+        #     event.accept()
         elif event.key() == Qt.Key.Key_A:
             if PartItem.pre_create(self.items(), ""):
                 self.set_mode("ADD_CIRCLE")
             event.accept()
-        elif event.key() == Qt.Key.Key_F:
-            if GapItem.pre_create(self.items(), PartItem.get_active_item()):
+        elif event.key() == Qt.Key.Key_Q:
+            if QuestionRefItem.pre_create(self.items(), PartItem.get_active_item()):
                 self.set_mode("ADD_LABEL")
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
@@ -164,7 +164,7 @@ class EditorScene(QGraphicsScene):
                     self.temp_rect_item = None
 
                 for item in self.items():
-                    if isinstance(item, IRepeatable):
+                    if isinstance(item, RectanglePartItem) and item.platform_config.repeatable:
                         item.cancel_repeating()
                 self.set_mode("SELECT")
             else:
@@ -215,12 +215,12 @@ class EditorScene(QGraphicsScene):
                     PartItem.set_active_item(self.part_items, part_id=new_item.part_id)
 
                 elif self.mode == "ADD_LABEL":
-                    new_item = GapItem.create_item(pos, 0, 0)
+                    new_item = QuestionRefItem.create_item(pos, 0, 0)
                 if new_item:
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
                     )
-                    if isinstance(new_item, IRepeatable):
+                    if isinstance(new_item, RectanglePartItem) and new_item.platform_config.repeatable:
                         if new_item.is_repeating:
                             new_item.repeat()
                         else:
