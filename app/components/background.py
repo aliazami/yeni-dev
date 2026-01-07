@@ -9,9 +9,10 @@ EMPTY = "empty"
 WIDTH = 1000
 HEIGHT = 800
 
+
 class Background(QGraphicsPixmapItem):
 
-    def __init__(self, file_path = None):
+    def __init__(self, file_path=None):
         file_path = file_path or EMPTY
         pixmap = QPixmap(file_path)
         if pixmap.isNull():

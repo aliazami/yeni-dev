@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, KEY_PART_ID, KEY_TYPE, PART_ITEM, SCOPE_PART, SCOPE_QUESTION, PRE_ITEM
+from app.constants import SETTINGS, KEY_PART_ID, KEY_PART_TYPE, PART_ITEM, SCOPE_PART, SCOPE_QUESTION, PRE_ITEM
 from app.helpers.utils import ignore
 from app.models import RectanglePartItem, PreItem, PlatFormConfig
 

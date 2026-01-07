@@ -20,6 +20,7 @@ class WordBoundaryPartItem(RectanglePartItem):
         repeatable=True,
         scope=SCOPE_PART,
     )
+    
     def __init__(self, part_id: str, pos: QPointF, **kwargs):
         kwargs["setting"] = SETTINGS["word_boundary_part_item"]
         super().__init__(WORD_BOUNDARY_PART_ITEM, part_id, pos, **kwargs)
@@ -41,17 +42,6 @@ class WordBoundaryPartItem(RectanglePartItem):
         t.setPos(0, h + 5)
         t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
-    @property
-    def item_type(self) -> str:
-        return self.data(KEY_TYPE)
-
-    @property
-    def part_id(self) -> str:
-        return self.data(KEY_PART_ID)
-
-    @property
-    def qn(self) -> int:
-        return self.data(KEY_QUESTION_NUMBER)
 
     def to_dict(self) -> dict:
         r = self.rect()
@@ -83,13 +73,15 @@ class WordBoundaryPartItem(RectanglePartItem):
 
     @classmethod
     def create_item(cls, pos: QPointF, w: float, h: float):
-        return WordBoundaryItem(cls._pre_item, pos, w, h) if cls._pre_item else None
+        pre_item = cls.platform_data.pre_item
+        return WordBoundaryPartItem(pre_item.part_id, pos, w=w, h=h) if pre_item else None
 
     def _refresh_ui(self, active):
         super()._refresh_ui(active)
-        self.r
-        t = QGraphicsSimpleTextItem(self.part_id, parent=self)
-        t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        br = t.boundingRect()
-        t.setPos(-br.width() / 2, -br.height() / 2)
+        self.scene().clear()
+        lbl = f"{self.part_id}.{self.qn}.{word}"
+        t = QGraphicsSimpleTextItem(lbl, parent=self)
+        t.setBrush(QBrush(Qt.GlobalColor.white))
+        t.setFont(QFont("Arial", 10))
+        t.setPos(0, h + 5)
         t.setAcceptedMouseButtons(Qt.MouseButton.NoButton)

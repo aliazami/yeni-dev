@@ -1,4 +1,5 @@
 # app/scene.py
+from enum import Enum, auto, StrEnum
 from PySide6.QtCore import Qt, QRectF, Signal, QPointF
 from PySide6.QtGui import QBrush, QPen, QColor, QCursor, QUndoStack
 from PySide6.QtWidgets import (
@@ -17,7 +18,7 @@ from app.commands import (
 
 from app.components.part_item import PartItem
 from app.components.background import Background
-from app.components.word_boundary_part_item import WordBoundaryItem
+from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command
 from app.constants import PART_ITEM
@@ -26,6 +27,21 @@ from app.models import RectanglePartItem
 # ==========================================
 #                THE SCENE
 # ==========================================
+
+class Mode(Enum):
+    SELECT = auto()
+    ADD_CIRCLE = auto()
+    ADD_LABEL = auto()
+    DRAWING_RECT = auto()
+
+
+class Prop(StrEnum):
+    undo_stack = "undo_stack"
+    mode = "mode"
+    temp_rect_item = "temp_rect_item"
+    start_point = "start_point"
+    drag_start_positions = "drag_start_positions"
+    background_item = "background_item"
 
 
 class EditorScene(QGraphicsScene):
@@ -37,7 +53,7 @@ class EditorScene(QGraphicsScene):
         self.undo_stack = QUndoStack(self)
         self.undo_stack.setUndoLimit(100)
 
-        self.mode = "SELECT"
+        self.mode = Mode.SELECT
         self.temp_rect_item = None
         self.start_point = None
         self.drag_start_positions = {}
@@ -47,6 +63,55 @@ class EditorScene(QGraphicsScene):
         # Background Management
         self.background_item = Background()
         self.set_background()
+
+    # --- Properties ---
+    @property
+    def undo_stack(self):
+        undo_stack: QUndoStack = self.property(Prop.undo_stack)
+        return undo_stack
+
+    @undo_stack.setter
+    def undo_stack(self, value):
+        self.setProperty(Prop.undo_stack, value)
+
+    
+    @property
+    def mode(self):
+        mode_value: Mode = self.property(Prop.mode)
+        return mode_value
+    
+    @mode.setter
+    def mode(self, value: Mode):
+        if not isinstance(value, Mode):
+            raise ValueError
+        self.setProperty(Prop.mode, value)
+        
+    @property
+    def temp_rect_item(self):
+        temp_rect_item_value: QGraphicsRectItem | None = self.property(Prop.temp_rect_item)
+        return temp_rect_item_value
+    
+    @temp_rect_item.setter
+    def temp_rect_item(self, value: QGraphicsRectItem | None):
+        self.setProperty(Prop.temp_rect_item, value)
+        
+    @property
+    def drag_start_positions(self):
+        drag_start_positions_value: dict | None = self.property(Prop.drag_start_positions)
+        return drag_start_positions_value
+    
+    @drag_start_positions.setter
+    def drag_start_positions(self, value: dict | None):
+        self.setProperty(Prop.drag_start_positions, value)
+    
+    @property
+    def background_item(self):
+        background_item_value: Background | None = self.property(Prop.background_item)
+        return background_item_value
+    
+    @background_item.setter
+    def background_item(self, value: Background | None):
+        self.setProperty(Prop.background_item, value)
 
     # --- Serialization Logic ---
     def deserialize_scene(self, data):
@@ -111,7 +176,7 @@ class EditorScene(QGraphicsScene):
         if not self.views():
             return
         view = self.views()[0]
-        if mode == "SELECT":
+        if mode == Mode.SELECT:
             view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
             view.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         else:
@@ -140,11 +205,11 @@ class EditorScene(QGraphicsScene):
         #     event.accept()
         elif event.key() == Qt.Key.Key_A:
             if PartItem.pre_create(self.items(), ""):
-                self.set_mode("ADD_CIRCLE")
+                self.mode = Mode.ADD_CIRCLE
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
             if QuestionRefItem.pre_create(self.items(), PartItem.get_active_item()):
-                self.set_mode("ADD_LABEL")
+                self.mode = Mode.ADD_LABEL
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
@@ -158,7 +223,7 @@ class EditorScene(QGraphicsScene):
                 self.undo_stack.push(RemoveItemsCommand(self, items))
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
-            if self.mode != "SELECT":
+            if self.mode != Mode.SELECT:
                 if self.temp_rect_item:
                     self.removeItem(self.temp_rect_item)
                     self.temp_rect_item = None
@@ -166,7 +231,7 @@ class EditorScene(QGraphicsScene):
                 for item in self.items():
                     if isinstance(item, RectanglePartItem) and item.platform_config.repeatable:
                         item.cancel_repeating()
-                self.set_mode("SELECT")
+                self.mode = Mode.SELECT
             else:
                 self.clearSelection()
         elif event.key() in (
@@ -197,7 +262,7 @@ class EditorScene(QGraphicsScene):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            if self.mode == "DRAWING_RECT":
+            if self.mode == Mode.DRAWING_RECT:
                 self.start_point = event.scenePos()
                 self.temp_rect_item = QGraphicsRectItem()
                 self.temp_rect_item.setPen(
@@ -207,14 +272,14 @@ class EditorScene(QGraphicsScene):
                 self.addItem(self.temp_rect_item)
                 self.temp_rect_item.setRect(QRectF(self.start_point, self.start_point))
                 event.accept()
-            elif self.mode in ["ADD_CIRCLE", "ADD_LABEL"]:
+            elif self.mode in [Mode.ADD_CIRCLE, Mode.ADD_LABEL]:
                 pos = event.scenePos()
                 new_item = None
-                if self.mode == "ADD_CIRCLE":
+                if self.mode == Mode.ADD_CIRCLE:
                     new_item = PartItem.create_item(pos, 0, 0)
                     PartItem.set_active_item(self.part_items, part_id=new_item.part_id)
 
-                elif self.mode == "ADD_LABEL":
+                elif self.mode == Mode.ADD_LABEL:
                     new_item = QuestionRefItem.create_item(pos, 0, 0)
                 if new_item:
                     self.undo_stack.push(
@@ -224,9 +289,9 @@ class EditorScene(QGraphicsScene):
                         if new_item.is_repeating:
                             new_item.repeat()
                         else:
-                            self.set_mode("SELECT")
+                            self.mode = Mode.SELECT
                     else:
-                        self.set_mode("SELECT")
+                        self.mode = Mode.SELECT
                 event.accept()
             else:
                 super().mousePressEvent(event)
@@ -244,7 +309,7 @@ class EditorScene(QGraphicsScene):
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.mode == "DRAWING_RECT" and self.temp_rect_item:
+        if self.mode == Mode.DRAWING_RECT and self.temp_rect_item:
             current_point = event.scenePos()
             new_rect = QRectF(self.start_point, current_point).normalized()
             self.temp_rect_item.setRect(new_rect)
@@ -254,7 +319,7 @@ class EditorScene(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         if (
-            self.mode == "DRAWING_RECT"
+            self.mode == Mode.DRAWING_RECT
             and event.button() == Qt.MouseButton.LeftButton
             and self.temp_rect_item
         ):
@@ -269,14 +334,14 @@ class EditorScene(QGraphicsScene):
                 pos = QPointF(geo.x(), geo.y())
                 w = geo.width()
                 h = geo.height()
-                final_item = WordBoundaryItem.create_item(pos, w, h)
+                final_item = WordBoundaryPartItem.create_item(pos, w, h)
                 self.addItem(final_item)
                 self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
 
-            self.set_mode("SELECT")
+            self.mode = Mode.SELECT
             event.accept()
 
-        elif self.mode == "SELECT" and event.button() == Qt.MouseButton.LeftButton:
+        elif self.mode == Mode.SELECT and event.button() == Qt.MouseButton.LeftButton:
             super().mouseReleaseEvent(event)
             if self.drag_start_positions:
                 move_data = {}

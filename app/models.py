@@ -1,11 +1,11 @@
 from abc import abstractmethod
+
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsRectItem
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QBrush, QPen
-from app.constants import KEY_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, KEY_IS_ACTIVE, SCOPE_QUESTION, \
-    KEY_KWARGS, SCOPE_PART, KEY_STYLE_BORDER_COLOR_ACTIVE, KEY_STYLE_BORDER_COLOR_INACTIVE, \
-    KEY_STYLE_BG_COLOR_INACTIVE, KEY_STYLE_BG_COLOR_ACTIVE, KEY_VISIBLE, KEY_STYLE_FONT_COLOR_ACTIVE, \
-    KEY_STYLE_FONT_COLOR_INACTIVE, KEY_STYLE_FONT_SIZE_INACTIVE, KEY_STYLE_FONT_SIZE_ACTIVE
+from app.constants import KEY_PART_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, KEY_IS_ACTIVE, SCOPE_QUESTION, \
+    SCOPE_PART, KEY_VISIBLE, KEY_RECT_STYLE
+
 from app.helpers.utils import get_next
 
 
@@ -22,6 +22,17 @@ class PlatformState:
     is_repeating = False
     is_active = False
     active_item_uid = ""
+
+class RectStyles:
+    def __init__(self, styles: dict):
+        self.bg_color_active = styles.get("bg_color_active", "#00D4FF")
+        self.bg_color_inactive = styles.get("bg_color_inactive", "#B0E9F5")
+        self.border_color_active = styles.get("border_color_active", "#00D4FF")
+        self.border_color_inactive = styles.get("border_color_inactive", "#B0E9F5")
+        self.font_color_active = styles.get("font_color_active", "#000")
+        self.font_color_inactive = styles.get("font_color_inactive", "#000")
+        self.font_size_active = styles.get("font_size_active", 2)
+        self.font_size_inactive = styles.get("font_size_inactive", 2)
 
 
 class PreItem:
@@ -55,28 +66,23 @@ class RectanglePartItem(QGraphicsRectItem):
     def __init__(self, part_type: str, part_id: str, pos: QPointF, **kwargs):
         w = kwargs.get("w") or kwargs.get("size") or 5
         h = kwargs.get("h") or kwargs.get("size") or 5
+        if not isinstance(part_type, str) or not isinstance(part_id, str):
+            raise ValueError
         super().__init__(pos.x(), pos.y(), w, h)
+
         self.setData(KEY_PART_ID, part_id)
-        self.setData(KEY_TYPE, part_type)
-        self.setData(KEY_KWARGS, kwargs)
+        self.setData(KEY_PART_TYPE, part_type)
         visible = True
         if kwargs.get("visible") is not None:
             visible = kwargs.get("visible")
-        self.setData(KEY_VISIBLE, visible)
-        setting = kwargs.get("setting")
-        if isinstance(setting, dict):
-            border_color_active = setting.get("border_color_active", "#00D4FF")
-            self.setData(KEY_STYLE_BG_COLOR_ACTIVE, setting.get("bg_color_active", "#00D4FF"))
-            self.setData(KEY_STYLE_BG_COLOR_INACTIVE, setting.get("bg_color_inactive", "#B0E9F5"))
-            self.setData(KEY_STYLE_BORDER_COLOR_ACTIVE, setting.get("border_color_active", "#00D4FF"))
-            self.setData(KEY_STYLE_BORDER_COLOR_INACTIVE, setting.get("border_color_inactive", "#B0E9F5"))
-            self.setData(KEY_STYLE_FONT_COLOR_ACTIVE, setting.get("font_color_active", "#000"))
-            self.setData(KEY_STYLE_FONT_COLOR_INACTIVE, setting.get("font_color_inactive", "#000"))
-            self.setData(KEY_STYLE_FONT_SIZE_ACTIVE, setting.get("font_size_active", 2))
-            self.setData(KEY_STYLE_FONT_SIZE_INACTIVE, setting.get("font_size_inactive", 2))
-            self.setPen(QPen(Qt.GlobalColor.black, 2))
+        self.visible = visible
+        styles = kwargs.get("styles")
+        if isinstance(styles, dict):
+            self.setData(KEY_RECT_STYLE, RectStyles(styles))
+            self.setPen(QPen(QColor(self.styles.border_color_active), 2))
 
-
+    def __eq__(self, other):
+        return self.part_type == other.part_type and self.part_id == other.part_id
 
     # ====== part item identity =======
     @property
@@ -91,16 +97,21 @@ class RectanglePartItem(QGraphicsRectItem):
 
     @property
     def part_type(self) -> str:
-        return self.data(KEY_TYPE)
+        return self.data(KEY_PART_TYPE)
 
     @property
-    def is_visible(self):
+    def visible(self) -> bool:
         return self.data(KEY_VISIBLE)
 
-    def set_visible(self, visibility: bool):
-        if not isinstance(visibility, bool):
-            raise Exception("visibility must be bool")
-        self.setData(KEY_VISIBLE, visibility)
+    @property
+    def styles(self) -> RectStyles:
+        return self.data(KEY_RECT_STYLE)
+
+    @visible.setter
+    def visible(self, value):
+        if not isinstance(value, bool):
+            raise ValueError
+        self.setData(KEY_VISIBLE, value)
 
     def is_me(self, **kwargs) -> bool:
         part_type = kwargs.get("part_type")
@@ -170,7 +181,7 @@ class RectanglePartItem(QGraphicsRectItem):
             "x": self.pos().x(),
             "y": self.pos().y(),
             "part_id": self.part_id,
-            "visible": self.is_visible,
+            "visible": self.visible,
         }
         if self.platform_config.sizable:
             item_dict["w"] = self.rect().width()
@@ -225,11 +236,11 @@ class RectanglePartItem(QGraphicsRectItem):
     # ======= item UI =======
     def _refresh_ui(self, active):
         if active:
-            self.setBrush(QBrush(QColor(self.data(KEY_STYLE_BG_COLOR_ACTIVE))))
-            self.setPen(QPen(QColor(self.data(KEY_STYLE_BORDER_COLOR_ACTIVE)), 2))
+            self.setBrush(QBrush(QColor(self.styles.bg_color_active)))
+            self.setPen(QPen(QColor(self.styles.border_color_active), 2))
         else:
-            self.setBrush(QBrush(QColor(self.data(KEY_STYLE_BG_COLOR_INACTIVE))))
-            self.setPen(QPen(QColor(self.data(KEY_STYLE_BORDER_COLOR_INACTIVE)), 2))
+            self.setBrush(QBrush(QColor(self.styles.bg_color_inactive)))
+            self.setPen(QPen(QColor(self.styles.border_color_inactive), 2))
 
     # ======= item active state =======
     @property
