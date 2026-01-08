@@ -3,11 +3,10 @@ from abc import abstractmethod
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsRectItem
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QBrush, QPen
-from app.constants import KEY_PART_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, KEY_IS_ACTIVE, SCOPE_QUESTION, \
+from app.constants import KEY_PART_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, SCOPE_QUESTION, \
     SCOPE_PART, KEY_VISIBLE, KEY_RECT_STYLE
 
 from app.helpers.utils import get_next
-
 
 class PlatFormConfig:
     def __init__(self, serializable, sizable, repeatable, activable, scope):
@@ -48,7 +47,7 @@ class PreItem:
     @property
     def uid(self) -> str:
         item_uid = f"{self.part_type}::{self.part_id}"
-        if self.question_number > 0:
+        if self.question_number:
             item_uid = f"{item_uid}::{self.question_number}"
 
         return item_uid
@@ -76,13 +75,11 @@ class RectanglePartItem(QGraphicsRectItem):
         if kwargs.get("visible") is not None:
             visible = kwargs.get("visible")
         self.visible = visible
-        styles = kwargs.get("styles")
+        styles = kwargs.get("setting")
         if isinstance(styles, dict):
             self.setData(KEY_RECT_STYLE, RectStyles(styles))
             self.setPen(QPen(QColor(self.styles.border_color_active), 2))
 
-    def __eq__(self, other):
-        return self.part_type == other.part_type and self.part_id == other.part_id
 
     # ====== part item identity =======
     @property
@@ -113,19 +110,6 @@ class RectanglePartItem(QGraphicsRectItem):
             raise ValueError
         self.setData(KEY_VISIBLE, value)
 
-    def is_me(self, **kwargs) -> bool:
-        part_type = kwargs.get("part_type")
-        part_id = kwargs.get("part_id")
-        if self.part_type != part_type or self.part_id != part_id:
-            return False
-
-        if self.platform_config.scope in [SCOPE_PART]:
-            return True
-
-        if self.platform_config.scope in [SCOPE_QUESTION]:
-            return self.question_number == kwargs.get("qn")
-
-        return False
 
     @classmethod
     def has_item(cls, items: list[QGraphicsItem], temp_item) -> bool:
@@ -234,7 +218,7 @@ class RectanglePartItem(QGraphicsRectItem):
         cls.platform_data.pre_item = PreItem(part_type, part_id, **kwargs)
 
     # ======= item UI =======
-    def _refresh_ui(self, active):
+    def _refresh_ui(self, active: bool):
         if active:
             self.setBrush(QBrush(QColor(self.styles.bg_color_active)))
             self.setPen(QPen(QColor(self.styles.border_color_active), 2))
@@ -242,12 +226,6 @@ class RectanglePartItem(QGraphicsRectItem):
             self.setBrush(QBrush(QColor(self.styles.bg_color_inactive)))
             self.setPen(QPen(QColor(self.styles.border_color_inactive), 2))
 
-    # ======= item active state =======
-    @property
-    def is_active(self) -> str | None:
-        if not self.platform_config.activable:
-            return None
-        return self.data(KEY_IS_ACTIVE)
 
     @classmethod
     def get_active_item_uid(cls) -> str | None:
@@ -256,17 +234,21 @@ class RectanglePartItem(QGraphicsRectItem):
         return cls.platform_state.active_item_uid
 
     @classmethod
-    def set_active_item(cls, items: list, **kwargs):
+    def set_active_item(cls, items: list, uid: str | None):
         if not cls.platform_config.activable:
             return None
-        part_items: list[RectanglePartItem] = items
-        for item in part_items:
-            part_id = kwargs["part_id"]
-            if item.is_me(**kwargs) and not item.is_active:
-                item.setData(KEY_IS_ACTIVE, item.uid)
-                cls.platform_state.active_item_uid = item.uid
-                item._refresh_ui(True)
-            elif item.part_id != part_id and item.is_active:
-                item.setData(KEY_IS_ACTIVE, "")
-                cls._active_item = ""
-                item._refresh_ui(False)
+        
+        prev_uid = cls.platform_state.active_item_uid
+        prev_active: RectanglePartItem = cls.get_item(items, prev_uid)
+        new_active: RectanglePartItem = cls.get_item(items, uid)
+        if prev_active:
+            prev_active._refresh_ui(False)
+        if new_active:
+            new_active._refresh_ui(True)
+        cls.platform_state.active_item_uid = uid
+
+    @classmethod
+    def get_item(cls, items: list, uid):
+        for item in items:
+            if item.uid == uid:
+                return item

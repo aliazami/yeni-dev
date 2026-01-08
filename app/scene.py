@@ -57,10 +57,10 @@ class EditorScene(QGraphicsScene):
         self.temp_rect_item = None
         self.start_point = None
         self.drag_start_positions = {}
-
+        self.setProperty("background_item", 12)
         # Background Management
         self.background_item = Background()
-#         self.set_background()
+        # self.set_background()
 
 #     # --- Properties ---
     @property
@@ -83,6 +83,16 @@ class EditorScene(QGraphicsScene):
         if not isinstance(value, Mode):
             raise ValueError
         self.setProperty(Prop.mode, value)
+        if not self.views():
+            return
+        view = self.views()[0]
+        if value == Mode.SELECT:
+            view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+            view.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        else:
+            view.setDragMode(QGraphicsView.DragMode.NoDrag)
+            view.setCursor(QCursor(Qt.CursorShape.CrossCursor))
+            self.clearSelection()
         
     @property
     def temp_rect_item(self):
@@ -104,7 +114,11 @@ class EditorScene(QGraphicsScene):
     
     @property
     def background_item(self):
-        background_item_value: Background | None = self.property(Prop.background_item)
+        prop = str(Prop.background_item)
+        try:
+            background_item_value: Background | None = self.property(prop)
+        except Exception as e:
+            print(e)
         return background_item_value
     
     @background_item.setter
@@ -284,7 +298,7 @@ class EditorScene(QGraphicsScene):
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
                     )
                     if isinstance(new_item, RectanglePartItem) and new_item.platform_config.repeatable:
-                        if new_item.is_repeating:
+                        if new_item.is_repeating():
                             new_item.repeat()
                         else:
                             self.mode = Mode.SELECT
@@ -296,7 +310,8 @@ class EditorScene(QGraphicsScene):
                 items = self.selectedItems()
                 self.drag_start_positions = {}
                 for item in items:
-                    self.drag_start_positions[item] = item.pos()
+                    rectangle_part_item: RectanglePartItem = item
+                    self.drag_start_positions[rectangle_part_item.uid] = item.pos()
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
                     if isinstance(item, PartItem):
@@ -306,67 +321,67 @@ class EditorScene(QGraphicsScene):
         else:
             super().mousePressEvent(event)
 
-#     def mouseMoveEvent(self, event):
-#         if self.mode == Mode.DRAWING_RECT and self.temp_rect_item:
-#             current_point = event.scenePos()
-#             new_rect = QRectF(self.start_point, current_point).normalized()
-#             self.temp_rect_item.setRect(new_rect)
-#             event.accept()
-#         else:
-#             super().mouseMoveEvent(event)
+    def mouseMoveEvent(self, event):
+        if self.mode == Mode.DRAWING_RECT and self.temp_rect_item:
+            current_point = event.scenePos()
+            new_rect = QRectF(self.start_point, current_point).normalized()
+            self.temp_rect_item.setRect(new_rect)
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
 
-#     def mouseReleaseEvent(self, event):
-#         if (
-#             self.mode == Mode.DRAWING_RECT
-#             and event.button() == Qt.MouseButton.LeftButton
-#             and self.temp_rect_item
-#         ):
-#             # 1. Get the geometry of the drawn dashed rectangle
-#             geo = self.temp_rect_item.rect()
+    def mouseReleaseEvent(self, event):
+        if (
+            self.mode == Mode.DRAWING_RECT
+            and event.button() == Qt.MouseButton.LeftButton
+            and self.temp_rect_item
+        ):
+            # 1. Get the geometry of the drawn dashed rectangle
+            geo = self.temp_rect_item.rect()
 
-#             # Remove the temporary dashed item
-#             self.removeItem(self.temp_rect_item)
-#             self.temp_rect_item = None
+            # Remove the temporary dashed item
+            self.removeItem(self.temp_rect_item)
+            self.temp_rect_item = None
 
-#             if geo.width() > 1 and geo.height() > 1:
-#                 pos = QPointF(geo.x(), geo.y())
-#                 w = geo.width()
-#                 h = geo.height()
-#                 final_item = WordBoundaryPartItem.create_item(pos, w, h)
-#                 self.addItem(final_item)
-#                 self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
+            if geo.width() > 1 and geo.height() > 1:
+                pos = QPointF(geo.x(), geo.y())
+                w = geo.width()
+                h = geo.height()
+                final_item = WordBoundaryPartItem.create_item(pos, w, h)
+                self.addItem(final_item)
+                self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
 
-#             self.mode = Mode.SELECT
-#             event.accept()
+            self.mode = Mode.SELECT
+            event.accept()
 
-#         elif self.mode == Mode.SELECT and event.button() == Qt.MouseButton.LeftButton:
-#             super().mouseReleaseEvent(event)
-#             if self.drag_start_positions:
-#                 move_data = {}
-#                 moved = False
-#                 for item, start_pos in self.drag_start_positions.items():
-#                     end_pos = item.pos()
-#                     if start_pos != end_pos:
-#                         moved = True
-#                         move_data[item] = (start_pos, end_pos)
-#                 if moved:
-#                     for item, (start, end) in move_data.items():
-#                         item.setPos(start)
-#                     self.undo_stack.push(
-#                         MoveItemsCommand(self, move_data, "Mouse Drag")
-#                     )
-#                 self.drag_start_positions = {}
-#         else:
-#             super().mouseReleaseEvent(event)
+        elif self.mode == Mode.SELECT and event.button() == Qt.MouseButton.LeftButton:
+            super().mouseReleaseEvent(event)
+            if self.drag_start_positions:
+                move_data = {}
+                moved = False
+                for item, start_pos in self.drag_start_positions.items():
+                    end_pos = item.pos()
+                    if start_pos != end_pos:
+                        moved = True
+                        move_data[item] = (start_pos, end_pos)
+                if moved:
+                    for item, (start, end) in move_data.items():
+                        item.setPos(start)
+                    self.undo_stack.push(
+                        MoveItemsCommand(self, move_data, "Mouse Drag")
+                    )
+                self.drag_start_positions = {}
+        else:
+            super().mouseReleaseEvent(event)
 
-#     def set_background(self, file_path=None):
-#         if self.background_item and self.background_item in self.items():
-#             self.removeItem(self.background_item)
-#         self.background_item = Background(file_path)
-#         rect = QRectF(self.background_item.pixmap().rect())
-#         self.addItem(self.background_item)
-#         self.setSceneRect(rect)
+    def set_background(self, file_path=None):
+        if self.background_item and self.background_item in self.items():
+            self.removeItem(self.background_item)
+        # self.background_item = Background(file_path)
+        # rect = QRectF(self.background_item.pixmap().rect())
+        # self.addItem(self.background_item)
+        # self.setSceneRect(rect)
 
-#     @property
-#     def part_items(self):
-#         return [item for item in self.items() if isinstance(item, PartItem)]
+    @property
+    def part_items(self):
+        return [item for item in self.items() if isinstance(item, PartItem)]

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, PART_ITEM, SCOPE_PART
+from app.constants import SETTINGS, PART_ITEM, SCOPE_PART, QUESTION_REF_ITEM
 from app.helpers.utils import ignore
 from app.models import RectanglePartItem, PreItem, PlatFormConfig
 
@@ -22,7 +22,7 @@ class PartItem(RectanglePartItem):
     )
 
     def __init__(self, part_id: str, pos: QPointF, **kwargs):
-        setting = SETTINGS["question_ref_item"]
+        setting = SETTINGS[QUESTION_REF_ITEM]
         size = setting["size"]
         draw_pos = QPointF(-size / 2, -size / 2)
         super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting, **kwargs)
@@ -50,7 +50,7 @@ class PartItem(RectanglePartItem):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
             else:
-                cls._pre_item = pre_item
+                cls.platform_data.pre_item = pre_item
                 return True
 
         return False
@@ -63,7 +63,8 @@ class PartItem(RectanglePartItem):
 
     def _refresh_ui(self, active):
         super()._refresh_ui(active)
-        self.scene().clear()
+        if self.scene():
+            self.scene().clear()
         t = QGraphicsSimpleTextItem(self.part_id, parent=self)
         t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         br = t.boundingRect()
