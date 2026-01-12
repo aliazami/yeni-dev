@@ -134,21 +134,10 @@ class RectanglePartItem(QGraphicsRectItem):
             return self.data(KEY_QUESTION_NUMBER)
         return None
 
-    @classmethod
-    def get_max_question_number(cls, items: list[QGraphicsItem], part_id: str) -> int | None:
-        if cls.platform_config.scope in [SCOPE_QUESTION]:
-            max_qn = 0
-            for item in items:
-                if isinstance(item, cls) and item.part_id == part_id:
-                    max_qn = max(max_qn, item.question_number)
-            return max_qn
-
-        return None
-
     # ======= item creation =======
     @classmethod
     @abstractmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str) -> bool:
+    def pre_create(cls, items: list[QGraphicsItem], **kwargs) -> bool:
         pass
 
     @classmethod
@@ -234,21 +223,22 @@ class RectanglePartItem(QGraphicsRectItem):
         return cls.platform_state.active_item_uid
 
     @classmethod
-    def set_active_item(cls, items: list, uid: str | None):
+    def set_active_item(cls, items: list, uid: str | None=None, this_item=None):
         if not cls.platform_config.activable:
             return None
-        
         prev_uid = cls.platform_state.active_item_uid
-        prev_active: RectanglePartItem = cls.get_item(items, prev_uid)
-        new_active: RectanglePartItem = cls.get_item(items, uid)
+        new_active: RectanglePartItem = this_item or cls.get_item(items, uid)
+        prev_active: RectanglePartItem = cls.get_item(items, prev_uid) if prev_uid else None
         if prev_active:
             prev_active._refresh_ui(False)
         if new_active:
             new_active._refresh_ui(True)
-        cls.platform_state.active_item_uid = uid
+        cls.platform_state.active_item_uid = new_active.uid if new_active else None
 
     @classmethod
     def get_item(cls, items: list, uid):
+        if not uid:
+            return None
         for item in items:
             if item.uid == uid:
                 return item

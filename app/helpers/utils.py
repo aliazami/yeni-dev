@@ -58,3 +58,10 @@ def get_next(value: str) -> str:
         return str(int(value) + 1)
 
     raise ValueError(f"Invalid: '{value}'")
+
+def check_repeat_id(id: str | int) -> tuple[bool, str | int]:
+    if isinstance(id, int) and id > 999 and id % 1000 == 0:
+        return True, int(id / 1000)
+    if isinstance(id, str) and (id.endswith("+++")):
+        return True, id.replace("+++", "")
+    return False, id

@@ -7,8 +7,8 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.constants import SETTINGS, PART_ITEM, SCOPE_PART, QUESTION_REF_ITEM
-from app.helpers.utils import ignore
+from app.constants import SETTINGS, PART_ITEM, SCOPE_PART, PART_ITEM, KEY_PART_ITEM_TEXT
+from app.helpers.utils import ignore, check_repeat_id
 from app.models import RectanglePartItem, PreItem, PlatFormConfig
 
 
@@ -22,7 +22,7 @@ class PartItem(RectanglePartItem):
     )
 
     def __init__(self, part_id: str, pos: QPointF, **kwargs):
-        setting = SETTINGS[QUESTION_REF_ITEM]
+        setting = SETTINGS[PART_ITEM]
         size = setting["size"]
         draw_pos = QPointF(-size / 2, -size / 2)
         super().__init__(PART_ITEM, part_id, draw_pos, size=size, setting=setting, **kwargs)
@@ -32,6 +32,8 @@ class PartItem(RectanglePartItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
+        part_item_text = QGraphicsSimpleTextItem(self.part_id, parent=self)
+        self.setData(KEY_PART_ITEM_TEXT, part_item_text) 
         self._refresh_ui(False)
 
     @classmethod
@@ -42,14 +44,16 @@ class PartItem(RectanglePartItem):
         return uid.split("::")[1]
 
     @classmethod
-    def pre_create(cls, items: list[QGraphicsItem], part_id: str) -> bool:
-        text, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
-        if ok and text:
-            pre_item = PreItem(part_type=PART_ITEM, part_id=text)
+    def pre_create(cls, items: list[QGraphicsItem], **kwargs) -> bool:
+        part_id, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
+        if ok and part_id:
+            is_repeating, part_id = check_repeat_id(part_id)
+            pre_item = PreItem(part_type=PART_ITEM, part_id=part_id)
             if cls.has_item(items, pre_item):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
             else:
+                cls.platform_state.is_repeating = is_repeating
                 cls.platform_data.pre_item = pre_item
                 return True
 
@@ -63,9 +67,7 @@ class PartItem(RectanglePartItem):
 
     def _refresh_ui(self, active):
         super()._refresh_ui(active)
-        if self.scene():
-            self.scene().clear()
-        t = QGraphicsSimpleTextItem(self.part_id, parent=self)
+        t = self.data(KEY_PART_ITEM_TEXT)
         t.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         br = t.boundingRect()
         t.setPos(-br.width() / 2, -br.height() / 2)

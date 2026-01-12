@@ -1,6 +1,6 @@
 # # app/scene.py
 from enum import Enum, auto, StrEnum
-from PySide6.QtCore import Signal, Qt, QRectF, QPointF
+from PySide6.QtCore import Signal, Qt, QRectF, QPointF, QEvent
 from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor
 from PySide6.QtWidgets import (
     QGraphicsView,
@@ -197,7 +197,7 @@ class EditorScene(QGraphicsScene):
             self.clearSelection()
 
     # --- Events ---
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QEvent):
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -216,11 +216,12 @@ class EditorScene(QGraphicsScene):
         #         self.set_mode("DRAWING_RECT")
         #     event.accept()
         elif event.key() == Qt.Key.Key_A:
-            if PartItem.pre_create(self.items(), ""):
+            if PartItem.pre_create(self.items()):
                 self.mode = Mode.ADD_CIRCLE
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
-            if QuestionRefItem.pre_create(self.items(), PartItem.get_active_item()):
+            part_id = PartItem.get_active_item()
+            if QuestionRefItem.pre_create(self.items(), part_id=part_id):
                 self.mode = Mode.ADD_LABEL
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
@@ -231,7 +232,7 @@ class EditorScene(QGraphicsScene):
                         isinstance(item, PartItem)
                         and item.part_id == PartItem.get_active_item()
                     ):
-                        PartItem.set_active_item(self.part_items, part_id="")
+                        PartItem.set_active_item(self.get_part_items, uid="")
                 self.undo_stack.push(RemoveItemsCommand(self, items))
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
@@ -289,10 +290,11 @@ class EditorScene(QGraphicsScene):
                 new_item = None
                 if self.mode == Mode.ADD_CIRCLE:
                     new_item = PartItem.create_item(pos, 0, 0)
-                    PartItem.set_active_item(self.part_items, part_id=new_item.part_id)
+                    PartItem.set_active_item(self.get_part_items, this_item=new_item)
 
                 elif self.mode == Mode.ADD_LABEL:
                     new_item = QuestionRefItem.create_item(pos, 0, 0)
+                    QuestionRefItem.set_active_item(self.get_part_items, this_item=new_item)
                 if new_item:
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
@@ -315,7 +317,10 @@ class EditorScene(QGraphicsScene):
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
                     if isinstance(item, PartItem):
-                        PartItem.set_active_item(self.part_items, part_id=item.part_id)
+                        PartItem.set_active_item(self.get_part_items, uid=item.uid)
+                        break
+                    elif isinstance(item, QuestionRefItem):
+                        QuestionRefItem.set_active_item(self.get_part_items, this_item=item)
                         break
 
         else:
@@ -385,3 +390,7 @@ class EditorScene(QGraphicsScene):
     @property
     def part_items(self):
         return [item for item in self.items() if isinstance(item, PartItem)]
+    
+    def question_ref_items(self, part_id=None):
+        return [item for item in self.items() if isinstance(item, QuestionRefItem) and (part_id is None or item.part_id == part_id)]
+
