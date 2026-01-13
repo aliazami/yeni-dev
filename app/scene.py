@@ -30,8 +30,8 @@ from app.item_manager import ItemManager
 
 class Mode(Enum):
     SELECT = auto()
-    ADD_CIRCLE = auto()
-    ADD_LABEL = auto()
+    ADD_PART_ITEM = auto()
+    ADD_QUESTION_REF_ITEM = auto()
     DRAWING_RECT = auto()
 
 
@@ -122,7 +122,7 @@ class EditorScene(QGraphicsScene):
         return background_item_value
     
     @property
-    def mgr(self):
+    def mgr(self) -> ItemManager:
         return self.property(Prop.mgr)
 
     @background_item.setter
@@ -221,11 +221,11 @@ class EditorScene(QGraphicsScene):
         #     event.accept()
         elif event.key() == Qt.Key.Key_A:
             if self.mgr.pre_create_part_item():
-                self.mode = Mode.ADD_CIRCLE
+                self.mode = Mode.ADD_PART_ITEM
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
             if self.mgr.pre_create_question_ref_item():
-                self.mode = Mode.ADD_LABEL
+                self.mode = Mode.ADD_QUESTION_REF_ITEM
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
@@ -284,7 +284,7 @@ class EditorScene(QGraphicsScene):
                 self.addItem(self.temp_rect_item)
                 self.temp_rect_item.setRect(QRectF(self.start_point, self.start_point))
                 event.accept()
-            elif self.mode in [Mode.ADD_CIRCLE, Mode.ADD_LABEL]:
+            elif self.mode in [Mode.ADD_PART_ITEM, Mode.ADD_QUESTION_REF_ITEM]:
                 pos = event.scenePos()
                 new_item = self.mgr.create(pos)
                 if new_item:
@@ -303,10 +303,12 @@ class EditorScene(QGraphicsScene):
                 self.drag_start_positions = {}
                 for item in items:
                     rectangle_part_item: RectanglePartItem = item
-                    self.drag_start_positions[rectangle_part_item.uid] = item.pos()
+                    self.drag_start_positions[rectangle_part_item.pre_item.uid] = item.pos()
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
-                    self.set_active_item(item)
+                    if isinstance(item, RectanglePartItem):
+                        self.mgr.activate_item(item.pre_item.uid)
+
 
         else:
             super().mousePressEvent(event)

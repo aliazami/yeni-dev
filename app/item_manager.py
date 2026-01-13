@@ -25,18 +25,20 @@ class ItemManager:
                 return item
     
     def create(self, pos) -> RectanglePartItem | None:
-        item = self._pre_item
-        if not item or self.get_item(item.uid):
-            return
-
-        if item.part_type == PART_ITEM:
-            ui = PartItem(item, pos)
-        elif item.part_type == QUESTION_REF_ITEM:
-            ui = QuestionRefItem(item, pos)
+        item = self._pre_item.copy()
+        if not self.is_repeating:
+            self._pre_item = None
+        if not item:
+            raise Exception(f"No pre-item exists in create phase")
+        if self.get_item(item.uid):
+            self.debug_print()
+            raise Exception(f"Duplicate pre-item")
+        item.ui = get_ui(item, pos)
         self.items.append(item)
-        self.activate_item(item)
-        item.ui = ui
-        return ui
+        self.debug_print()
+        self.activate_item(item.uid)
+        print(item.to_dict())
+        return item.ui
 
     def remove(self, uid: str):
         item = self.get_item(uid)
@@ -88,7 +90,8 @@ class ItemManager:
         part_id, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
         if ok and part_id:
             is_repeating, part_id = check_repeat_id(part_id)
-            pre_item = PreItem(part_type=PART_ITEM, part_id=part_id)
+            kwargs = {}
+            pre_item = PreItem(PART_ITEM, part_id, **kwargs)
             if self.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
@@ -114,7 +117,8 @@ class ItemManager:
         )
         if ok:
             ir_repeating, qn = check_repeat_id(qn)
-            pre_item = PreItem(part_type=PRE_ITEM, part_id=part_id, pos=QPointF(0, 0), qn=qn)
+            kwargs = {"qn": qn}
+            pre_item = PreItem(QUESTION_REF_ITEM, part_id, **kwargs)
             if self.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
@@ -124,12 +128,12 @@ class ItemManager:
                 self._pre_item = pre_item
                 return True
             
+        return False
+            
     def repeat(self):
-        if not self._pre_item:
-            return
-        
-        if not self._pre_item.repeatable:
-            return 
+        self.debug_print()
+        if not self._pre_item or not self._pre_item.repeatable:
+            raise Exception(f"No pre-item exists in repeat phase")
 
         part_id = self._pre_item.part_id
         part_type = self._pre_item.part_type
@@ -141,4 +145,23 @@ class ItemManager:
             qn = int(get_next(str(last_qn)))
             kwargs["qn"] = qn
         self._pre_item = PreItem(part_type, part_id, **kwargs)
+       
 
+    def debug_print(self):
+        print("============================")
+        for item in self.items:
+            print(item)
+        print(f"self._pre_item: {self._pre_item}")
+
+
+def get_ui(item: PreItem, pos: QPointF=None) -> RectanglePartItem:
+    current_ui: RectanglePartItem | None = item.ui
+    if current_ui:
+        return current_ui
+    if pos is None:
+        pos = item.pos
+    if item.part_type == PART_ITEM:
+        current_ui = PartItem(item, pos)
+    elif item.part_type == QUESTION_REF_ITEM:
+        current_ui = QuestionRefItem(item, pos)
+    return current_ui

@@ -7,6 +7,7 @@ class RectStyles:
         self.border_color_inactive = styles.get("border_color_inactive", "#B0E9F5")
         self.font_color_active = styles.get("font_color_active", "#000")
         self.font_color_inactive = styles.get("font_color_inactive", "#000")
-        self.font_size_active = styles.get("font_size_active", 2)
-        self.font_size_inactive = styles.get("font_size_inactive", 2)
+        self.font_family = styles.get("font_family", "Arial")
+        self.font_size_active = styles.get("font_size_active", 12)
+        self.font_size_inactive = styles.get("font_size_inactive", 12)
 

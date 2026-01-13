@@ -10,7 +10,7 @@ KEY_PRE_ITEM = Qt.ItemDataRole.UserRole + 3
 KEY_KWARGS = Qt.ItemDataRole.UserRole + 4
 KEY_VISIBLE = Qt.ItemDataRole.UserRole + 5
 KEY_RECT_STYLE = Qt.ItemDataRole.UserRole + 6
-KEY_PART_ITEM_TEXT = Qt.ItemDataRole.UserRole + 7
+KEY_DEFAULT_TEXT = Qt.ItemDataRole.UserRole + 7
 KEY_QUESTION_REF_ITEM_TEXT = Qt.ItemDataRole.UserRole + 8
 KEY_WORD = Qt.ItemDataRole.UserRole + 14
 
