@@ -306,7 +306,6 @@ class EditorScene(QGraphicsScene):
                     drag_start_positions = self.drag_start_positions
                     drag_start_positions[rectangle_part_item.pre_item.uid] = item.pos()
                     self.drag_start_positions = drag_start_positions
-                    print(self.drag_start_positions)
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
                     if isinstance(item, RectanglePartItem):

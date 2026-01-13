@@ -131,7 +131,7 @@ class ItemManager:
         return False
             
     def repeat(self):
-        self.debug_print()
+
         if not self._pre_item or not self._pre_item.repeatable:
             raise Exception(f"No pre-item exists in repeat phase")
 
