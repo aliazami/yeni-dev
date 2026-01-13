@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
 )
 
-from app.components.question_ref_item import QuestionRefItem
+from app.constants import PART_ITEM
 from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
@@ -18,11 +18,11 @@ from app.commands import (
 
 from app.components.part_item import PartItem
 from app.components.background import Background
-from app.components.word_boundary_part_item import WordBoundaryPartItem
+# from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command
-from app.constants import PART_ITEM
-from app.models import RectanglePartItem
+from app.components.rectangle_part_item import RectanglePartItem
+from app.item_manager import ItemManager
 
 # # ==========================================
 # #                THE SCENE
@@ -42,7 +42,7 @@ class Prop(StrEnum):
     start_point = "start_point"
     drag_start_positions = "drag_start_positions"
     background_item = "background_item"
-
+    mgr = "mgr"
 
 class EditorScene(QGraphicsScene):
     helpRequested = Signal()
@@ -52,11 +52,11 @@ class EditorScene(QGraphicsScene):
         super().__init__(x, y, w, h, parent)
         self.undo_stack = QUndoStack(self)
         self.undo_stack.setUndoLimit(100)
-
         self.mode = Mode.SELECT
         self.temp_rect_item = None
         self.start_point = None
         self.drag_start_positions = {}
+        self.setProperty(Prop.mgr, ItemManager())
         self.setProperty("background_item", 12)
         # Background Management
         self.background_item = Background()
@@ -121,6 +121,10 @@ class EditorScene(QGraphicsScene):
             print(e)
         return background_item_value
     
+    @property
+    def mgr(self):
+        return self.property(Prop.mgr)
+
     @background_item.setter
     def background_item(self, value: Background | None):
         self.setProperty(Prop.background_item, value)
@@ -216,34 +220,29 @@ class EditorScene(QGraphicsScene):
         #         self.set_mode("DRAWING_RECT")
         #     event.accept()
         elif event.key() == Qt.Key.Key_A:
-            if PartItem.pre_create(self.items()):
+            if self.mgr.pre_create_part_item():
                 self.mode = Mode.ADD_CIRCLE
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
-            part_id = PartItem.get_active_item()
-            if QuestionRefItem.pre_create(self.items(), part_id=part_id):
+            if self.mgr.pre_create_question_ref_item():
                 self.mode = Mode.ADD_LABEL
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             if items:
+                deleting_items = []
                 for item in items:
-                    if (
-                        isinstance(item, PartItem)
-                        and item.part_id == PartItem.get_active_item()
-                    ):
-                        PartItem.set_active_item(self.get_part_items, uid="")
-                self.undo_stack.push(RemoveItemsCommand(self, items))
+                    if isinstance(item, RectanglePartItem):
+                        if self.mgr.remove(item.pre_item.uid):
+                            deleting_items.append(item)
+                self.undo_stack.push(RemoveItemsCommand(self, deleting_items))
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
             if self.mode != Mode.SELECT:
                 if self.temp_rect_item:
                     self.removeItem(self.temp_rect_item)
                     self.temp_rect_item = None
-
-                for item in self.items():
-                    if isinstance(item, RectanglePartItem) and item.platform_config.repeatable:
-                        item.cancel_repeating()
+                self.mgr.is_repeating = False
                 self.mode = Mode.SELECT
             else:
                 self.clearSelection()
@@ -287,23 +286,16 @@ class EditorScene(QGraphicsScene):
                 event.accept()
             elif self.mode in [Mode.ADD_CIRCLE, Mode.ADD_LABEL]:
                 pos = event.scenePos()
-                new_item = None
-                if self.mode == Mode.ADD_CIRCLE:
-                    new_item = PartItem.create_item(pos, 0, 0)
-                elif self.mode == Mode.ADD_LABEL:
-                    new_item = QuestionRefItem.create_item(pos, 0, 0)
+                new_item = self.mgr.create(pos)
                 if new_item:
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
                     )
-                    self.set_active_item(new_item)
-                    if isinstance(new_item, RectanglePartItem) and new_item.platform_config.repeatable:
-                        if new_item.is_repeating():
-                            new_item.repeat()
-                        else:
-                            self.mode = Mode.SELECT
+                    if self.mgr.is_repeating:
+                        self.mgr.repeat()
                     else:
                         self.mode = Mode.SELECT
+
                 event.accept()
             else:
                 super().mousePressEvent(event)
@@ -345,9 +337,9 @@ class EditorScene(QGraphicsScene):
                 pos = QPointF(geo.x(), geo.y())
                 w = geo.width()
                 h = geo.height()
-                final_item = WordBoundaryPartItem.create_item(pos, w, h)
-                self.addItem(final_item)
-                self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
+                # final_item = WordBoundaryPartItem.create_item(pos, w, h)
+                # self.addItem(final_item)
+                # self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
 
             self.mode = Mode.SELECT
             event.accept()
@@ -380,22 +372,5 @@ class EditorScene(QGraphicsScene):
         # self.addItem(self.background_item)
         # self.setSceneRect(rect)
 
-    @property
-    def get_part_items(self):
-        return [item for item in self.items() if isinstance(item, PartItem)]
-    
-    def question_ref_items(self, part_id=None):
-        return [item for item in self.items() if isinstance(item, QuestionRefItem) and (part_id is None or item.part_id == part_id)]
-
-    def set_active_item(self, active_item: RectanglePartItem):
-        if not isinstance(active_item, RectanglePartItem) or not active_item.platform_config.activable:
-            return
-        if isinstance(active_item, QuestionRefItem):
-            QuestionRefItem.set_active_item(self.items(), this_item=active_item)
-        elif isinstance(active_item, PartItem):
-            active_question = QuestionRefItem.get_active_object(self.items())
-            if active_question and active_question.part_id != active_item.part_id:
-                QuestionRefItem.set_active_item(self.items(), this_item=None)
-            PartItem.set_active_item(self.items(), this_item=active_item)
 
     

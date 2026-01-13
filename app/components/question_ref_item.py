@@ -8,7 +8,8 @@ from app.constants import (
     KEY_QUESTION_REF_ITEM_TEXT
 )
 
-from app.models import RectanglePartItem, PreItem
+from app.components.rectangle_part_item import RectanglePartItem
+from app.pre_item import PreItem
 
 
 class QuestionRefItem(RectanglePartItem):

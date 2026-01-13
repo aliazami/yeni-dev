@@ -3,30 +3,57 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
 )
-from app.models import PreItem
+from app.pre_item import PreItem
 from app.constants import (
     PART_ITEM, QUESTION_REF_ITEM, PRE_ITEM,
 )
 from app.manager_helper import check_repeat_id, get_next
+from app.components.part_item import PartItem
+from app.components.question_ref_item import QuestionRefItem
+from app.components.rectangle_part_item import RectanglePartItem
 
 
-
-class ItemMgr:
+class ItemManager:
     def __init__(self):
         self.items: list[PreItem] = []
         self.is_repeating = False
-        self.pre_item: PreItem | None = None
+        self._pre_item: PreItem | None = None
 
     def get_item(self, uid: str):
         for item in self.items:
             if item.uid == uid:
                 return item
     
-    def add(self, item: PreItem, set_active=True):
-        if self.get_item(item.uid):
-            raise Exception(f"item {item.uid} already exists.")
-        item.is_active = set_active
+    def create(self, pos) -> RectanglePartItem | None:
+        item = self._pre_item
+        if not item or self.get_item(item.uid):
+            return
+
+        if item.part_type == PART_ITEM:
+            ui = PartItem(item, pos)
+        elif item.part_type == QUESTION_REF_ITEM:
+            ui = QuestionRefItem(item, pos)
         self.items.append(item)
+        self.activate_item(item)
+        item.ui = ui
+        return ui
+
+    def remove(self, uid: str):
+        item = self.get_item(uid)
+        if not item:
+            raise Exception(f"item {uid} not found")
+        if item.part_type == PART_ITEM:
+            for qri in self.question_ref_items:
+                if qri.part_id == item.part_id:
+                    return False
+
+            self.items.remove(item)
+            return True
+
+        elif item.part_type == QUESTION_REF_ITEM:
+            self.items.remove(item)
+            return True
+            
 
     def activate_item(self, uid: str):
         item = self.get_item(uid)
@@ -67,7 +94,7 @@ class ItemMgr:
                 return False
             else:
                 self.is_repeating = is_repeating
-                self.pre_item = pre_item
+                self._pre_item = pre_item
                 return True
 
         return False
@@ -94,24 +121,24 @@ class ItemMgr:
 
             else:
                 self.is_repeating = ir_repeating
-                self.pre_item = pre_item
+                self._pre_item = pre_item
                 return True
             
-    def repeat(self, type: str):
-        if not self.pre_item:
+    def repeat(self):
+        if not self._pre_item:
             return
         
-        if not self.pre_item.repeatable:
+        if not self._pre_item.repeatable:
             return 
 
-        part_id = self.pre_item.part_id
-        part_type = self.pre_item.part_type
-        kwargs = self.pre_item.kwargs
-        if type in [PART_ITEM]:
+        part_id = self._pre_item.part_id
+        part_type = self._pre_item.part_type
+        kwargs = self._pre_item.kwargs
+        if part_type in [PART_ITEM]:
             part_id = get_next(part_id)
-        elif type in [QUESTION_REF_ITEM]:
-            last_qn = self.pre_item.question_number
+        elif part_type in [QUESTION_REF_ITEM]:
+            last_qn = self._pre_item.question_number
             qn = int(get_next(str(last_qn)))
             kwargs["qn"] = qn
-        self.pre_item = PreItem(part_type, part_id, **kwargs)
+        self._pre_item = PreItem(part_type, part_id, **kwargs)
 

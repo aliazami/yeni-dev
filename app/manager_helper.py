@@ -1,5 +1,3 @@
-from app.models import PreItem
-
 
 def get_next(value: str) -> str:
     """Return next integer or alphabet character."""
