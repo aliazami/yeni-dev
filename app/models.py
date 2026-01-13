@@ -1,26 +1,12 @@
-from abc import abstractmethod
-
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsRectItem
+from PySide6.QtWidgets import QGraphicsRectItem
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QBrush, QPen
-from app.constants import KEY_PART_TYPE, KEY_QUESTION_NUMBER, KEY_PART_ID, SCOPE_QUESTION, \
-    SCOPE_PART, KEY_VISIBLE, KEY_RECT_STYLE
+from app.constants import (
+    KEY_PRE_ITEM, KEY_RECT_STYLE, 
+    QUESTION_REF_ITEM, SETTINGS,
+    SIZABLE, SERIALIZABLE, REPEATABLE, ACTIVABLE
+)
 
-from app.helpers.utils import get_next
-
-class PlatFormConfig:
-    def __init__(self, serializable, sizable, repeatable, activable, scope):
-        self.serializable = serializable
-        self.sizable = sizable
-        self.repeatable = repeatable
-        self.activable = activable
-        self.scope = scope
-
-
-class PlatformState:
-    is_repeating = False
-    is_active = False
-    active_item_uid = ""
 
 class RectStyles:
     def __init__(self, styles: dict):
@@ -39,10 +25,33 @@ class PreItem:
         self.part_type = part_type
         self.part_id = part_id
         self.kwargs = kwargs
+        self.is_active = kwargs.get("active", False)
+        self.is_visible = kwargs.get("visible", True)
+        size: int = SETTINGS.get(part_type, {}).get("size")
+        self.pos = QPointF(-size / 2, -size / 2) if size else kwargs.get("pos", QPointF(0, 0))
+        self.width = kwargs.get("width", 30) 
+        self.height = kwargs.get("height", 10) 
+        self.ui: RectanglePartItem | None = None
 
     @property
     def question_number(self):
         return self.kwargs.get("qn")
+    
+    @property
+    def serializable(self):
+        return self.part_type in SERIALIZABLE
+    
+    @property
+    def activable(self):
+        return self.part_type in ACTIVABLE
+    
+    @property
+    def repeatable(self):
+        return self.part_type in REPEATABLE
+
+    @property
+    def sizable(self):
+        return self.part_type in SIZABLE      
 
     @property
     def uid(self) -> str:
@@ -51,194 +60,73 @@ class PreItem:
             item_uid = f"{item_uid}::{self.question_number}"
 
         return item_uid
-
-
-class PlatformData:
-    pre_item: PreItem | None = None
-
-
-class RectanglePartItem(QGraphicsRectItem):
-    platform_config: PlatFormConfig | None = None
-    platform_state = PlatformState()
-    platform_data = PlatformData()
-
-    def __init__(self, part_type: str, part_id: str, pos: QPointF, **kwargs):
-        w = kwargs.get("w") or kwargs.get("size") or 5
-        h = kwargs.get("h") or kwargs.get("size") or 5
-        if not isinstance(part_type, str) or not isinstance(part_id, str):
-            raise ValueError
-        super().__init__(pos.x(), pos.y(), w, h)
-
-        self.setData(KEY_PART_ID, part_id)
-        self.setData(KEY_PART_TYPE, part_type)
-        visible = True
-        if kwargs.get("visible") is not None:
-            visible = kwargs.get("visible")
-        self.visible = visible
-        styles = kwargs.get("setting")
-        if isinstance(styles, dict):
-            self.setData(KEY_RECT_STYLE, RectStyles(styles))
-            self.setPen(QPen(QColor(self.styles.border_color_active), 2))
-
-
-    # ====== part item identity =======
-    @property
-    def uid(self) -> str:
-        if self.platform_config.scope == SCOPE_QUESTION:
-            return f"{self.part_type}::{self.part_id}::{self.question_number}"
-        return f"{self.part_type}::{self.part_id}"
-
-    @property
-    def part_id(self) -> str:
-        return self.data(KEY_PART_ID)
-
-    @property
-    def part_type(self) -> str:
-        return self.data(KEY_PART_TYPE)
-
-    @property
-    def visible(self) -> bool:
-        return self.data(KEY_VISIBLE)
-
-    @property
-    def styles(self) -> RectStyles:
-        return self.data(KEY_RECT_STYLE)
-
-    @visible.setter
-    def visible(self, value):
-        if not isinstance(value, bool):
-            raise ValueError
-        self.setData(KEY_VISIBLE, value)
-
-
-    @classmethod
-    def has_item(cls, items: list[QGraphicsItem], temp_item) -> bool:
-        if isinstance(temp_item, PreItem):
-            return any(
-                isinstance(item, cls) and item.uid == temp_item.uid
-                for item in items
-            )
-
-        if not isinstance(temp_item, RectanglePartItem):
-            return False
-
-        return any(
-            isinstance(item, cls) and item.uid == temp_item.uid
-            for item in items
-        )
-
-    # ====== question items ======
-    @property
-    def question_number(self) -> int | None:
-        if self.platform_config.scope in [SCOPE_QUESTION]:
-            return self.data(KEY_QUESTION_NUMBER)
-        return None
-
-    # ======= item creation =======
-    @classmethod
-    @abstractmethod
-    def pre_create(cls, items: list[QGraphicsItem], **kwargs) -> bool:
-        pass
-
-    @classmethod
-    @abstractmethod
-    def create_item(cls, pos: QPointF, w: float, h: float):
-        pass
+    
+    def update_ui(self):
+        if not self.ui:
+            return
+        self.pos = self.ui.pos()
+        self.width = self.ui.rect().width()
+        self.height = self.ui.rect().height()
 
     # ======= item serialization =======
     def to_dict(self) -> dict | None:
-        if not self.platform_config.serializable:
+        if not self.serializable:
             return None
+        if not self.ui:
+            return
+        self.update_ui()
+
         item_dict = {
             "part_type": self.part_type,
-            "x": self.pos().x(),
-            "y": self.pos().y(),
+            "x": self.pos.x(),
+            "y": self.pos.y(),
             "part_id": self.part_id,
-            "visible": self.visible,
+            "visible": self.is_visible,
         }
-        if self.platform_config.sizable:
-            item_dict["w"] = self.rect().width()
-            item_dict["h"] = self.rect().height()
-        if self.platform_config.scope in [SCOPE_QUESTION]:
+        if self.sizable:
+            item_dict["w"] = self.width
+            item_dict["h"] = self.height
+        if self.part_type in [QUESTION_REF_ITEM]:
             item_dict["qn"] = self.question_number
         return item_dict
 
     @classmethod
     def from_dict(cls, data: dict):
-        if not cls.platform_config.serializable:
-            return
         pos = QPointF(data["x"], data["y"])
         part_type = data["part_type"]
         part_id = data["part_id"]
         visible = data["visible"]
+        return PreItem(part_type, part_id, visible=visible)
+        return cls(pre_item, pos)
 
-        return cls(part_type, part_id, pos, visible=visible)
 
-    # ======= item repeating =======
-    @classmethod
-    def is_repeating(cls) -> bool | None:
-        if not cls.platform_config.repeatable:
-            return None
-        return cls.platform_state.is_repeating
 
-    @classmethod
-    def cancel_repeating(cls):
-        if not cls.platform_config.repeatable:
-            return None
-        cls.platform_state.is_repeating = False
+class RectanglePartItem(QGraphicsRectItem):
 
-    @classmethod
-    def repeat(cls):
-        if not cls.platform_config.repeatable:
-            return None
-        pre_item: PreItem = cls.platform_data.pre_item
-        if not pre_item:
-            return
-
-        part_id = pre_item.part_id
-        part_type = pre_item.part_type
+    def __init__(self, pre_item: PreItem, pos: QPointF):
         kwargs = pre_item.kwargs
-        if cls.platform_config.scope in [SCOPE_PART]:
-            part_id = get_next(part_id)
-        elif cls.platform_config.scope in [SCOPE_QUESTION]:
-            last_qn = pre_item.question_number
-            qn = int(get_next(str(last_qn)))
-            kwargs["qn"] = qn
-        cls.platform_data.pre_item = PreItem(part_type, part_id, **kwargs)
+        w = kwargs.get("w") or kwargs.get("size") or 5
+        h = kwargs.get("h") or kwargs.get("size") or 5
+        super().__init__(pos.x(), pos.y(), w, h)
+        self.setData(KEY_PRE_ITEM, pre_item)
+        styles = kwargs.get("setting")
+        if isinstance(styles, dict):
+            self.setData(KEY_RECT_STYLE, RectStyles(styles))
+            self.setPen(QPen(QColor(self.styles.border_color_active), 2))
+
+    @property
+    def styles(self) -> RectStyles:
+        return self.data(KEY_RECT_STYLE)
+
+    @property
+    def pre_item(self) -> PreItem:
+        return self.data(KEY_PRE_ITEM)
 
     # ======= item UI =======
-    def _refresh_ui(self, active: bool):
-        if active:
+    def _refresh_ui(self):
+        if self.pre_item.is_active:
             self.setBrush(QBrush(QColor(self.styles.bg_color_active)))
             self.setPen(QPen(QColor(self.styles.border_color_active), 2))
         else:
             self.setBrush(QBrush(QColor(self.styles.bg_color_inactive)))
             self.setPen(QPen(QColor(self.styles.border_color_inactive), 2))
-
-
-    @classmethod
-    def get_active_item_uid(cls) -> str | None:
-        if not cls.platform_config.activable:
-            return None
-        return cls.platform_state.active_item_uid
-
-    @classmethod
-    def set_active_item(cls, items: list, uid: str | None=None, this_item=None):
-        if not cls.platform_config.activable:
-            return None
-        prev_uid = cls.platform_state.active_item_uid
-        new_active: RectanglePartItem = this_item or cls.get_item(items, uid)
-        prev_active: RectanglePartItem = cls.get_item(items, prev_uid) if prev_uid else None
-        if prev_active:
-            prev_active._refresh_ui(False)
-        if new_active:
-            new_active._refresh_ui(True)
-        cls.platform_state.active_item_uid = new_active.uid if new_active else None
-
-    @classmethod
-    def get_item(cls, items: list, uid):
-        if not uid:
-            return None
-        for item in items:
-            if item.uid == uid:
-                return item

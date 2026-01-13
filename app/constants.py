@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 KEY_PART_ID = Qt.ItemDataRole.UserRole + 0
 KEY_PART_TYPE = Qt.ItemDataRole.UserRole + 1
 KEY_QUESTION_NUMBER = Qt.ItemDataRole.UserRole + 2
-# KEY_IS_ACTIVE = Qt.ItemDataRole.UserRole + 3
+KEY_PRE_ITEM = Qt.ItemDataRole.UserRole + 3
 KEY_KWARGS = Qt.ItemDataRole.UserRole + 4
 KEY_VISIBLE = Qt.ItemDataRole.UserRole + 5
 KEY_RECT_STYLE = Qt.ItemDataRole.UserRole + 6
@@ -27,6 +27,11 @@ PART_ITEM = "PART_ITEM"
 WORD_BOUNDARY_PART_ITEM = "WORD_BOUNDARY_PART_ITEM"
 GAP_ITEM = "GAP_ITEM"
 QUESTION_REF_ITEM = "QUESTION_REF_ITEM"
+
+REPEATABLE = [PART_ITEM, QUESTION_REF_ITEM]
+SERIALIZABLE = [PART_ITEM, QUESTION_REF_ITEM]
+SIZABLE = []
+ACTIVABLE =[ PART_ITEM, QUESTION_REF_ITEM]
 
 SETTINGS = {
     "colors": {

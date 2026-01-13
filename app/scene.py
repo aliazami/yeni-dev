@@ -290,15 +290,13 @@ class EditorScene(QGraphicsScene):
                 new_item = None
                 if self.mode == Mode.ADD_CIRCLE:
                     new_item = PartItem.create_item(pos, 0, 0)
-                    PartItem.set_active_item(self.get_part_items, this_item=new_item)
-
                 elif self.mode == Mode.ADD_LABEL:
                     new_item = QuestionRefItem.create_item(pos, 0, 0)
-                    QuestionRefItem.set_active_item(self.get_part_items, this_item=new_item)
                 if new_item:
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"Add {self.mode}")
                     )
+                    self.set_active_item(new_item)
                     if isinstance(new_item, RectanglePartItem) and new_item.platform_config.repeatable:
                         if new_item.is_repeating():
                             new_item.repeat()
@@ -316,12 +314,7 @@ class EditorScene(QGraphicsScene):
                     self.drag_start_positions[rectangle_part_item.uid] = item.pos()
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
-                    if isinstance(item, PartItem):
-                        PartItem.set_active_item(self.get_part_items, uid=item.uid)
-                        break
-                    elif isinstance(item, QuestionRefItem):
-                        QuestionRefItem.set_active_item(self.get_part_items, this_item=item)
-                        break
+                    self.set_active_item(item)
 
         else:
             super().mousePressEvent(event)
@@ -388,9 +381,21 @@ class EditorScene(QGraphicsScene):
         # self.setSceneRect(rect)
 
     @property
-    def part_items(self):
+    def get_part_items(self):
         return [item for item in self.items() if isinstance(item, PartItem)]
     
     def question_ref_items(self, part_id=None):
         return [item for item in self.items() if isinstance(item, QuestionRefItem) and (part_id is None or item.part_id == part_id)]
 
+    def set_active_item(self, active_item: RectanglePartItem):
+        if not isinstance(active_item, RectanglePartItem) or not active_item.platform_config.activable:
+            return
+        if isinstance(active_item, QuestionRefItem):
+            QuestionRefItem.set_active_item(self.items(), this_item=active_item)
+        elif isinstance(active_item, PartItem):
+            active_question = QuestionRefItem.get_active_object(self.items())
+            if active_question and active_question.part_id != active_item.part_id:
+                QuestionRefItem.set_active_item(self.items(), this_item=None)
+            PartItem.set_active_item(self.items(), this_item=active_item)
+
+    
