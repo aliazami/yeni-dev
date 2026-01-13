@@ -22,7 +22,7 @@ from app.components.background import Background
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command
 from app.components.rectangle_part_item import RectanglePartItem
-from app.item_manager import ItemManager
+from app.item_manager import ItemManager, get_ui
 
 # # ==========================================
 # #                THE SCENE
@@ -233,7 +233,7 @@ class EditorScene(QGraphicsScene):
                 deleting_items = []
                 for item in items:
                     if isinstance(item, RectanglePartItem):
-                        if self.mgr.remove(item.pre_item.uid):
+                        if self.mgr.remove_item(item.pre_item.uid):
                             deleting_items.append(item)
                 self.undo_stack.push(RemoveItemsCommand(self, deleting_items))
             event.accept()
@@ -303,7 +303,10 @@ class EditorScene(QGraphicsScene):
                 self.drag_start_positions = {}
                 for item in items:
                     rectangle_part_item: RectanglePartItem = item
-                    self.drag_start_positions[rectangle_part_item.pre_item.uid] = item.pos()
+                    drag_start_positions = self.drag_start_positions
+                    drag_start_positions[rectangle_part_item.pre_item.uid] = item.pos()
+                    self.drag_start_positions = drag_start_positions
+                    print(self.drag_start_positions)
                 items_at_pos = self.items(event.scenePos())
                 for item in items_at_pos:
                     if isinstance(item, RectanglePartItem):
@@ -351,14 +354,16 @@ class EditorScene(QGraphicsScene):
             if self.drag_start_positions:
                 move_data = {}
                 moved = False
-                for item, start_pos in self.drag_start_positions.items():
-                    end_pos = item.pos()
+                for uid, start_pos in self.drag_start_positions.items():
+                    pre_item = self.mgr.get_item(uid)
+                    end_pos = pre_item.ui.pos()
                     if start_pos != end_pos:
                         moved = True
-                        move_data[item] = (start_pos, end_pos)
+                        move_data[uid] = (start_pos, end_pos)
                 if moved:
-                    for item, (start, end) in move_data.items():
-                        item.setPos(start)
+                    for uid, (start, end) in move_data.items():
+                        pre_item = self.mgr.get_item(uid)
+                        pre_item.ui.setPos(start)
                     self.undo_stack.push(
                         MoveItemsCommand(self, move_data, "Mouse Drag")
                     )
@@ -373,6 +378,21 @@ class EditorScene(QGraphicsScene):
         # rect = QRectF(self.background_item.pixmap().rect())
         # self.addItem(self.background_item)
         # self.setSceneRect(rect)
+
+    def update_scene(self):
+        for item in self.items():
+            if isinstance(item, RectanglePartItem) and not self.mgr.get_item(item.pre_item.uid):
+                # has been removed before
+                self.removeItem(item)
+            
+        for pre_item in self.mgr.items:
+            if pre_item.is_visible:
+                ui = get_ui(pre_item)
+                if ui.scene() != self:
+                    self.addItem(ui)
+            elif not pre_item.is_visible and pre_item.ui == self:
+                self.removeItem(pre_item.ui)
+
 
 
     

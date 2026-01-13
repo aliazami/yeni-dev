@@ -23,6 +23,12 @@ class ItemManager:
         for item in self.items:
             if item.uid == uid:
                 return item
+            
+    def add_item(self, item: PreItem):
+        if self.get_item(item.uid):
+            raise Exception(f"Duplicate pre-item")
+        self.items.append(item.copy())
+
     
     def create(self, pos) -> RectanglePartItem | None:
         item = self._pre_item.copy()
@@ -30,17 +36,11 @@ class ItemManager:
             self._pre_item = None
         if not item:
             raise Exception(f"No pre-item exists in create phase")
-        if self.get_item(item.uid):
-            self.debug_print()
-            raise Exception(f"Duplicate pre-item")
         item.ui = get_ui(item, pos)
-        self.items.append(item)
-        self.debug_print()
-        self.activate_item(item.uid)
-        print(item.to_dict())
+        # self.activate_item(item.uid)
         return item.ui
 
-    def remove(self, uid: str):
+    def remove_item(self, uid: str):
         item = self.get_item(uid)
         if not item:
             raise Exception(f"item {uid} not found")

@@ -1,44 +1,36 @@
 # app/commands.py
 from PySide6.QtGui import QUndoCommand
-from PySide6.QtWidgets import QGraphicsScene
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsScene
 from app.components.rectangle_part_item import RectanglePartItem
+
 # ==========================================
 #              UNDO COMMANDS
 # ==========================================
 
 
 class AddItemsCommand(QUndoCommand):
-    def __init__(self, scene: QGraphicsScene, items: list[RectanglePartItem], description="Add Items"):
+    def __init__(self, scene: QGraphicsScene, items: list[QGraphicsItem] | QGraphicsItem, description="Add Items"):
         super().__init__(description)
         self.scene = scene
         self.items = items if isinstance(items, list) else [items]
 
     def redo(self):
-        for item in self.items:
-            if item.scene() != self.scene:
-                self.scene.addItem(item)
+        add_items(self.scene, self.items)
 
     def undo(self):
-        for item in self.items:
-            if item.scene() == self.scene:
-                self.scene.removeItem(item)
-
+        remove_items(self.scene, self.items)
 
 class RemoveItemsCommand(QUndoCommand):
-    def __init__(self, scene: QGraphicsScene, items: list[RectanglePartItem], description="Delete Items"):
+    def __init__(self, scene: QGraphicsScene, items: list[QGraphicsItem] | QGraphicsItem, description="Delete Items"):
         super().__init__(description)
         self.scene = scene
         self.items = items if isinstance(items, list) else [items]
 
     def redo(self):
-        for item in self.items:
-            if item.scene() == self.scene:
-                self.scene.removeItem(item)
+        remove_items(self.scene, self.items)
 
     def undo(self):
-        for item in self.items:
-            if item.scene() != self.scene:
-                self.scene.addItem(item)
+        add_items(self.scene, self.items)
 
 
 class MoveItemsCommand(QUndoCommand):
@@ -48,15 +40,40 @@ class MoveItemsCommand(QUndoCommand):
         self.move_data = move_data
 
     def redo(self):
-        for item, (start, end) in self.move_data.items():
-            set_pos(item, end)
+        for uid, (_, end) in self.move_data.items():
+            pre_item = self.scene.mgr.get_item(uid)
+            set_pos(pre_item.ui, end)
 
     def undo(self):
-        for item, (start, end) in self.move_data.items():
-            set_pos(item, start)
+        for uid, (start, _) in self.move_data.items():
+            pre_item = self.scene.mgr.get_item(uid)
+            set_pos(pre_item.ui, start)
 
 
 def set_pos(item: RectanglePartItem, pos):
     if isinstance(item, RectanglePartItem):
-        item.setPos(pos)
-        item.pre_item.update_ui()
+        item.pre_item.update_ui_data()
+    item.setPos(pos)
+
+def add_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
+    update_flag = False
+    for item in items:
+        if isinstance(item, RectanglePartItem) and not scene.mgr.get_item(item.pre_item.uid):
+            scene.mgr.add_item(item.pre_item)
+            update_flag = True
+        elif item.scene() != scene:
+            scene.addItem(item)
+    if update_flag:
+        scene.update_scene()
+
+def remove_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
+    update_flag = False
+    for item in items:
+        if isinstance(item, RectanglePartItem) and scene.mgr.get_item(item.pre_item.uid):
+            scene.mgr.remove_item(item.pre_item.uid)
+            update_flag = True
+        elif item.scene() == scene:
+            scene.removeItem(item)
+    if update_flag:
+        scene.update_scene()
+

@@ -3,6 +3,7 @@ from PySide6.QtCore import QPointF
 from app.constants import (
     PART_ITEM, QUESTION_REF_ITEM, SETTINGS,
     SIZABLE, SERIALIZABLE, REPEATABLE, ACTIVABLE,
+    KEY_PRE_ITEM,
 )
 
 
@@ -11,20 +12,21 @@ class PreItem:
     def __init__(self, part_type: str, part_id: str, **kwargs):
         self.part_type = part_type
         self.part_id = part_id
-        self.kwargs = kwargs
         self._is_active = kwargs.get("active", False)
+        self._qn = kwargs.get("qn")
         self.is_visible = kwargs.get("visible", True)
         size: int = SETTINGS.get(part_type, {}).get("size")
         self.pos = QPointF(-size / 2, -size / 2) if size else kwargs.get("pos", QPointF(0, 0))
         self.width = size or kwargs.get("width", 30) 
         self.height = size or kwargs.get("height", 10) 
-        self.ui = None
+        self.ui = kwargs.get("ui")
+        if self.ui:
+            self.ui.setData(KEY_PRE_ITEM, self)
 
     def copy(self):
         part_id= str(self.part_id)
         part_type = str(self.part_type)
-        kwargs = self.kwargs.copy()
-        return PreItem(part_type, part_id, **kwargs)
+        return PreItem(part_type, part_id, **self.kwargs)
 
     def __str__(self):
         return self.uid
@@ -32,6 +34,18 @@ class PreItem:
     @property
     def settings(self) -> dict:
         return SETTINGS.get(self.part_type, {})
+
+    @property
+    def kwargs(self):
+        return {
+            "active": self._is_active,
+            "visible": self.is_visible,
+            "pos": self.pos,
+            "width": self.width,
+            "height": self.height,
+            "ui": self.ui,
+            "qn": self._qn,
+        }
 
     @property
     def is_active(self):
@@ -46,7 +60,7 @@ class PreItem:
 
     @property
     def question_number(self):
-        return self.kwargs.get("qn")
+        return self._qn
     
     @property
     def serializable(self):
@@ -80,7 +94,7 @@ class PreItem:
             return str(self.question_number)
         return "???"
     
-    def update_ui(self):
+    def update_ui_data(self):
         if not self.ui:
             return
         self.pos = self.ui.pos()
@@ -98,7 +112,7 @@ class PreItem:
             return None
         if not self.ui:
             return
-        self.update_ui()
+        self.update_ui_data()
 
         item_dict = {
             "part_type": self.part_type,
