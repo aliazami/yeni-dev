@@ -7,7 +7,7 @@ from app.pre_item import PreItem
 from app.constants import (
     PART_ITEM, QUESTION_REF_ITEM, PRE_ITEM,
 )
-from app.manager_helper import check_repeat_id, get_next
+from app.manager_helper import get_next
 from app.components.part_item import PartItem
 from app.components.question_ref_item import QuestionRefItem
 from app.components.rectangle_part_item import RectanglePartItem
@@ -97,14 +97,13 @@ class ItemManager:
     def pre_create_part_item(self) -> bool:
         part_id, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:")
         if ok and part_id:
-            is_repeating, part_id = check_repeat_id(part_id)
             kwargs = {}
             pre_item = PreItem(PART_ITEM, part_id, **kwargs)
             if self.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
                 return False
             else:
-                self.is_repeating = is_repeating
+                self.is_repeating = True
                 self._pre_item = pre_item
                 return True
 
@@ -124,7 +123,6 @@ class ItemManager:
             None, "Add Gap Item", "Sequence:", value=default_int, minValue=1
         )
         if ok:
-            ir_repeating, qn = check_repeat_id(qn)
             kwargs = {"qn": qn}
             pre_item = PreItem(QUESTION_REF_ITEM, part_id, **kwargs)
             if self.get_item(pre_item.uid):
@@ -132,7 +130,7 @@ class ItemManager:
                 return False
 
             else:
-                self.is_repeating = ir_repeating
+                self.is_repeating = True
                 self._pre_item = pre_item
                 return True
             

@@ -3,8 +3,8 @@
     "items": [
         {
             "part_type": "PART_ITEM",
-            "x": 372.0,
-            "y": 174.0,
+            "x": 236.0,
+            "y": 161.0,
             "w": 30,
             "h": 30,
             "part_id": "1",
@@ -12,8 +12,8 @@
         },
         {
             "part_type": "PART_ITEM",
-            "x": 631.0,
-            "y": 263.0,
+            "x": 385.0,
+            "y": 158.0,
             "w": 30,
             "h": 30,
             "part_id": "2",
@@ -21,12 +21,72 @@
         },
         {
             "part_type": "PART_ITEM",
-            "x": 635.0,
-            "y": 420.0,
+            "x": 598.0,
+            "y": 158.0,
             "w": 30,
             "h": 30,
             "part_id": "3",
             "visible": true
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 586.0,
+            "y": 210.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "3",
+            "visible": false,
+            "qn": 1
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 585.0,
+            "y": 264.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "3",
+            "visible": false,
+            "qn": 2
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 583.0,
+            "y": 324.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "3",
+            "visible": false,
+            "qn": 3
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 370.0,
+            "y": 210.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "2",
+            "visible": true,
+            "qn": 1
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 368.0,
+            "y": 268.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "2",
+            "visible": true,
+            "qn": 2
+        },
+        {
+            "part_type": "QUESTION_REF_ITEM",
+            "x": 367.0,
+            "y": 324.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "2",
+            "visible": true,
+            "qn": 3
         }
     ]
 }
