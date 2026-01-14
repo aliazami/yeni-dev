@@ -1,58 +1,32 @@
 {
-    "background_image": "/Users/macbook/Documents/azami-personal/yeni-dev/test.webp",
+    "background_image": "background_path",
     "items": [
         {
-            "type": "CIRCLE",
-            "x": 434.0,
-            "y": 698.0,
-            "id": "1"
-        },
-        {
-            "type": "RECTANGLE",
+            "part_type": "PART_ITEM",
+            "x": 372.0,
+            "y": 174.0,
+            "w": 30,
+            "h": 30,
             "part_id": "1",
-            "item_id": "1",
-            "word": "fitiland",
-            "w": 84.0,
-            "h": 39.0,
-            "x": 652.0,
-            "y": 747.0
+            "visible": true
         },
         {
-            "type": "RECTANGLE",
-            "part_id": "1",
-            "item_id": "1",
-            "word": "Season",
-            "w": 64.0,
-            "h": 28.0,
-            "x": 747.0,
-            "y": 754.0
-        },
-        {
-            "type": "LABEL",
-            "x": 464.0,
-            "y": 762.0,
-            "part_id": "1",
-            "gap_id": 1
-        },
-        {
-            "type": "LABEL",
-            "x": 464.0,
-            "y": 798.0,
-            "part_id": "1",
-            "gap_id": 2
-        },
-        {
-            "type": "CIRCLE",
-            "x": 407.0,
-            "y": 932.0,
-            "id": "2"
-        },
-        {
-            "type": "LABEL",
-            "x": 457.0,
-            "y": 911.0,
+            "part_type": "PART_ITEM",
+            "x": 631.0,
+            "y": 263.0,
+            "w": 30,
+            "h": 30,
             "part_id": "2",
-            "gap_id": 1
+            "visible": true
+        },
+        {
+            "part_type": "PART_ITEM",
+            "x": 635.0,
+            "y": 420.0,
+            "w": 30,
+            "h": 30,
+            "part_id": "3",
+            "visible": true
         }
     ]
 }

@@ -14,6 +14,7 @@ from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
     RemoveItemsCommand,
+    add_items,
 )
 
 from app.components.part_item import PartItem
@@ -81,6 +82,7 @@ class EditorScene(QGraphicsScene):
     def mode(self, value: Mode):
         if not isinstance(value, Mode):
             raise ValueError
+
         self.setProperty(Prop.mode, value)
         if not self.views():
             return
@@ -133,45 +135,29 @@ class EditorScene(QGraphicsScene):
         # 1. Clear everything (C++ objects are deleted)
         self.clear()
         self.undo_stack.clear()
-
-        # Reset Python references to avoid accessing deleted C++ objects
         self.temp_rect_item = None
-        # self.current_part = None
-
-        # 2. Restore Background EXPLICITLY
-        # We manually create the background here instead of calling helper methods
-        # like set_image_background() or init_default_background().
-        # This avoids calling removeItem() on a deleted object.
+        self.setProperty(Prop.mgr, ItemManager())
 
         bg_path = data.get("background_image")
-        self.set_background(bg_path)
+        # self.set_background(bg_path)
 
         # 3. Restore Items
+        ui_items = []
         for item_data in data.get("items", []):
-            itype = item_data["item-type"]
+            ui_item = self.mgr.create_from_dict(item_data)
+            if ui_item:
+                ui_items.append(ui_item)
+        add_items(self, ui_items)
+            
 
-            if itype == PART_ITEM:
-                part_item = PartItem.from_dict(item_data)
-                self.addItem(part_item)
-            # elif itype == GAP_I:
-            #     gap_item = GapItem.from_dict(item_data)
-            #     self.addItem(gap_item)
-            # elif itype == "WORD_BOUNDARY_ITEM":
-            #     word_boundary_item = WordBoundaryItem.from_dict(item_data)
-            #     self.addItem(word_boundary_item)
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        background_path = (
-            self.background_item.file_path() if self.background_item else None
-        )
-        data = {"background_image": background_path, "items": []}
-        for item in self.items():
-            if isinstance(item, RectanglePartItem) and item.platform_config.serializable:
-                serializable = item
-                item_data = serializable.to_dict()
-                data["items"].append(item_data)
-
+        # background_path = (
+        #     self.background_item.file_path() if self.background_item else None
+        # )
+        items = self.mgr.to_dict()
+        data = {"background_image": "background_path", "items": items}
         return data
 
     def align_items(self, direction):
@@ -185,19 +171,6 @@ class EditorScene(QGraphicsScene):
             self.undo_stack.push(
                 MoveItemsCommand(self, move_data, f"Distribute {orientation}")
             )
-
-    def set_mode(self, mode):
-        self.mode = mode
-        if not self.views():
-            return
-        view = self.views()[0]
-        if mode == Mode.SELECT:
-            view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-            view.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-        else:
-            view.setDragMode(QGraphicsView.DragMode.NoDrag)
-            view.setCursor(QCursor(Qt.CursorShape.CrossCursor))
-            self.clearSelection()
 
     # --- Events ---
     def keyPressEvent(self, event: QEvent):
@@ -309,6 +282,7 @@ class EditorScene(QGraphicsScene):
                 for item in items_at_pos:
                     if isinstance(item, RectanglePartItem):
                         self.mgr.activate_item(item.pre_item.uid)
+                        self.update_scene()
 
 
         else:

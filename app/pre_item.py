@@ -7,6 +7,8 @@ from app.constants import (
     KEY_PRE_ITEM,
 )
 
+from app.helpers.utils import points_are_very_near
+
 
 
 class PreItem:
@@ -18,9 +20,21 @@ class PreItem:
         self._qnn = kwargs.get("qnn")
         self.is_visible = kwargs.get("visible", True)
         size: int = SETTINGS.get(part_type, {}).get("size")
-        self.pos = QPointF(-size / 2, -size / 2) if size else kwargs.get("pos", QPointF(0, 0))
-        self.width = size or kwargs.get("width", 30) 
-        self.height = size or kwargs.get("height", 10) 
+        x = kwargs.get("x")
+        y = kwargs.get("y")
+        pos = kwargs.get("pos")
+        width = kwargs.get("width") 
+        height = kwargs.get("height")
+        if x is None or y is None:
+            if pos and isinstance(pos, QPointF):
+                x , y = pos.x(), pos.y()
+            elif size:
+                x = y = -size / 2
+            else:
+                x = y = 0
+        self._pos = QPointF(x, y)
+        self.width = width or size
+        self.height = height or size
         self.ui = kwargs.get("ui")
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
@@ -36,13 +50,24 @@ class PreItem:
     @property
     def settings(self) -> dict:
         return SETTINGS.get(self.part_type, {})
-
+    
+    @property
+    def pos(self):
+        return QPointF(self._pos.x(), self._pos.y())
+    
+    def set_pos(self, x, y):
+        self._pos.setX(x)
+        self._pos.setY(y)
+        if self.ui:
+            if not points_are_very_near(self._pos, self.ui.pos()):
+                self.ui.setPos(self._pos)
     @property
     def kwargs(self):
         return {
             "active": self._is_active,
             "visible": self.is_visible,
-            "pos": self.pos,
+            "x": self.pos.x(),
+            "y": self.pos.y(),
             "width": self.width,
             "height": self.height,
             "ui": self.ui,
@@ -101,10 +126,18 @@ class PreItem:
             return str(self.question_number)
         return "???"
     
+    @property
+    def initial_pos(self):
+        pos = QPointF(0, 0)
+        if self.part_type in [PART_ITEM, QUESTION_REF_ITEM]:
+          pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
+        return pos  
+    
     def update_ui_data(self):
         if not self.ui:
             return
-        self.pos = self.ui.pos()
+        pos = self.ui.pos()
+        self.set_pos(pos.x(), pos.y())
         self.width = self.ui.rect().width()
         self.height = self.ui.rect().height()
 
@@ -115,34 +148,34 @@ class PreItem:
 
     # ======= item serialization =======
     def to_dict(self) -> dict | None:
-        if not self.serializable:
-            return None
-        if not self.ui:
-            return
-        self.update_ui_data()
-
         item_dict = {
             "part_type": self.part_type,
             "x": self.pos.x(),
             "y": self.pos.y(),
+            "w": self.width,
+            "h": self.height,
             "part_id": self.part_id,
             "visible": self.is_visible,
         }
-        if self.sizable:
-            item_dict["w"] = self.width
-            item_dict["h"] = self.height
-        if self.part_type in [QUESTION_REF_ITEM]:
-            item_dict["qn"] = self.question_number
-        if self.part_type in [WORD_BOUNDARY_PART_ITEM]:
-            item_dict["qn"] = self.question_number
-            item_dict["qnn"] = self.qnn
+        if self._qn:
+                item_dict["qn"] = self._qn
+        if self._qnn:
+                item_dict["qnn"] = self._qnn
         return item_dict
 
-    def from_dict(self, data: dict):
-        pos = QPointF(data["x"], data["y"])
+    @classmethod
+    def from_dict(cls, data: dict):
         part_type = data["part_type"]
         part_id = data["part_id"]
-        visible = data["visible"]
-        kwargs = {"visible": visible, "pos": pos}
-        return PreItem(part_type, part_id, **kwargs)
+        kwargs = {
+            "active": False,
+            "visible": part_type == PART_ITEM,
+            "x": data.get("x"),
+            "y": data.get("y"),
+            "width": data.get("w"),
+            "height": data.get("h"),
+            "qn": data.get("qn"),
+            "qnn": data.get("qnn"),
+        }
+        return cls(part_type, part_id, **kwargs)
     

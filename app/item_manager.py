@@ -30,15 +30,22 @@ class ItemManager:
         self.items.append(item.copy())
 
     
-    def create(self, pos) -> RectanglePartItem | None:
+    def create(self, pos=None) -> RectanglePartItem | None:
         item = self._pre_item.copy()
         if not self.is_repeating:
             self._pre_item = None
         if not item:
             raise Exception(f"No pre-item exists in create phase")
-        item.ui = get_ui(item, pos)
+        if pos:
+            item.set_pos(pos.x(), pos.y())
+        item.ui = get_ui(item)
         # self.activate_item(item.uid)
         return item.ui
+    
+    def create_from_dict(self, item_data: dict)-> RectanglePartItem | None:
+        pre_item = PreItem.from_dict(item_data)
+        self._pre_item = pre_item
+        return self.create()
 
     def remove_item(self, uid: str):
         item = self.get_item(uid)
@@ -70,6 +77,7 @@ class ItemManager:
             for qri in self.question_ref_items:
                 qri.is_visible = (qri.part_id == item.part_id)
                 qri.is_active = False
+        
 
     @property
     def part_items(self):
@@ -153,15 +161,19 @@ class ItemManager:
             print(item)
         print(f"self._pre_item: {self._pre_item}")
 
+    def to_dict(self):
+        output = []
+        for per_item in self.items:
+            output.append(per_item.to_dict())
+        return output
 
-def get_ui(item: PreItem, pos: QPointF=None) -> RectanglePartItem:
+
+def get_ui(item: PreItem) -> RectanglePartItem:
     current_ui: RectanglePartItem | None = item.ui
     if current_ui:
         return current_ui
-    if pos is None:
-        pos = item.pos
     if item.part_type == PART_ITEM:
-        current_ui = PartItem(item, pos)
+        current_ui = PartItem(item)
     elif item.part_type == QUESTION_REF_ITEM:
-        current_ui = QuestionRefItem(item, pos)
+        current_ui = QuestionRefItem(item)
     return current_ui

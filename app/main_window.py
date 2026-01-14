@@ -119,7 +119,6 @@ class MainWindow(QMainWindow):
             print(f"Saved to {path}")
         except Exception as e:
             QMessageBox.critical(self, "Save Error", str(e))
-        self._open_file(path)
 
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
