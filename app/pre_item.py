@@ -2,7 +2,7 @@
 from PySide6.QtCore import QPointF
 from app.constants import (
     SETTINGS,
-    PART_ITEM, QUESTION_REF_ITEM, WORD_BOUNDARY_PART_ITEM,
+    PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
     SIZABLE, SERIALIZABLE, REPEATABLE, ACTIVABLE,
     KEY_PRE_ITEM,
 )
@@ -115,7 +115,8 @@ class PreItem:
         item_uid = f"{self.part_type}::{self.part_id}"
         if self.question_number:
             item_uid = f"{item_uid}::{self.question_number}"
-
+            if self.qnn:
+                item_uid = f"{item_uid}::{self.question_number}::{self.qnn}"
         return item_uid
     
     @property
@@ -124,6 +125,8 @@ class PreItem:
             return self.part_id
         if self.part_type == QUESTION_REF_ITEM:
             return str(self.question_number)
+        if self.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
+            return str(self.qnn)        
         return "???"
     
     @property

@@ -35,7 +35,7 @@
             "w": 30,
             "h": 30,
             "part_id": "3",
-            "visible": false,
+            "visible": true,
             "qn": 1
         },
         {
@@ -45,7 +45,7 @@
             "w": 30,
             "h": 30,
             "part_id": "3",
-            "visible": false,
+            "visible": true,
             "qn": 2
         },
         {
@@ -55,7 +55,7 @@
             "w": 30,
             "h": 30,
             "part_id": "3",
-            "visible": false,
+            "visible": true,
             "qn": 3
         },
         {
@@ -65,7 +65,7 @@
             "w": 30,
             "h": 30,
             "part_id": "2",
-            "visible": true,
+            "visible": false,
             "qn": 1
         },
         {
@@ -75,7 +75,7 @@
             "w": 30,
             "h": 30,
             "part_id": "2",
-            "visible": true,
+            "visible": false,
             "qn": 2
         },
         {
@@ -85,8 +85,52 @@
             "w": 30,
             "h": 30,
             "part_id": "2",
-            "visible": true,
+            "visible": false,
             "qn": 3
+        },
+        {
+            "part_type": "Q_WORD_BOUNDARY_PART_ITEM",
+            "x": 645.0,
+            "y": 202.0,
+            "w": 69.0,
+            "h": 33.0,
+            "part_id": "3",
+            "visible": false,
+            "qn": 1,
+            "qnn": 1
+        },
+        {
+            "part_type": "Q_WORD_BOUNDARY_PART_ITEM",
+            "x": 745.0,
+            "y": 203.0,
+            "w": 92.0,
+            "h": 31.0,
+            "part_id": "3",
+            "visible": false,
+            "qn": 1,
+            "qnn": 2
+        },
+        {
+            "part_type": "Q_WORD_BOUNDARY_PART_ITEM",
+            "x": 640.0,
+            "y": 250.0,
+            "w": 76.0,
+            "h": 31.0,
+            "part_id": "3",
+            "visible": true,
+            "qn": 2,
+            "qnn": 1
+        },
+        {
+            "part_type": "Q_WORD_BOUNDARY_PART_ITEM",
+            "x": 733.0,
+            "y": 250.0,
+            "w": 81.0,
+            "h": 34.0,
+            "part_id": "3",
+            "visible": true,
+            "qn": 2,
+            "qnn": 2
         }
     ]
 }

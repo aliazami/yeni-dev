@@ -24,7 +24,7 @@ QUESTION_NUMBER = "QUESTION_NUMBER"
 
 PRE_ITEM = "PRE_ITEM"
 PART_ITEM = "PART_ITEM"
-WORD_BOUNDARY_PART_ITEM = "WORD_BOUNDARY_PART_ITEM"
+Q_WORD_BOUNDARY_PART_ITEM = "Q_WORD_BOUNDARY_PART_ITEM"
 GAP_ITEM = "GAP_ITEM"
 QUESTION_REF_ITEM = "QUESTION_REF_ITEM"
 
@@ -55,7 +55,7 @@ SETTINGS = {
         "font_color_active": "#000",
         "font_color_inactive": "#000",
     },
-    WORD_BOUNDARY_PART_ITEM: {
+    Q_WORD_BOUNDARY_PART_ITEM: {
         "bg_color_active": "#6F59FF80",
         "bg_color_inactive": "#A4AFFB80",
         "border_color_active": "#6F59FF80",

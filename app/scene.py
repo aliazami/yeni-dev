@@ -52,8 +52,8 @@ class EditorScene(QGraphicsScene):
         super().__init__(x, y, w, h, parent)
         self.undo_stack = QUndoStack(self)
         self.undo_stack.setUndoLimit(100)
+        self.temp_rect_item: QGraphicsRectItem | None = None
         self.mode = Mode.SELECT
-        self.temp_rect_item = None
         self.start_point = None
         self.drag_start_positions = {}
         self.setProperty(Prop.mgr, ItemManager())
@@ -94,15 +94,6 @@ class EditorScene(QGraphicsScene):
             view.setDragMode(QGraphicsView.DragMode.NoDrag)
             view.setCursor(QCursor(Qt.CursorShape.CrossCursor))
             self.clearSelection()
-        
-    @property
-    def temp_rect_item(self):
-        temp_rect_item_value: QGraphicsRectItem | None = self.property(Prop.temp_rect_item)
-        return temp_rect_item_value
-    
-    @temp_rect_item.setter
-    def temp_rect_item(self, value: QGraphicsRectItem | None):
-        self.setProperty(Prop.temp_rect_item, value)
         
     @property
     def drag_start_positions(self):
@@ -187,10 +178,10 @@ class EditorScene(QGraphicsScene):
             if file_path:
                 self.set_background(file_path)
             event.accept()
-        # elif event.key() == Qt.Key.Key_R:
-        #     if WordBoundaryItem.pre_create(self.items(), PartItem.get_active_item()):
-        #         self.set_mode("DRAWING_RECT")
-        #     event.accept()
+        elif event.key() == Qt.Key.Key_B:
+            if self.mgr.pre_create_boundary():
+                self.mode = Mode.DRAWING_RECT
+            event.accept()
         elif event.key() == Qt.Key.Key_A:
             if self.mgr.pre_create_part_item():
                 self.mode = Mode.ADD_ITEM
@@ -314,9 +305,11 @@ class EditorScene(QGraphicsScene):
                 pos = QPointF(geo.x(), geo.y())
                 w = geo.width()
                 h = geo.height()
-                # final_item = WordBoundaryPartItem.create_item(pos, w, h)
-                # self.addItem(final_item)
-                # self.undo_stack.push(AddItemsCommand(self, final_item, "Add Rectangle"))
+                new_item = self.mgr.create_rect(pos, w, h)
+                if new_item:
+                    self.undo_stack.push(
+                        AddItemsCommand(self, new_item, f"Add {new_item.pre_item.uid}")
+                    )
 
             self.mode = Mode.SELECT
             event.accept()
