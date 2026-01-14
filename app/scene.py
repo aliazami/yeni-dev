@@ -30,8 +30,7 @@ from app.item_manager import ItemManager, get_ui
 
 class Mode(Enum):
     SELECT = auto()
-    ADD_PART_ITEM = auto()
-    ADD_QUESTION_REF_ITEM = auto()
+    ADD_ITEM = auto()
     DRAWING_RECT = auto()
 
 
@@ -221,11 +220,11 @@ class EditorScene(QGraphicsScene):
         #     event.accept()
         elif event.key() == Qt.Key.Key_A:
             if self.mgr.pre_create_part_item():
-                self.mode = Mode.ADD_PART_ITEM
+                self.mode = Mode.ADD_ITEM
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
             if self.mgr.pre_create_question_ref_item():
-                self.mode = Mode.ADD_QUESTION_REF_ITEM
+                self.mode = Mode.ADD_ITEM
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
@@ -284,7 +283,7 @@ class EditorScene(QGraphicsScene):
                 self.addItem(self.temp_rect_item)
                 self.temp_rect_item.setRect(QRectF(self.start_point, self.start_point))
                 event.accept()
-            elif self.mode in [Mode.ADD_PART_ITEM, Mode.ADD_QUESTION_REF_ITEM]:
+            elif self.mode == Mode.ADD_ITEM:
                 pos = event.scenePos()
                 new_item = self.mgr.create(pos)
                 if new_item:
