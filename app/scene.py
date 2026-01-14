@@ -362,7 +362,7 @@ class EditorScene(QGraphicsScene):
                 ui = get_ui(pre_item)
                 if ui.scene() != self:
                     self.addItem(ui)
-            elif not pre_item.is_visible and pre_item.ui == self:
+            elif not pre_item.is_visible and pre_item.ui.scene() == self:
                 self.removeItem(pre_item.ui)
 
 
