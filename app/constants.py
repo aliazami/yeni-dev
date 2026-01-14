@@ -56,10 +56,10 @@ SETTINGS = {
         "font_color_inactive": "#000",
     },
     WORD_BOUNDARY_PART_ITEM: {
-        "bg_color_active": "#FF7A59",
-        "bg_color_inactive": "#FFC7B3",
-        "border_color_active": "#FF7A59",
-        "border_color_inactive": "#FFC7B3",
+        "bg_color_active": "#6F59FF80",
+        "bg_color_inactive": "#A4AFFB80",
+        "border_color_active": "#6F59FF80",
+        "border_color_inactive": "#A4AFFB80",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
     }

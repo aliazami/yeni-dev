@@ -1,7 +1,8 @@
 
 from PySide6.QtCore import QPointF
 from app.constants import (
-    PART_ITEM, QUESTION_REF_ITEM, SETTINGS,
+    SETTINGS,
+    PART_ITEM, QUESTION_REF_ITEM, WORD_BOUNDARY_PART_ITEM,
     SIZABLE, SERIALIZABLE, REPEATABLE, ACTIVABLE,
     KEY_PRE_ITEM,
 )
@@ -14,6 +15,7 @@ class PreItem:
         self.part_id = part_id
         self._is_active = kwargs.get("active", False)
         self._qn = kwargs.get("qn")
+        self._qnn = kwargs.get("qnn")
         self.is_visible = kwargs.get("visible", True)
         size: int = SETTINGS.get(part_type, {}).get("size")
         self.pos = QPointF(-size / 2, -size / 2) if size else kwargs.get("pos", QPointF(0, 0))
@@ -45,6 +47,7 @@ class PreItem:
             "height": self.height,
             "ui": self.ui,
             "qn": self._qn,
+            "qnn": self._qnn,
         }
 
     @property
@@ -61,6 +64,10 @@ class PreItem:
     @property
     def question_number(self):
         return self._qn
+    
+    @property
+    def qnn(self):
+        return self._qnn
     
     @property
     def serializable(self):
@@ -126,6 +133,9 @@ class PreItem:
             item_dict["h"] = self.height
         if self.part_type in [QUESTION_REF_ITEM]:
             item_dict["qn"] = self.question_number
+        if self.part_type in [WORD_BOUNDARY_PART_ITEM]:
+            item_dict["qn"] = self.question_number
+            item_dict["qnn"] = self.qnn
         return item_dict
 
     def from_dict(self, data: dict):
