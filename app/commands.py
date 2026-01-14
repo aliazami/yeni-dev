@@ -42,18 +42,12 @@ class MoveItemsCommand(QUndoCommand):
     def redo(self):
         for uid, (_, end) in self.move_data.items():
             pre_item = self.scene.mgr.get_item(uid)
-            set_pos(pre_item.ui, end)
+            pre_item.ui.setPos(end)
 
     def undo(self):
         for uid, (start, _) in self.move_data.items():
             pre_item = self.scene.mgr.get_item(uid)
-            set_pos(pre_item.ui, start)
-
-
-def set_pos(item: RectanglePartItem, pos):
-    if isinstance(item, RectanglePartItem):
-        item.pre_item.update_ui_data()
-    item.setPos(pos)
+            pre_item.ui.setPos(start)
 
 def add_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
     update_flag = False

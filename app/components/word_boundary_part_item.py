@@ -8,8 +8,8 @@ from app.components.rectangle_part_item import RectanglePartItem
 
 class WordBoundary(RectanglePartItem):
 
-    def __init__(self, pre_item: PreItem, pos: QPointF):
-        super().__init__(pre_item, pos)
+    def __init__(self, pre_item: PreItem):
+        super().__init__(pre_item)
         self._refresh_ui()
 
     def _refresh_ui(self):
