@@ -20,6 +20,7 @@ class ItemManager:
         self.is_repeating = False
         self._pre_item: PreItem | None = None
         self._current_item: PreItem | None = None
+        self._editing_item: PreItem | None = None
 
     def get_item(self, uid: str):
         for item in self.items:
@@ -68,8 +69,15 @@ class ItemManager:
         pre_item = PreItem(part_type, part_id, **kwargs)
         self._pre_item = pre_item
         return self.create()
-
-
+    
+    def edit_rect(self, pos: QPointF, w: float, h: float):
+        pre_item = self._editing_item
+        pre_item.set_pos(pos.x(), pos.y())
+        pre_item.width = w
+        pre_item.height = h
+        self._pre_item = pre_item
+        return self.create()
+    
     def remove_item(self, uid: str):
         item = self.get_item(uid)
         if not item:
@@ -194,6 +202,13 @@ class ItemManager:
             QMessageBox.warning(None, "Error", "Question?")
             return False
         return True
+    
+    def request_edit(self):
+        if self._current_item and self._current_item.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
+            self._editing_item = self._current_item.copy()
+            return "edit-rect", self._current_item
+        
+        return None,None
 
             
     def repeat(self):

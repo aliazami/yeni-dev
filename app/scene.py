@@ -33,6 +33,7 @@ class Mode(Enum):
     SELECT = auto()
     ADD_ITEM = auto()
     DRAWING_RECT = auto()
+    EDIT_RECT = auto()
 
 
 class Prop(StrEnum):
@@ -182,6 +183,12 @@ class EditorScene(QGraphicsScene):
             if self.mgr.pre_create_boundary():
                 self.mode = Mode.DRAWING_RECT
             event.accept()
+        elif event.key() == Qt.Key.Key_E:
+            request, pre_item = self.mgr.request_edit()
+            if request and pre_item:
+                self.removeItem(pre_item.ui)
+                self.mode = Mode.DRAWING_RECT
+            event.accept()
         elif event.key() == Qt.Key.Key_A:
             if self.mgr.pre_create_part_item():
                 self.mode = Mode.ADD_ITEM
@@ -237,7 +244,7 @@ class EditorScene(QGraphicsScene):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            if self.mode == Mode.DRAWING_RECT:
+            if self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT]:
                 self.start_point = event.scenePos()
                 self.temp_rect_item = QGraphicsRectItem()
                 self.temp_rect_item.setPen(
@@ -280,7 +287,7 @@ class EditorScene(QGraphicsScene):
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.mode == Mode.DRAWING_RECT and self.temp_rect_item:
+        if self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT] and self.temp_rect_item:
             current_point = event.scenePos()
             new_rect = QRectF(self.start_point, current_point).normalized()
             self.temp_rect_item.setRect(new_rect)
@@ -290,7 +297,7 @@ class EditorScene(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         if (
-            self.mode == Mode.DRAWING_RECT
+            self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT]
             and event.button() == Qt.MouseButton.LeftButton
             and self.temp_rect_item
         ):
@@ -305,10 +312,17 @@ class EditorScene(QGraphicsScene):
                 pos = QPointF(geo.x(), geo.y())
                 w = geo.width()
                 h = geo.height()
-                new_item = self.mgr.create_rect(pos, w, h)
+                new_item = None
+                command = ""
+                if self.mode == Mode.DRAWING_RECT:
+                    new_item = self.mgr.create_rect(pos, w, h)
+                    command = "Add"
+                if self.mode == Mode.EDIT_RECT:
+                    new_item = self.mgr.edit_rect(pos, w, h)
+                    command = "Edit-Add"
                 if new_item:
                     self.undo_stack.push(
-                        AddItemsCommand(self, new_item, f"Add {new_item.pre_item.uid}")
+                        AddItemsCommand(self, new_item, f"{command} {new_item.pre_item.uid}")
                     )
 
             self.mode = Mode.SELECT
