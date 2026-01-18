@@ -1,6 +1,12 @@
 # app/constants.py
 from PySide6.QtCore import Qt
+from enum import Enum, auto
 
+class SceneMode(Enum):
+    SELECT = auto()
+    ADD_ITEM = auto()
+    DRAWING_RECT = auto()
+    EDIT_RECT = auto()
 
 # --- Constants ---
 KEY_PART_ID = Qt.ItemDataRole.UserRole + 0
@@ -27,6 +33,8 @@ PART_ITEM = "PART_ITEM"
 Q_WORD_BOUNDARY_PART_ITEM = "Q_WORD_BOUNDARY_PART_ITEM"
 GAP_ITEM = "GAP_ITEM"
 QUESTION_REF_ITEM = "QUESTION_REF_ITEM"
+OPTION_REF_ITEM = "OPTION_REF_ITEM"
+
 
 REPEATABLE = [PART_ITEM, QUESTION_REF_ITEM]
 SERIALIZABLE = [PART_ITEM, QUESTION_REF_ITEM]

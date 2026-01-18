@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QLineEdit,
     QDialogButtonBox,
+    QComboBox
 )
 
 # ==========================================
@@ -36,6 +37,40 @@ class RectInputDialog(QDialog):
 
     def get_data(self):
         return self.id_input.text().strip(), self.text_input.text().strip()
+    
+class PartSelectDialog(QDialog):
+    def __init__(self, child_options: list[tuple[str, str]], parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Select Part Item Type")
+        self.resize(300, 150)
+        self.child_options = child_options
+        layout = QVBoxLayout(self)
+        self.combo_box = QComboBox()
+        for child_type in self.child_options:
+            self.combo_box.addItem(child_type[0])
+        self.id_input = QLineEdit()
+        self.id_input.setPlaceholderText("Enter ID:")
+        id_str = str(self.child_options[0][1])
+        self.id_input.setText(id_str)
+        self.combo_box.currentIndexChanged.connect(self.update_label)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(self.combo_box)
+        layout.addWidget(self.id_input)
+        layout.addWidget(buttons)
+        self.combo_box.setCurrentIndex(0)
+
+    def update_label(self, selected_type):
+        id_str = str(self.child_options[selected_type][1])
+        self.id_input.setText(id_str)
+
+
+    def get_data(self):
+        return self.combo_box.currentText(), self.id_input.text().strip()
 
 
 class HelpWindow(QWidget):

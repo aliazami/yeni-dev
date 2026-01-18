@@ -1,5 +1,5 @@
 # # app/scene.py
-from enum import Enum, auto, StrEnum
+from enum import StrEnum
 from PySide6.QtCore import Signal, Qt, QRectF, QPointF, QEvent
 from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor
 from PySide6.QtWidgets import (
@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
 )
 
-from app.constants import PART_ITEM
+from app.constants import SceneMode
 from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
@@ -17,7 +17,6 @@ from app.commands import (
     add_items,
 )
 
-from app.components.part_item import PartItem
 from app.components.background import Background
 # from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
@@ -28,12 +27,6 @@ from app.item_manager import ItemManager, get_ui
 # # ==========================================
 # #                THE SCENE
 # # ==========================================
-
-class Mode(Enum):
-    SELECT = auto()
-    ADD_ITEM = auto()
-    DRAWING_RECT = auto()
-    EDIT_RECT = auto()
 
 
 class Prop(StrEnum):
@@ -54,7 +47,7 @@ class EditorScene(QGraphicsScene):
         self.undo_stack = QUndoStack(self)
         self.undo_stack.setUndoLimit(100)
         self.temp_rect_item: QGraphicsRectItem | None = None
-        self.mode = Mode.SELECT
+        self.mode = SceneMode.SELECT
         self.start_point = None
         self.drag_start_positions = {}
         self.setProperty(Prop.mgr, ItemManager())
@@ -76,19 +69,19 @@ class EditorScene(QGraphicsScene):
     
     @property
     def mode(self):
-        mode_value: Mode = self.property(Prop.mode)
+        mode_value: SceneMode = self.property(Prop.mode)
         return mode_value
     
     @mode.setter
-    def mode(self, value: Mode):
-        if not isinstance(value, Mode):
+    def mode(self, value: SceneMode):
+        if not isinstance(value, SceneMode):
             raise ValueError
 
         self.setProperty(Prop.mode, value)
         if not self.views():
             return
         view = self.views()[0]
-        if value == Mode.SELECT:
+        if value == SceneMode.SELECT:
             view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
             view.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         else:
@@ -123,7 +116,7 @@ class EditorScene(QGraphicsScene):
         self.setProperty(Prop.background_item, value)
 
     # --- Serialization Logic ---
-    def deserialize_scene(self, data):
+    def deserialize_scene(self, data: dict):
         # 1. Clear everything (C++ objects are deleted)
         self.clear()
         self.undo_stack.clear()
@@ -180,22 +173,25 @@ class EditorScene(QGraphicsScene):
                 self.set_background(file_path)
             event.accept()
         elif event.key() == Qt.Key.Key_B:
-            if self.mgr.pre_create_boundary():
-                self.mode = Mode.DRAWING_RECT
+            mode = self.mgr.pre_create_boundary()
+            if mode is not None:
+                self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_E:
-            request, pre_item = self.mgr.request_edit()
-            if request and pre_item:
-                self.removeItem(pre_item.ui)
-                self.mode = Mode.DRAWING_RECT
+            mode, editing_item = self.mgr.request_edit()
+            if mode is not None and editing_item:
+                self.undo_stack.push(RemoveItemsCommand(self, [editing_item]))
+                self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_A:
-            if self.mgr.pre_create_part_item():
-                self.mode = Mode.ADD_ITEM
+            mode = self.mgr.pre_create_part_item()
+            if mode is not None:
+                self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_Q:
-            if self.mgr.pre_create_question_ref_item():
-                self.mode = Mode.ADD_ITEM
+            mode = self.mgr.pre_create_part_child_item()
+            if mode is not None:
+                self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
@@ -203,17 +199,19 @@ class EditorScene(QGraphicsScene):
                 deleting_items = []
                 for item in items:
                     if isinstance(item, RectanglePartItem):
-                        if self.mgr.remove_item(item.pre_item.uid):
+                        if self.mgr.stat.remove_item(item.pre_item.uid):
                             deleting_items.append(item)
                 self.undo_stack.push(RemoveItemsCommand(self, deleting_items))
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
-            if self.mode != Mode.SELECT:
+            if self.mode != SceneMode.SELECT:
                 if self.temp_rect_item:
                     self.removeItem(self.temp_rect_item)
                     self.temp_rect_item = None
                 self.mgr.is_repeating = False
-                self.mode = Mode.SELECT
+                if self.mgr._editing_item:
+                    self.undo_stack.undo()
+                self.mode = SceneMode.SELECT
             else:
                 self.clearSelection()
         elif event.key() in (
@@ -244,7 +242,7 @@ class EditorScene(QGraphicsScene):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            if self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT]:
+            if self.mode in [SceneMode.DRAWING_RECT, SceneMode.EDIT_RECT]:
                 self.start_point = event.scenePos()
                 self.temp_rect_item = QGraphicsRectItem()
                 self.temp_rect_item.setPen(
@@ -254,7 +252,7 @@ class EditorScene(QGraphicsScene):
                 self.addItem(self.temp_rect_item)
                 self.temp_rect_item.setRect(QRectF(self.start_point, self.start_point))
                 event.accept()
-            elif self.mode == Mode.ADD_ITEM:
+            elif self.mode == SceneMode.ADD_ITEM:
                 pos = event.scenePos()
                 new_item = self.mgr.create(pos)
                 if new_item:
@@ -264,7 +262,7 @@ class EditorScene(QGraphicsScene):
                     if self.mgr.is_repeating:
                         self.mgr.repeat()
                     else:
-                        self.mode = Mode.SELECT
+                        self.mode = SceneMode.SELECT
 
                 event.accept()
             else:
@@ -287,7 +285,7 @@ class EditorScene(QGraphicsScene):
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT] and self.temp_rect_item:
+        if self.mode in [SceneMode.DRAWING_RECT, SceneMode.EDIT_RECT] and self.temp_rect_item:
             current_point = event.scenePos()
             new_rect = QRectF(self.start_point, current_point).normalized()
             self.temp_rect_item.setRect(new_rect)
@@ -297,7 +295,7 @@ class EditorScene(QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         if (
-            self.mode in [Mode.DRAWING_RECT, Mode.EDIT_RECT]
+            self.mode in [SceneMode.DRAWING_RECT, SceneMode.EDIT_RECT]
             and event.button() == Qt.MouseButton.LeftButton
             and self.temp_rect_item
         ):
@@ -314,10 +312,10 @@ class EditorScene(QGraphicsScene):
                 h = geo.height()
                 new_item = None
                 command = ""
-                if self.mode == Mode.DRAWING_RECT:
+                if self.mode == SceneMode.DRAWING_RECT:
                     new_item = self.mgr.create_rect(pos, w, h)
                     command = "Add"
-                if self.mode == Mode.EDIT_RECT:
+                if self.mode == SceneMode.EDIT_RECT:
                     new_item = self.mgr.edit_rect(pos, w, h)
                     command = "Edit-Add"
                 if new_item:
@@ -325,23 +323,23 @@ class EditorScene(QGraphicsScene):
                         AddItemsCommand(self, new_item, f"{command} {new_item.pre_item.uid}")
                     )
 
-            self.mode = Mode.SELECT
+            self.mode = SceneMode.SELECT
             event.accept()
 
-        elif self.mode == Mode.SELECT and event.button() == Qt.MouseButton.LeftButton:
+        elif self.mode == SceneMode.SELECT and event.button() == Qt.MouseButton.LeftButton:
             super().mouseReleaseEvent(event)
             if self.drag_start_positions:
                 move_data = {}
                 moved = False
                 for uid, start_pos in self.drag_start_positions.items():
-                    pre_item = self.mgr.get_item(uid)
+                    pre_item = self.mgr.stat.get_item(uid)
                     end_pos = pre_item.ui.pos()
                     if start_pos != end_pos:
                         moved = True
                         move_data[uid] = (start_pos, end_pos)
                 if moved:
                     for uid, (start, end) in move_data.items():
-                        pre_item = self.mgr.get_item(uid)
+                        pre_item = self.mgr.stat.get_item(uid)
                         pre_item.ui.setPos(start)
                     self.undo_stack.push(
                         MoveItemsCommand(self, move_data, "Mouse Drag")
@@ -360,11 +358,11 @@ class EditorScene(QGraphicsScene):
 
     def update_scene(self):
         for item in self.items():
-            if isinstance(item, RectanglePartItem) and not self.mgr.get_item(item.pre_item.uid):
+            if isinstance(item, RectanglePartItem) and not self.mgr.stat.get_item(item.pre_item.uid):
                 # has been removed before
                 self.removeItem(item)
             
-        for pre_item in self.mgr.items:
+        for pre_item in self.mgr.stat.items:
             if pre_item.is_visible:
                 ui = get_ui(pre_item)
                 if ui.scene() != self:
