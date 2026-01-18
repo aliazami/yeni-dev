@@ -3,18 +3,19 @@ from PySide6.QtCore import QPointF
 from app.constants import (
     SETTINGS,
     PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
-    SIZABLE, SERIALIZABLE, REPEATABLE, ACTIVABLE,
+    FIXED_SIZE, SERIALIZABLE, REPEATABLE, ACTIVABLE, SQUARE,
     KEY_PRE_ITEM,
 )
 
-from app.helpers.utils import points_are_very_near
-
+from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
+from app.models import Delta
+from app.helpers.utils import resize_rect
 
 
 class PreItem:
     def __init__(self, part_type: str, part_id: str, **kwargs):
-        self.part_type = part_type
-        self.part_id = part_id
+        self._part_type = part_type
+        self._part_id = part_id
         self._is_active = kwargs.get("active", False)
         self._qn = kwargs.get("qn")
         self._qnn = kwargs.get("qnn")
@@ -33,8 +34,8 @@ class PreItem:
             else:
                 x = y = 0
         self._pos = QPointF(x, y)
-        self.width = width or size
-        self.height = height or size
+        self._width = width or size
+        self._height = height or size
         self.ui = kwargs.get("ui")
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
@@ -46,7 +47,18 @@ class PreItem:
 
     def __str__(self):
         return self.uid
+    
+    def __repr__(self):
+        return f"{self.uid} {id(self)}"
 
+    @property
+    def part_type(self):
+        return self._part_type
+    
+    @property
+    def part_id(self):
+        return self._part_id
+    
     @property
     def settings(self) -> dict:
         return SETTINGS.get(self.part_type, {})
@@ -55,12 +67,45 @@ class PreItem:
     def pos(self):
         return QPointF(self._pos.x(), self._pos.y())
     
+    @property
+    def width(self):
+        return self._width
+    
+    @property
+    def height(self):
+        return self._height
+    
+    def move(self, delta: Delta):
+        x = self.pos.x() + delta.dx
+        y = self.pos.y() + delta.dy
+        self.set_pos(x, y)
+    
     def set_pos(self, x, y):
         self._pos.setX(x)
         self._pos.setY(y)
         if self.ui:
             if not points_are_very_near(self._pos, self.ui.pos()):
                 self.ui.setPos(self._pos)
+
+    def set_width(self, value: float):
+        if self.fixed_size:
+            return
+        self._width = value
+        if self.ui:
+            if not lengthes_are_very_similar(self._width, self.ui.rect().width()):
+                new_rect = resize_rect(self.ui.rect(), w=self._width, h=None)
+                self.ui.setRect(new_rect)
+
+    def set_height(self, value: float):
+        if self.fixed_size:
+            return        
+        self._height = value
+        if self.ui:
+            if not lengthes_are_very_similar(self._height, self.ui.rect().height()):
+                new_rect = resize_rect(self.ui.rect(), w=None, h=self._height)
+                self.ui.setRect(new_rect)
+
+
     @property
     def kwargs(self):
         return {
@@ -107,8 +152,12 @@ class PreItem:
         return self.part_type in REPEATABLE
 
     @property
-    def sizable(self):
-        return self.part_type in SIZABLE  
+    def fixed_size(self):
+        return self.part_type in FIXED_SIZE
+    
+    @property
+    def is_square(self):
+        return self.part_type in SQUARE
 
     @property
     def uid(self) -> str:
@@ -116,7 +165,7 @@ class PreItem:
         if self.question_number:
             item_uid = f"{item_uid}::{self.question_number}"
             if self.qnn:
-                item_uid = f"{item_uid}::{self.question_number}::{self.qnn}"
+                item_uid = f"{item_uid}::{self.qnn}"
         return item_uid
     
     @property
@@ -141,8 +190,8 @@ class PreItem:
             return
         pos = self.ui.pos()
         self.set_pos(pos.x(), pos.y())
-        self.width = self.ui.rect().width()
-        self.height = self.ui.rect().height()
+        self.set_width(self.ui.rect().width())
+        self.set_height(self.ui.rect().height())
 
     def _refresh_ui(self):
         if not self.ui:

@@ -49,6 +49,26 @@ class MoveItemsCommand(QUndoCommand):
             pre_item = self.scene.mgr.stat.get_item(uid)
             pre_item.ui.setPos(start)
 
+
+class ResizeItemsCommand(QUndoCommand):
+    def __init__(self, scene: QGraphicsScene, resize_data, description="Move Items"):
+        super().__init__(description)
+        self.scene = scene
+        self.resize_data = resize_data
+
+    def redo(self):
+        for uid, (_, end) in self.resize_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.set_width(end[0])
+            pre_item.set_height(end[1])
+
+    def undo(self):
+        for uid, (start, _) in self.resize_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.set_width(start[0])
+            pre_item.set_height(start[1])
+
+
 def add_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
     update_flag = False
     for item in items:

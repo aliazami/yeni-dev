@@ -11,3 +11,15 @@ class RectStyles:
         self.font_size_active = styles.get("font_size_active", 12)
         self.font_size_inactive = styles.get("font_size_inactive", 12)
 
+class Delta:
+    def __init__(self, dx: int, dy:int):
+        self._dx = dx
+        self._dy = dy
+
+    @property
+    def dx(self):
+        return self._dx
+    
+    @property
+    def dy(self):
+        return self._dy

@@ -7,6 +7,7 @@ class SceneMode(Enum):
     ADD_ITEM = auto()
     DRAWING_RECT = auto()
     EDIT_RECT = auto()
+    DEEP_COPY = auto()
 
 # --- Constants ---
 KEY_PART_ID = Qt.ItemDataRole.UserRole + 0
@@ -31,16 +32,22 @@ QUESTION_NUMBER = "QUESTION_NUMBER"
 PRE_ITEM = "PRE_ITEM"
 PART_ITEM = "PART_ITEM"
 Q_WORD_BOUNDARY_PART_ITEM = "Q_WORD_BOUNDARY_PART_ITEM"
+Q_BOX_PART_ITEM = "Q_BOX_PART_ITEM"
 GAP_ITEM = "GAP_ITEM"
+Q_GAP_ITEM = "Q_GAP_ITEM"
 QUESTION_REF_ITEM = "QUESTION_REF_ITEM"
 OPTION_REF_ITEM = "OPTION_REF_ITEM"
 
 
 REPEATABLE = [PART_ITEM, QUESTION_REF_ITEM]
 SERIALIZABLE = [PART_ITEM, QUESTION_REF_ITEM]
-SIZABLE = []
+FIXED_SIZE = [PART_ITEM, QUESTION_REF_ITEM]
+SQUARE = [Q_BOX_PART_ITEM]
 ACTIVABLE =[ PART_ITEM, QUESTION_REF_ITEM]
-
+CHILD_TYPES = {
+    PART_ITEM: [QUESTION_REF_ITEM, OPTION_REF_ITEM],
+    QUESTION_REF_ITEM: [Q_WORD_BOUNDARY_PART_ITEM, Q_GAP_ITEM]
+}
 SETTINGS = {
     "colors": {
         "icon": Qt.GlobalColor.black,
@@ -63,6 +70,25 @@ SETTINGS = {
         "font_color_active": "#000",
         "font_color_inactive": "#000",
     },
+    Q_BOX_PART_ITEM: {
+        "size": 20,
+        "bg_color_active": "#000000ff",
+        "bg_color_inactive": "#000000ff",
+        "border_color_active": "#FF59E9",
+        "border_color_inactive": "#F8BDF0",
+        "font_color_active": "#000",
+        "font_color_inactive": "#000",
+    },
+    Q_GAP_ITEM: {
+        "width": 50,
+        "height": 20,
+        "bg_color_active": "#2A741480",
+        "bg_color_inactive": "#88FA8480",
+        "border_color_active": "#2A741480",
+        "border_color_inactive": "#88FA8480",
+        "font_color_active": "#000",
+        "font_color_inactive": "#000",
+    },    
     Q_WORD_BOUNDARY_PART_ITEM: {
         "bg_color_active": "#6F59FF80",
         "bg_color_inactive": "#A4AFFB80",

@@ -14,13 +14,13 @@ from app.commands import (
     AddItemsCommand,
     MoveItemsCommand,
     RemoveItemsCommand,
+    ResizeItemsCommand,
     add_items,
 )
 
 from app.components.background import Background
-# from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
-from app.helpers.scene_misc_helper import calculate_move_command
+from app.helpers.scene_misc_helper import calculate_move_command, calculate_resize_command
 from app.components.rectangle_part_item import RectanglePartItem
 from app.item_manager import ItemManager, get_ui
 
@@ -66,7 +66,6 @@ class EditorScene(QGraphicsScene):
     def undo_stack(self, value):
         self.setProperty(Prop.undo_stack, value)
 
-    
     @property
     def mode(self):
         mode_value: SceneMode = self.property(Prop.mode)
@@ -133,8 +132,6 @@ class EditorScene(QGraphicsScene):
             if ui_item:
                 ui_items.append(ui_item)
         add_items(self, ui_items)
-            
-
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
@@ -177,6 +174,16 @@ class EditorScene(QGraphicsScene):
             if mode is not None:
                 self.mode = mode
             event.accept()
+        elif event.key() == Qt.Key.Key_N:
+            mode = self.mgr.request_next_item()
+            if mode is not None:
+                self.mode = mode
+            event.accept()
+        elif event.key() == Qt.Key.Key_D:
+            mode = self.mgr.request_deep_copy()
+            if mode is not None:
+                self.mode = mode
+            event.accept()                      
         elif event.key() == Qt.Key.Key_E:
             mode, editing_item = self.mgr.request_edit()
             if mode is not None and editing_item:
@@ -208,10 +215,11 @@ class EditorScene(QGraphicsScene):
                 if self.temp_rect_item:
                     self.removeItem(self.temp_rect_item)
                     self.temp_rect_item = None
-                self.mgr.is_repeating = False
                 if self.mgr._editing_item:
                     self.undo_stack.undo()
+                self.mgr.escape()
                 self.mode = SceneMode.SELECT
+
             else:
                 self.clearSelection()
         elif event.key() in (
@@ -231,7 +239,11 @@ class EditorScene(QGraphicsScene):
             elif event.key() == Qt.Key.Key_Down:
                 dy = step
             items = self.selectedItems()
-            if items:
+            if items and event.modifiers() & Qt.KeyboardModifier.AltModifier:
+                move_data = calculate_resize_command(items, dx, dy)
+                self.undo_stack.push(ResizeItemsCommand(self, move_data, "Arrow Resize"))
+                event.accept()
+            elif items:
                 move_data = calculate_move_command(items, dx, dy)
                 self.undo_stack.push(MoveItemsCommand(self, move_data, "Arrow Move"))
                 event.accept()
@@ -263,7 +275,15 @@ class EditorScene(QGraphicsScene):
                         self.mgr.repeat()
                     else:
                         self.mode = SceneMode.SELECT
-
+                event.accept()
+            elif self.mode == SceneMode.DEEP_COPY:
+                pos = event.scenePos()
+                new_item_list = self.mgr.deep_copy(pos)
+                if new_item_list:
+                    self.undo_stack.push(
+                        AddItemsCommand(self, new_item_list, f"Deep Copy {self.mode}")
+                    )
+                    self.mode = SceneMode.SELECT
                 event.accept()
             else:
                 super().mousePressEvent(event)

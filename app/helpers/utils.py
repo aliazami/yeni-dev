@@ -1,5 +1,5 @@
 # app/utils.py
-from PySide6.QtCore import Qt, QPointF, QPoint
+from PySide6.QtCore import Qt, QPointF, QPoint, QRect
 from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QIcon
 from app.constants import SETTINGS
 
@@ -48,9 +48,19 @@ def ignore(var):
     if var:
         pass
 
+def lengthes_are_very_similar(length1: float, length2: float):
+    return abs(length1 - length2) < 1
+
 def points_are_very_near(pnt1: QPoint | QPointF, pnt2: QPoint | QPointF):
     if abs(pnt1.x() - pnt2.x()) > 1: 
         return False
     if abs(pnt1.y() - pnt2.y()) > 1:
         return False
     return True
+
+def resize_rect(rect: QRect, w: int, h: int):
+    x = rect.x()
+    y = rect.y()
+    width = w if w is not None else rect.width()
+    height = h if h is not None else rect.height()
+    return QRect(x, y, width, height)
