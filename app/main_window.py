@@ -18,8 +18,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.resize(1000, 800)
-        self.setWindowTitle("Interactive Graphics Editor (Save/Load)")
-        self.current_file_path = None  # State for file handling
+        self.setWindowTitle("No page")
 
         self.scene = EditorScene(0, 0, 1000, 800)
         self.view = QGraphicsView(self.scene)
@@ -30,6 +29,7 @@ class MainWindow(QMainWindow):
         self.help_window = HelpWindow()
         self.scene.helpRequested.connect(self.show_help_window)
         self.scene.toggleToolbarRequested.connect(self.toggle_align_toolbar)
+        self.scene.docNameRequested.connect(self.doc_name_request)
 
         self.create_alignment_toolbar()
         self.create_actions()
@@ -47,10 +47,6 @@ class MainWindow(QMainWindow):
         save_as_act.triggered.connect(self.save_file_as)
         self.addAction(save_as_act)
 
-        open_act = QAction("Open", self)
-        open_act.setShortcut(QKeySequence.StandardKey.Open)  # Ctrl+O
-        open_act.triggered.connect(self.open_file)
-        self.addAction(open_act)
 
         # Undo/Redo
         undo_act = self.scene.undo_stack.createUndoAction(self, "Undo")
@@ -98,17 +94,17 @@ class MainWindow(QMainWindow):
     # --- File IO Logic ---
 
     def save_file(self):
-        if self.current_file_path:
-            self._write_to_file(self.current_file_path)
+        json_path = self.scene.mgr.io.json_path
+        if json_path:
+            self._write_to_file(json_path)
         else:
-            self.save_file_as()
+            QMessageBox.warning(None, "Error", "No image is loaded")
 
     def save_file_as(self):
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Scene", "", "JSON Files (*.json)"
         )
         if file_path:
-            self.current_file_path = file_path
             self._write_to_file(file_path)
 
     def _write_to_file(self, path):
@@ -120,19 +116,5 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Save Error", str(e))
 
-    def open_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open Scene", "", "JSON Files (*.json)"
-        )
-        self._open_file(file_path)
-
-    def _open_file(self, file_path):
-        if file_path:
-            try:
-                with open(file_path, "r") as f:
-                    data = json.load(f)
-                self.scene.deserialize_scene(data)
-                self.current_file_path = file_path
-                print(f"Loaded from {file_path}")
-            except Exception as e:
-                QMessageBox.critical(self, "Load Error", str(e))
+    def doc_name_request(self, docname: str):
+        self.setWindowTitle(docname)

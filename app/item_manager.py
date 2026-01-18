@@ -14,17 +14,26 @@ from app.components.rectangle_part_item import RectanglePartItem
 from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.dialogs import PartSelectDialog
 from app.models import Delta
-from app.managet_stat import ManagerStat, get_next_str
-
+from app.manager_stat import ManagerStat, get_next_str
+from app.manager_io import ManagerIO
 class ItemManager:
     def __init__(self):
         self._items: list[PreItem] = []
-        self.stat = ManagerStat(self._items)
+        self._stat = ManagerStat(self._items)
+        self.io = ManagerIO()
         self.is_repeating = False
         self._pre_item: PreItem | None = None
         self._current_item: PreItem | None = None
         self._editing_item: PreItem | None = None
         self._deep_copy_item: PreItem | None = None
+
+    # @property
+    # def current_file_path(self):
+
+    @property
+    def stat(self):
+        return self._stat
+
     
     def create(self, pos: QPointF | None = None) -> RectanglePartItem | None:
         item = self._pre_item.copy()
@@ -232,15 +241,28 @@ class ItemManager:
         print(f"self._pre_item: {self._pre_item}")
 
     def to_dict(self):
-        output = []
+        items = []
         for per_item in self.stat.items:
-            output.append(per_item.to_dict())
-        return output
+            items.append(per_item.to_dict())
+        return {"background_image": self.io.image_path, "items": items}        
 
     def escape(self):
         self.is_repeating = False
         self._editing_item = None
         self._deep_copy_item = None
+
+    def open_image(self):
+        old_background, new_background = self.io.open_image()
+        if new_background:
+            self._items: list[PreItem] = []
+            self._stat = ManagerStat(self._items)
+            # self.io = ManagerIO()
+            self.is_repeating = False
+            self._pre_item: PreItem | None = None
+            self._current_item: PreItem | None = None
+            self._editing_item: PreItem | None = None
+            self._deep_copy_item: PreItem | None = None
+        return old_background, new_background
 
 def get_ui(item: PreItem) -> RectanglePartItem:
     current_ui: RectanglePartItem | None = item.ui

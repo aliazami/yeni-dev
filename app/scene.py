@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
     QGraphicsRectItem,
-    QFileDialog,
 )
 
 from app.constants import SceneMode
@@ -41,6 +40,7 @@ class Prop(StrEnum):
 class EditorScene(QGraphicsScene):
     helpRequested = Signal()
     toggleToolbarRequested = Signal()
+    docNameRequested = Signal(str)
 
     def __init__(self, x, y, w, h, parent=None):
         super().__init__(x, y, w, h, parent)
@@ -51,9 +51,7 @@ class EditorScene(QGraphicsScene):
         self.start_point = None
         self.drag_start_positions = {}
         self.setProperty(Prop.mgr, ItemManager())
-        self.setProperty("background_item", 12)
         # Background Management
-        self.background_item = Background()
         # self.set_background()
 
 #     # --- Properties ---
@@ -121,10 +119,11 @@ class EditorScene(QGraphicsScene):
         self.undo_stack.clear()
         self.temp_rect_item = None
         self.setProperty(Prop.mgr, ItemManager())
-
-        bg_path = data.get("background_image")
-        # self.set_background(bg_path)
-
+        
+        background_image = data.get("background_image")
+        if background_image:
+           old_background, new_background = self.mgr.io.open_image(file_path=background_image)
+           self.set_background(old_background, new_background)
         # 3. Restore Items
         ui_items = []
         for item_data in data.get("items", []):
@@ -135,11 +134,7 @@ class EditorScene(QGraphicsScene):
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        # background_path = (
-        #     self.background_item.file_path() if self.background_item else None
-        # )
-        items = self.mgr.to_dict()
-        data = {"background_image": "background_path", "items": items}
+        data = self.mgr.to_dict()
         return data
 
     def align_items(self, direction):
@@ -163,11 +158,18 @@ class EditorScene(QGraphicsScene):
             self.helpRequested.emit()
             event.accept()
         elif event.key() == Qt.Key.Key_I:
-            file_path, _ = QFileDialog.getOpenFileName(
-                None, "Open Image", "", "Images (*.png *.jpg *.jpeg *.webp)"
-            )
-            if file_path:
-                self.set_background(file_path)
+            old_background, new_background = self.mgr.open_image()
+            if old_background and old_background in self.items():
+                self.removeItem(old_background)
+            if new_background:
+                self.docNameRequested.emit(self.mgr.io.image_name)
+                self.clear()
+                rect = QRectF(new_background.pixmap().rect())
+                self.addItem(new_background)
+                self.setSceneRect(rect)
+            data = self.mgr.io.load_json()
+            if data:
+                self.deserialize_scene(data)
             event.accept()
         elif event.key() == Qt.Key.Key_B:
             mode = self.mgr.pre_create_boundary()
@@ -368,13 +370,13 @@ class EditorScene(QGraphicsScene):
         else:
             super().mouseReleaseEvent(event)
 
-    def set_background(self, file_path=None):
-        if self.background_item and self.background_item in self.items():
-            self.removeItem(self.background_item)
-        # self.background_item = Background(file_path)
-        # rect = QRectF(self.background_item.pixmap().rect())
-        # self.addItem(self.background_item)
-        # self.setSceneRect(rect)
+    def set_background(self, old_background: Background, new_background: Background):
+        if old_background and old_background in self.items():
+            self.removeItem(old_background)
+        if new_background:
+            rect = QRectF(new_background.pixmap().rect())
+            self.addItem(new_background)
+            self.setSceneRect(rect)   
 
     def update_scene(self):
         for item in self.items():
