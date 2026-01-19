@@ -1,6 +1,6 @@
 from app.constants import (
-    PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM, 
-    CHILD_TYPES, ANSWER_PART_ITEM, OPTION_REF_ITEM, PAGE_REF_ITEM
+    REF_PART_ITEM, REF_QUESTION_ITEM, Q_WORD_BOUNDARY_PART_ITEM, 
+    CHILD_TYPES, ANSWER_PART_ITEM, REF_OPTION_ITEM, REF_PAGE_ITEM
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -30,7 +30,7 @@ class ManagerStat:
         item = self.get_item(uid)
         if not item:
             raise Exception(f"item {uid} not found")
-        if item.part_type == PART_ITEM:
+        if item.part_type == REF_PART_ITEM:
             for qri in self.question_ref_items:
                 if qri.part_id == item.part_id:
                     return False
@@ -38,7 +38,7 @@ class ManagerStat:
             self.items.remove(item)
             return True
 
-        elif item.part_type == QUESTION_REF_ITEM:
+        elif item.part_type == REF_QUESTION_ITEM:
             for qnn in self.all_question_child_items:
                 if qnn.question_number == item.question_number:
                     return False
@@ -53,7 +53,7 @@ class ManagerStat:
 
     @property
     def part_items(self):
-        return [item for item in self.items if item.part_type == PART_ITEM]
+        return [item for item in self.items if item.part_type == REF_PART_ITEM]
     
     @property
     def answer_part_items(self):
@@ -67,10 +67,10 @@ class ManagerStat:
 
     @property
     def question_ref_items(self):
-        return [item for item in self.items if item.part_type == QUESTION_REF_ITEM]
+        return [item for item in self.items if item.part_type == REF_QUESTION_ITEM]
 
     def part_child_items(self, parent_item: PreItem):
-        return [item for item in self.items if item.part_type in CHILD_TYPES[PART_ITEM] and item.part_id == parent_item.part_id]
+        return [item for item in self.items if item.part_type in CHILD_TYPES[REF_PART_ITEM] and item.part_id == parent_item.part_id]
     
 
     def get_decendents(self, parent_item: PreItem):
@@ -79,21 +79,21 @@ class ManagerStat:
             return []
         part_id = parent_item.part_id
         question_number = parent_item.question_number
-        screen1 = [item for item in self.items if item.part_id == part_id and item.part_type != PART_ITEM]
-        if part_type == PART_ITEM:
+        screen1 = [item for item in self.items if item.part_id == part_id and item.part_type != REF_PART_ITEM]
+        if part_type == REF_PART_ITEM:
             return screen1
         screen2 = [item for item in screen1 if \
                    question_number and item.question_number == question_number \
-                   and item.part_type != QUESTION_REF_ITEM
+                   and item.part_type != REF_QUESTION_ITEM
                    ]
-        if part_type == QUESTION_REF_ITEM:
+        if part_type == REF_QUESTION_ITEM:
             return screen2
         
         raise Exception(f"not implemented for {part_type}")
         
     @property
     def all_question_child_items(self):
-        return [item for item in self.items if item.part_type in CHILD_TYPES[QUESTION_REF_ITEM]]
+        return [item for item in self.items if item.part_type in CHILD_TYPES[REF_QUESTION_ITEM]]
     
     def deep_copy_by_delta(self, item: PreItem, move_delta: Delta) -> list[PreItem]:
         root_item = self.get_next_pre_item(item, move_delta)
@@ -139,12 +139,12 @@ class ManagerStat:
         d.visible = True
         part_type = item.part_type
         question_number = item.question_number
-        if part_type == PART_ITEM:
+        if part_type == REF_PART_ITEM:
             next_part_id = self.get_next_part_id()
             d.set_part_id(next_part_id)
-        elif part_type == QUESTION_REF_ITEM:
+        elif part_type == REF_QUESTION_ITEM:
             d.qn = self.get_next_question_number(item.part_id)
-        elif part_type in CHILD_TYPES[QUESTION_REF_ITEM]:
+        elif part_type in CHILD_TYPES[REF_QUESTION_ITEM]:
             d.qnn = self.get_next_qnn(item.part_id, question_number, part_type)
         else:
             raise Exception("unexpected type")
@@ -158,19 +158,19 @@ class ManagerStat:
         part_type = item.part_type
         part_id = item.part_id
         question_number = item.question_number
-        if part_type == PART_ITEM:
+        if part_type == REF_PART_ITEM:
             next_question_number = self.get_next_question_number(part_id)
             next_question_option = "b"
             child_options = [
-                (QUESTION_REF_ITEM, next_question_number),
-                (OPTION_REF_ITEM, next_question_option),
+                (REF_QUESTION_ITEM, next_question_number),
+                (REF_OPTION_ITEM, next_question_option),
             ]
-        elif part_type == PAGE_REF_ITEM:
+        elif part_type == REF_PAGE_ITEM:
             next_answer_part_id = self.stat.get_next_answer_part_id(page_id)
             child_options = [
                 (ANSWER_PART_ITEM, next_answer_part_id),
             ]            
-        elif part_type == QUESTION_REF_ITEM:
+        elif part_type == REF_QUESTION_ITEM:
             next_q_word_boundary = self.stat.get_next_qnn(part_id, question_number, Q_WORD_BOUNDARY_PART_ITEM)
             child_options = [
                 (Q_WORD_BOUNDARY_PART_ITEM, next_q_word_boundary),

@@ -1,10 +1,10 @@
 # app/utils.py
 from PySide6.QtCore import Qt, QPointF, QPoint, QRect
 from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QIcon
-from app.constants import SETTINGS
+from app.constants import UI_SETTINGS
 
 
-def create_icon(icon_type, color=SETTINGS["colors"]["icon"]):
+def create_icon(icon_type, color=UI_SETTINGS["colors"]["icon"]):
     pixmap = QPixmap(32, 32)
     pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)

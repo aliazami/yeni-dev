@@ -1,10 +1,10 @@
 
 from PySide6.QtCore import QPointF
 from app.constants import (
-    SETTINGS,
-    PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
+    UI_SETTINGS,
+    REF_PART_ITEM, REF_QUESTION_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
     FIXED_SIZE, SERIALIZABLE, REPEATABLE, ACTIVABLE, SQUARE,
-    KEY_PRE_ITEM, PAGE_REF_ITEM
+    KEY_PRE_ITEM, REF_PAGE_ITEM
 )
 
 from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
@@ -21,7 +21,7 @@ class PreItem:
         self._qn = d.qn
         self._qnn = d.qnn
         self.is_visible = d.visible
-        size: int = SETTINGS.get(d.part_type, {}).get("size")
+        size: int = UI_SETTINGS.get(d.part_type, {}).get("size")
         x = d.x
         y = d.y
         width = d.width 
@@ -61,7 +61,7 @@ class PreItem:
     
     @property
     def settings(self) -> dict:
-        return SETTINGS.get(self.part_type, {})
+        return UI_SETTINGS.get(self.part_type, {})
     
     @property
     def pos(self):
@@ -170,11 +170,11 @@ class PreItem:
     
     @property
     def default_text(self) -> str:
-        if self.part_type == PAGE_REF_ITEM:
+        if self.part_type == REF_PAGE_ITEM:
             return self.page_id        
-        if self.part_type == PART_ITEM:
+        if self.part_type == REF_PART_ITEM:
             return self.part_id
-        if self.part_type == QUESTION_REF_ITEM:
+        if self.part_type == REF_QUESTION_ITEM:
             return str(self.question_number)
         if self.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
             return str(self.qnn)        
@@ -183,7 +183,7 @@ class PreItem:
     @property
     def initial_pos(self):
         pos = QPointF(0, 0)
-        if self.part_type in [PART_ITEM, QUESTION_REF_ITEM]:
+        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
           pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
         return pos  
     
@@ -224,7 +224,7 @@ class PreItem:
         part_id = data["part_id"]
         d = PreItemData(part_type, part_id)
         d.active = False
-        d.visible = part_type == PART_ITEM
+        d.visible = part_type == REF_PART_ITEM
         d.x = data.get("x")
         d.y = data.get("y")
         d.width = data.get("w")

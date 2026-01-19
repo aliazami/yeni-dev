@@ -6,8 +6,8 @@ from PySide6.QtWidgets import (
 )
 from app.pre_item import PreItem
 from app.constants import (
-    PART_ITEM, QUESTION_REF_ITEM, SceneMode, Q_WORD_BOUNDARY_PART_ITEM,
-    OPTION_REF_ITEM, Q_BOX_PART_ITEM, PAGE_REF_ITEM, ANSWER_PART_ITEM,
+    REF_PART_ITEM, REF_QUESTION_ITEM, SceneMode, Q_WORD_BOUNDARY_PART_ITEM,
+    REF_OPTION_ITEM, Q_BOX_PART_ITEM, REF_PAGE_ITEM, ANSWER_PART_ITEM,
 )
 from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
@@ -56,7 +56,7 @@ class ItemManager:
         if not self._current_item or not part_id:
             return
         
-        if self._current_item.part_type == QUESTION_REF_ITEM:
+        if self._current_item.part_type == REF_QUESTION_ITEM:
             part_type = Q_WORD_BOUNDARY_PART_ITEM
             d = PreItemData(part_type, part_id)
             d.x = pos.x(),
@@ -102,7 +102,7 @@ class ItemManager:
         next_part_id = self.stat.get_next_part_id()
         part_id, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:", text=next_part_id)
         if ok and part_id:
-            d = PreItemData(PART_ITEM, part_id)
+            d = PreItemData(REF_PART_ITEM, part_id)
             d.page_id = self.io.page_id
             pre_item = PreItem(d)
             if self.stat.get_item(pre_item.uid):
@@ -115,7 +115,7 @@ class ItemManager:
     def pre_create_page_ref_item(self):
         page_id, ok = QInputDialog.getText(None, "Add Page Ref Item", "Enter Unique ID:")
         if ok and page_id:
-            d = PreItemData(PAGE_REF_ITEM, f"{PAGE_REF_ITEM}({page_id})") 
+            d = PreItemData(REF_PAGE_ITEM, f"{REF_PAGE_ITEM}({page_id})") 
             d.page_id = self.io.page_id
             pre_item = PreItem(d)
             if self.stat.get_item(pre_item.uid):
@@ -132,14 +132,14 @@ class ItemManager:
         if item.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
             for qnn in  self.stat.all_question_child_items:
                 qnn.is_active = (qnn.uid == item.uid)
-        elif item.part_type == QUESTION_REF_ITEM:
+        elif item.part_type == REF_QUESTION_ITEM:
             for qri in self.stat.question_ref_items:
                 qri.is_active = (qri.uid == item.uid)
 
             for qnn in self.stat.all_question_child_items:
                 qnn.is_visible = (qnn.part_id == item.part_id and qnn.question_number == item.question_number)
                 qnn.is_active = False
-        elif item.part_type == PART_ITEM:
+        elif item.part_type == REF_PART_ITEM:
             for pi in self.stat.part_items:
                 pi.is_active = (pi.uid == item.uid)
 
@@ -166,19 +166,19 @@ class ItemManager:
         part_type = self._current_item.part_type
         part_id = self._current_item.part_id
         question_number = self._current_item.question_number
-        if part_type == PART_ITEM:
+        if part_type == REF_PART_ITEM:
             next_question_number = self.stat.get_next_question_number(part_id)
             next_question_option = "b"
             child_options = [
-                (QUESTION_REF_ITEM, next_question_number),
-                (OPTION_REF_ITEM, next_question_option),
+                (REF_QUESTION_ITEM, next_question_number),
+                (REF_OPTION_ITEM, next_question_option),
             ]
-        elif part_type == PAGE_REF_ITEM:
+        elif part_type == REF_PAGE_ITEM:
             next_answer_part_id = self.stat.get_next_answer_part_id(page_id)
             child_options = [
                 (ANSWER_PART_ITEM, next_answer_part_id),
             ]            
-        elif part_type == QUESTION_REF_ITEM:
+        elif part_type == REF_QUESTION_ITEM:
             next_q_word_boundary = self.stat.get_next_qnn(part_id, question_number, Q_WORD_BOUNDARY_PART_ITEM)
             child_options = [
                 (Q_WORD_BOUNDARY_PART_ITEM, next_q_word_boundary),
@@ -191,10 +191,10 @@ class ItemManager:
         if dialog.exec() == QDialog.DialogCode.Accepted:
             r_part_type, r_id = dialog.get_data()
             d = PreItemData(r_part_type, part_id)
-            if r_part_type == PAGE_REF_ITEM:
+            if r_part_type == REF_PAGE_ITEM:
                 d.page_id = r_id
                 scene_mode = SceneMode.ADD_ITEM
-            elif r_part_type == QUESTION_REF_ITEM:
+            elif r_part_type == REF_QUESTION_ITEM:
                 d.qn = int(r_id)
                 scene_mode = SceneMode.ADD_ITEM
             elif r_part_type == Q_WORD_BOUNDARY_PART_ITEM:
@@ -221,7 +221,7 @@ class ItemManager:
         if not self._current_item:
             QMessageBox.warning(None, "Error", "No Active Item")
             return
-        if self._current_item.part_type != QUESTION_REF_ITEM:
+        if self._current_item.part_type != REF_QUESTION_ITEM:
             QMessageBox.warning(None, "Error", "Question?")
             return
         return SceneMode.DRAWING_RECT
@@ -235,7 +235,7 @@ class ItemManager:
             return SceneMode.EDIT_RECT, ui
 
     def request_next_item(self):
-        if self._current_item and self._current_item.part_type in [PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM]:
+        if self._current_item and self._current_item.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM, Q_WORD_BOUNDARY_PART_ITEM]:
             pre_item = self.stat.get_next_pre_item(self._current_item)
             self._pre_item = pre_item
             return SceneMode.ADD_ITEM
@@ -251,10 +251,10 @@ class ItemManager:
 
         part_type = self._pre_item.part_type
         d = self._pre_item.data.copy()
-        if part_type in [PART_ITEM]:
+        if part_type in [REF_PART_ITEM]:
             next_part_id = get_next_str(self._pre_item.part_id)
             d.set_part_id(next_part_id)
-        elif part_type in [QUESTION_REF_ITEM]:
+        elif part_type in [REF_QUESTION_ITEM]:
             last_qn = self._pre_item.question_number
             d.qn = int(get_next_str(str(last_qn)))
         self._pre_item = PreItem(d)
@@ -293,7 +293,7 @@ def get_ui(item: PreItem) -> RectanglePartItem:
     current_ui: RectanglePartItem | None = item.ui
     if current_ui:
         return current_ui
-    if item.part_type in [PART_ITEM, QUESTION_REF_ITEM, PAGE_REF_ITEM]:
+    if item.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_PAGE_ITEM]:
         current_ui = ReferencePartItem(item)
     elif item.part_type in [Q_WORD_BOUNDARY_PART_ITEM, Q_BOX_PART_ITEM]:
         current_ui = WordBoundaryPartItem(item)    
