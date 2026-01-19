@@ -197,6 +197,11 @@ class EditorScene(QGraphicsScene):
             if mode is not None:
                 self.mode = mode
             event.accept()
+        elif event.key() == Qt.Key.Key_P:
+            mode = self.mgr.pre_create_page_ref_item()
+            if mode is not None:
+                self.mode = mode
+            event.accept()            
         elif event.key() == Qt.Key.Key_Q:
             mode = self.mgr.pre_create_part_child_item()
             if mode is not None:

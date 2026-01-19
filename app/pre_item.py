@@ -4,7 +4,7 @@ from app.constants import (
     SETTINGS,
     PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
     FIXED_SIZE, SERIALIZABLE, REPEATABLE, ACTIVABLE, SQUARE,
-    KEY_PRE_ITEM,
+    KEY_PRE_ITEM, PAGE_REF_ITEM
 )
 
 from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
@@ -16,6 +16,7 @@ class PreItem:
     def __init__(self, part_type: str, part_id: str, **kwargs):
         self._part_type = part_type
         self._part_id = part_id
+        self._page_id: str | None = kwargs.get("page_id")
         self._is_active = kwargs.get("active", False)
         self._qn = kwargs.get("qn")
         self._qnn = kwargs.get("qnn")
@@ -58,6 +59,10 @@ class PreItem:
     @property
     def part_id(self):
         return self._part_id
+    
+    @property
+    def page_id(self):
+        return self._page_id
     
     @property
     def settings(self) -> dict:
@@ -118,6 +123,7 @@ class PreItem:
             "ui": self.ui,
             "qn": self._qn,
             "qnn": self._qnn,
+            "page_id": self.page_id,
         }
 
     @property
@@ -170,6 +176,8 @@ class PreItem:
     
     @property
     def default_text(self) -> str:
+        if self.part_type == PAGE_REF_ITEM:
+            return self.page_id        
         if self.part_type == PART_ITEM:
             return self.part_id
         if self.part_type == QUESTION_REF_ITEM:
@@ -207,6 +215,7 @@ class PreItem:
             "w": self.width,
             "h": self.height,
             "part_id": self.part_id,
+            "page_id": self.page_id,
             "visible": self.is_visible,
         }
         if self._qn:
@@ -228,6 +237,7 @@ class PreItem:
             "height": data.get("h"),
             "qn": data.get("qn"),
             "qnn": data.get("qnn"),
+            "page_id": data.get("page_id")
         }
         return cls(part_type, part_id, **kwargs)
     

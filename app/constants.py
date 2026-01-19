@@ -31,11 +31,13 @@ QUESTION_NUMBER = "QUESTION_NUMBER"
 
 PRE_ITEM = "PRE_ITEM"
 PART_ITEM = "PART_ITEM"
+ANSWER_PART_ITEM = "ANSWER_PART_ITEM"
 Q_WORD_BOUNDARY_PART_ITEM = "Q_WORD_BOUNDARY_PART_ITEM"
 Q_BOX_PART_ITEM = "Q_BOX_PART_ITEM"
 GAP_ITEM = "GAP_ITEM"
 Q_GAP_ITEM = "Q_GAP_ITEM"
 QUESTION_REF_ITEM = "QUESTION_REF_ITEM"
+PAGE_REF_ITEM = "PAGE_REF_ITEM"
 OPTION_REF_ITEM = "OPTION_REF_ITEM"
 
 
@@ -70,6 +72,15 @@ SETTINGS = {
         "font_color_active": "#000",
         "font_color_inactive": "#000",
     },
+    PAGE_REF_ITEM: {
+        "size": 50,
+        "bg_color_active": "#7D2EA8",
+        "bg_color_inactive": "#C69FDA",
+        "border_color_active": "#7D2EA8",
+        "border_color_inactive": "#C69FDA",
+        "font_color_active": "#000",
+        "font_color_inactive": "#000",
+    },    
     Q_BOX_PART_ITEM: {
         "size": 20,
         "bg_color_active": "#000000ff",

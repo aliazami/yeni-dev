@@ -1,4 +1,7 @@
-from app.constants import PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM, CHILD_TYPES
+from app.constants import (
+    PART_ITEM, QUESTION_REF_ITEM, Q_WORD_BOUNDARY_PART_ITEM, 
+    CHILD_TYPES, ANSWER_PART_ITEM, OPTION_REF_ITEM, PAGE_REF_ITEM
+)
 from app.pre_item import PreItem
 from app.models import Delta
 
@@ -51,6 +54,10 @@ class ManagerStat:
     @property
     def part_items(self):
         return [item for item in self.items if item.part_type == PART_ITEM]
+    
+    @property
+    def answer_part_items(self):
+        return [item for item in self.items if item.part_type == ANSWER_PART_ITEM]    
     
     @property
     def active_part_item(self):
@@ -109,6 +116,13 @@ class ManagerStat:
     def get_next_part_id(self) -> str:
         id_list = [item.part_id for item in self.part_items]
         return get_next_id(id_list, "1")
+    
+    def get_next_answer_part_id(self, page_id: str | None) -> str:
+        if page_id:
+            id_list = [item.part_id for item in self.answer_part_items if item.page_id == page_id]
+        else:
+            id_list = [item.part_id for item in self.answer_part_items]
+        return get_next_id(id_list, "001")
 
     def get_next_question_number(self, part_id: str) -> int:
         id_list = [item.question_number for item in self.question_ref_items if item.part_id == part_id]
@@ -138,6 +152,29 @@ class ManagerStat:
         if move_delta:
             next_item.move(move_delta)
         return next_item
+    
+    def get_child_options(self, item: PreItem):
+        page_id = item.page_id
+        part_type = item.part_type
+        part_id = item.part_id
+        question_number = item.question_number
+        if part_type == PART_ITEM:
+            next_question_number = self.get_next_question_number(part_id)
+            next_question_option = "b"
+            child_options = [
+                (QUESTION_REF_ITEM, next_question_number),
+                (OPTION_REF_ITEM, next_question_option),
+            ]
+        elif part_type == PAGE_REF_ITEM:
+            next_answer_part_id = self.stat.get_next_answer_part_id(page_id)
+            child_options = [
+                (ANSWER_PART_ITEM, next_answer_part_id),
+            ]            
+        elif part_type == QUESTION_REF_ITEM:
+            next_q_word_boundary = self.stat.get_next_qnn(part_id, question_number, Q_WORD_BOUNDARY_PART_ITEM)
+            child_options = [
+                (Q_WORD_BOUNDARY_PART_ITEM, next_q_word_boundary),
+            ]
 
 
 def get_next_str(value: str) -> str:

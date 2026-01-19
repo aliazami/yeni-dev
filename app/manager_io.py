@@ -39,6 +39,10 @@ class ManagerIO:
     def json_path(self):
         return os.path.join(self._image_folder, self.json_name)
     
+    @property
+    def page_id(self):
+        return self._image_stem or "<?>"
+    
 
     
     def open_image(self, file_path=None, image_name=None):
