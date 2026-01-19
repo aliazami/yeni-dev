@@ -13,9 +13,9 @@ from app.helpers.utils import resize_rect
 
 
 class PreItem:
-    def __init__(self, part_type: str, part_id: str, **kwargs):
+    def __init__(self, part_type: str, **kwargs):
         self._part_type = part_type
-        self._part_id = part_id
+        self._part_id = kwargs["part_id"] # raises error if not presents
         self._page_id: str | None = kwargs.get("page_id")
         self._is_active = kwargs.get("active", False)
         self._qn = kwargs.get("qn")
@@ -42,9 +42,8 @@ class PreItem:
             self.ui.setData(KEY_PRE_ITEM, self)
 
     def copy(self):
-        part_id= str(self.part_id)
         part_type = str(self.part_type)
-        return PreItem(part_type, part_id, **self.kwargs)
+        return PreItem(part_type, **self.kwargs)
 
     def __str__(self):
         return self.uid
@@ -124,6 +123,7 @@ class PreItem:
             "qn": self._qn,
             "qnn": self._qnn,
             "page_id": self.page_id,
+            "part_id": self.part_id,
         }
 
     @property
@@ -227,7 +227,7 @@ class PreItem:
     @classmethod
     def from_dict(cls, data: dict):
         part_type = data["part_type"]
-        part_id = data["part_id"]
+        
         kwargs = {
             "active": False,
             "visible": part_type == PART_ITEM,
@@ -235,9 +235,10 @@ class PreItem:
             "y": data.get("y"),
             "width": data.get("w"),
             "height": data.get("h"),
+            "part_id": data["part_id"], #mandatory
             "qn": data.get("qn"),
             "qnn": data.get("qnn"),
             "page_id": data.get("page_id")
         }
-        return cls(part_type, part_id, **kwargs)
+        return cls(part_type, **kwargs)
     

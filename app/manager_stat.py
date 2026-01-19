@@ -100,7 +100,6 @@ class ManagerStat:
         # root_item.move(move_delta)
         item_list = [root_item]
         for decendent in self.get_decendents(item):
-            part_id = root_item.part_id
             part_type = decendent.part_type
             kwargs = decendent.kwargs.copy()
             kwargs["ui"] = None
@@ -108,7 +107,7 @@ class ManagerStat:
                 kwargs["qn"] = root_item.question_number
             if root_item.qnn:
                 kwargs["qnn"] = root_item.qnn
-            new_child = PreItem(part_type, part_id, **kwargs)
+            new_child = PreItem(part_type, **kwargs)
             new_child.move(move_delta)
             item_list.append(new_child)
         return item_list
@@ -138,17 +137,16 @@ class ManagerStat:
         kwargs["active"] = False
         kwargs["visible"] = True
         part_type = item.part_type
-        part_id = item.part_id
         question_number = item.question_number
         if part_type == PART_ITEM:
-            part_id = self.get_next_part_id()
+            kwargs["part_id"] = self.get_next_part_id()
         elif part_type == QUESTION_REF_ITEM:
-            kwargs["qn"] = self.get_next_question_number(part_id)
+            kwargs["qn"] = self.get_next_question_number(item.part_id)
         elif part_type in CHILD_TYPES[QUESTION_REF_ITEM]:
-            kwargs["qnn"] = self.get_next_qnn(part_id, question_number, part_type)
+            kwargs["qnn"] = self.get_next_qnn(item.part_id, question_number, part_type)
         else:
             raise Exception("unexpected type")
-        next_item = PreItem(part_type, part_id, **kwargs)
+        next_item = PreItem(part_type, **kwargs)
         if move_delta:
             next_item.move(move_delta)
         return next_item
