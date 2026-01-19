@@ -8,42 +8,38 @@ from app.constants import (
 )
 
 from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
-from app.models import Delta
+from app.models import Delta, PreItemData
 from app.helpers.utils import resize_rect
 
 
 class PreItem:
-    def __init__(self, part_type: str, **kwargs):
-        self._part_type = part_type
-        self._part_id = kwargs["part_id"] # raises error if not presents
-        self._page_id: str | None = kwargs.get("page_id")
-        self._is_active = kwargs.get("active", False)
-        self._qn = kwargs.get("qn")
-        self._qnn = kwargs.get("qnn")
-        self.is_visible = kwargs.get("visible", True)
-        size: int = SETTINGS.get(part_type, {}).get("size")
-        x = kwargs.get("x")
-        y = kwargs.get("y")
-        pos = kwargs.get("pos")
-        width = kwargs.get("width") 
-        height = kwargs.get("height")
+    def __init__(self, d: PreItemData):
+        self._part_type = d.part_type
+        self._part_id = d.part_id
+        self._page_id: str | None = d.page_id
+        self._is_active = d.active
+        self._qn = d.qn
+        self._qnn = d.qnn
+        self.is_visible = d.visible
+        size: int = SETTINGS.get(d.part_type, {}).get("size")
+        x = d.x
+        y = d.y
+        width = d.width 
+        height = d.height
         if x is None or y is None:
-            if pos and isinstance(pos, QPointF):
-                x , y = pos.x(), pos.y()
-            elif size:
+            if size:
                 x = y = -size / 2
             else:
                 x = y = 0
         self._pos = QPointF(x, y)
         self._width = width or size
         self._height = height or size
-        self.ui = kwargs.get("ui")
+        self.ui = d.ui
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
 
     def copy(self):
-        part_type = str(self.part_type)
-        return PreItem(part_type, **self.kwargs)
+        return PreItem(self.data)
 
     def __str__(self):
         return self.uid
@@ -109,22 +105,20 @@ class PreItem:
                 new_rect = resize_rect(self.ui.rect(), w=None, h=self._height)
                 self.ui.setRect(new_rect)
 
-
     @property
-    def kwargs(self):
-        return {
-            "active": self._is_active,
-            "visible": self.is_visible,
-            "x": self.pos.x(),
-            "y": self.pos.y(),
-            "width": self.width,
-            "height": self.height,
-            "ui": self.ui,
-            "qn": self._qn,
-            "qnn": self._qnn,
-            "page_id": self.page_id,
-            "part_id": self.part_id,
-        }
+    def data(self):
+        d = PreItemData(self.part_type, self.part_id)
+        d.active = self._is_active
+        d.visible = self.is_visible
+        d.x = self.pos.x()
+        d.y = self.pos.y()
+        d.width = self.width
+        d.height = self.height
+        d.ui = self.ui
+        d.qn = self._qn
+        d.qnn = self._qnn
+        d.page_id = self.page_id
+        return d
 
     @property
     def is_active(self):
@@ -227,18 +221,17 @@ class PreItem:
     @classmethod
     def from_dict(cls, data: dict):
         part_type = data["part_type"]
-        
-        kwargs = {
-            "active": False,
-            "visible": part_type == PART_ITEM,
-            "x": data.get("x"),
-            "y": data.get("y"),
-            "width": data.get("w"),
-            "height": data.get("h"),
-            "part_id": data["part_id"], #mandatory
-            "qn": data.get("qn"),
-            "qnn": data.get("qnn"),
-            "page_id": data.get("page_id")
-        }
-        return cls(part_type, **kwargs)
+        part_id = data["part_id"]
+        d = PreItemData(part_type, part_id)
+        d.active = False
+        d.visible = part_type == PART_ITEM
+        d.x = data.get("x")
+        d.y = data.get("y")
+        d.width = data.get("w")
+        d.height = data.get("h")
+        d.qn = data.get("qn")
+        d.qnn = data.get("qnn")
+        d.page_id = data.get("page_id")
+                
+        return cls(d)
     

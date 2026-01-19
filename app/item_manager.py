@@ -13,7 +13,7 @@ from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
 from app.components.word_boundary_part_item import WordBoundaryPartItem
 from app.dialogs import PartSelectDialog
-from app.models import Delta
+from app.models import Delta, PreItemData
 from app.manager_stat import ManagerStat, get_next_str
 from app.manager_io import ManagerIO
 class ItemManager:
@@ -55,22 +55,20 @@ class ItemManager:
         part_id = self.stat.active_part_item.part_id if self.stat.active_part_item else None
         if not self._current_item or not part_id:
             return
-        kwargs = {
-            "x": pos.x(),
-            "y": pos.y(),
-            "width": w,
-            "height": h,
-            "part_id": part_id,
-            "page_id": self.io.page_id,
-        }
+        
         if self._current_item.part_type == QUESTION_REF_ITEM:
             part_type = Q_WORD_BOUNDARY_PART_ITEM
-            qn = self._current_item.question_number
-            next_qnn = self.stat.get_next_qnn(part_id, qn, part_type)
-            kwargs.update({"qn": qn, "qnn": next_qnn}) 
+            d = PreItemData(part_type, part_id)
+            d.x = pos.x(),
+            d.y = pos.y(),
+            d.width = w,
+            d.height = h,
+            d.page_id = self.io.page_id,            
+            d.qn = self._current_item.question_number
+            d.qnn = self.stat.get_next_qnn(part_id, d.qn, part_type)
         else:
             return
-        pre_item = PreItem(part_type, **kwargs)
+        pre_item = PreItem(d)
         self._pre_item = pre_item
         return self.create()
     
@@ -104,11 +102,9 @@ class ItemManager:
         next_part_id = self.stat.get_next_part_id()
         part_id, ok = QInputDialog.getText(None, "Add Part Item", "Enter Unique ID:", text=next_part_id)
         if ok and part_id:
-            kwargs = {
-                "page_id": self.io.page_id,
-                "part_id": part_id,
-            }
-            pre_item = PreItem(PART_ITEM, **kwargs)
+            d = PreItemData(PART_ITEM, part_id)
+            d.page_id = self.io.page_id
+            pre_item = PreItem(d)
             if self.stat.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
             else:
@@ -119,11 +115,9 @@ class ItemManager:
     def pre_create_page_ref_item(self):
         page_id, ok = QInputDialog.getText(None, "Add Page Ref Item", "Enter Unique ID:")
         if ok and page_id:
-            kwargs = {
-                "page_id": page_id,
-                "part_id": f"{PAGE_REF_ITEM}({page_id})",
-            }
-            pre_item = PreItem(PAGE_REF_ITEM, **kwargs)
+            d = PreItemData(PAGE_REF_ITEM, f"{PAGE_REF_ITEM}({page_id})") 
+            d.page_id = self.io.page_id
+            pre_item = PreItem(d)
             if self.stat.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
             else:
@@ -161,7 +155,6 @@ class ItemManager:
     def pre_create_part_child_item(self):
         page_id = self.stat.active_part_item.page_id if self.stat.active_part_item else None
         part_id = self.stat.active_part_item.part_id if self.stat.active_part_item else None
-        kwargs = None
         child_options = None
         scene_mode: SceneMode | None = None
         if not part_id:
@@ -197,21 +190,23 @@ class ItemManager:
         dialog = PartSelectDialog(child_options)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             r_part_type, r_id = dialog.get_data()
+            d = PreItemData(r_part_type, part_id)
             if r_part_type == PAGE_REF_ITEM:
-                kwargs = {"part_id": part_id, "page_id": r_id}
+                d.page_id = r_id
                 scene_mode = SceneMode.ADD_ITEM
             elif r_part_type == QUESTION_REF_ITEM:
-                kwargs = {"part_id": part_id,"qn": int(r_id)}
+                d.qn = int(r_id)
                 scene_mode = SceneMode.ADD_ITEM
             elif r_part_type == Q_WORD_BOUNDARY_PART_ITEM:
-                kwargs = {"part_id": part_id,"qn": question_number, "qnn": int(r_id)}
+                d.qn = question_number
+                d.qnn = int(r_id)
                 scene_mode = SceneMode.DRAWING_RECT
         
             # other types are added bellow #
             # other types are added bellow #
             # other types are added bellow #
-            if kwargs and r_part_type and scene_mode:
-                pre_item = PreItem(r_part_type, **kwargs)
+            if d and scene_mode:
+                pre_item = PreItem(d)
                 if self.stat.get_item(pre_item.uid):
                     QMessageBox.warning(None, "Error", "Exists!")
                 else:
@@ -255,14 +250,14 @@ class ItemManager:
             raise Exception(f"No pre-item exists in repeat phase")
 
         part_type = self._pre_item.part_type
-        kwargs = self._pre_item.kwargs.copy()
+        d = self._pre_item.data.copy()
         if part_type in [PART_ITEM]:
-            kwargs["part_id"] = get_next_str(self._pre_item.part_id)
+            next_part_id = get_next_str(self._pre_item.part_id)
+            d.set_part_id(next_part_id)
         elif part_type in [QUESTION_REF_ITEM]:
             last_qn = self._pre_item.question_number
-            qn = int(get_next_str(str(last_qn)))
-            kwargs["qn"] = qn
-        self._pre_item = PreItem(part_type, **kwargs)
+            d.qn = int(get_next_str(str(last_qn)))
+        self._pre_item = PreItem(d)
 
     def debug_print(self):
         print("============================")
