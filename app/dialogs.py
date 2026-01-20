@@ -70,7 +70,7 @@ class PartSelectDialog(QDialog):
 
 
     def get_data(self):
-        return self.combo_box.currentText(), self.id_input.text().strip()
+        return self.combo_box.currentText(), int(self.id_input.text().strip())
 
 
 class HelpWindow(QWidget):

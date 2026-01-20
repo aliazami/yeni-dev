@@ -1,6 +1,6 @@
 from app.constants import (
-    REF_PART_ITEM, REF_QUESTION_ITEM, Q_WORD_BOUNDARY_PART_ITEM, 
-    CHILD_TYPES, ANSWER_PART_ITEM, REF_OPTION_ITEM, REF_PAGE_ITEM
+    REF_PART_ITEM, REF_QUESTION_ITEM, WORD_BOUNDARY_ITEM, 
+    ITEM_CHILD_TYPES, REF_ANSWER_ITEM, REF_OPTION_ITEM, REF_UNIT_ITEM, BAHAVE_INITIAL_VISIBLE
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -30,106 +30,54 @@ class ManagerStat:
         item = self.get_item(uid)
         if not item:
             raise Exception(f"item {uid} not found")
-        if item.part_type == REF_PART_ITEM:
-            for qri in self.question_ref_items:
-                if qri.part_id == item.part_id:
-                    return False
-
-            self.items.remove(item)
-            return True
-
-        elif item.part_type == REF_QUESTION_ITEM:
-            for qnn in self.all_question_child_items:
-                if qnn.question_number == item.question_number:
-                    return False
-            self.items.remove(item)
-            return True
-        
-        elif item.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
-            self.items.remove(item)
-            return True
-        else:
-            print("Warning no type detected to delete")
-
-    @property
-    def part_items(self):
-        return [item for item in self.items if item.part_type == REF_PART_ITEM]
+        for child in self.get_decendents(item):
+            self.items.remove(child)
+        self.items.remove(item)
+        return True
     
-    @property
-    def answer_part_items(self):
-        return [item for item in self.items if item.part_type == ANSWER_PART_ITEM]    
+    def activate_item(self, item: PreItem):
+        ascendants = self.get_acendents(item)
+        siblings = self.get_siblings(item)
+        children = self.get_children(item)
+        visible_items = ascendants + siblings + children
+        for other in self.items:
+            other.is_visible = other.part_type in BAHAVE_INITIAL_VISIBLE or other in visible_items
+            other.is_active = False
+        item.is_visible = True
+        item.is_active = True
+
     
-    @property
-    def active_part_item(self):
-        for pi in self.part_items:
-            if pi.is_active:
-                return pi
-
-    @property
-    def question_ref_items(self):
-        return [item for item in self.items if item.part_type == REF_QUESTION_ITEM]
-
-    def part_child_items(self, parent_item: PreItem):
-        return [item for item in self.items if item.part_type in CHILD_TYPES[REF_PART_ITEM] and item.part_id == parent_item.part_id]
+    def get_acendents(self, parent_item: PreItem):
+        acendants = [item for item in self.items if parent_item.is_my_ascendant(item)]
+        return acendants
     
-
     def get_decendents(self, parent_item: PreItem):
-        part_type = parent_item.part_type
-        if not CHILD_TYPES[part_type]:
-            return []
-        part_id = parent_item.part_id
-        question_number = parent_item.question_number
-        screen1 = [item for item in self.items if item.part_id == part_id and item.part_type != REF_PART_ITEM]
-        if part_type == REF_PART_ITEM:
-            return screen1
-        screen2 = [item for item in screen1 if \
-                   question_number and item.question_number == question_number \
-                   and item.part_type != REF_QUESTION_ITEM
-                   ]
-        if part_type == REF_QUESTION_ITEM:
-            return screen2
-        
-        raise Exception(f"not implemented for {part_type}")
-        
-    @property
-    def all_question_child_items(self):
-        return [item for item in self.items if item.part_type in CHILD_TYPES[REF_QUESTION_ITEM]]
+        decendants = [item for item in self.items if parent_item.is_my_descendant(item)]
+        return decendants
+    
+    def get_children(self, parent: PreItem):
+        children = [item for item in self.items if parent.is_my_child(item)]
+        return children
+    
+    def get_siblings(self, item: PreItem):
+        siblings = [other for other in self.items if item.is_my_sibling(other)]
+        return siblings
     
     def deep_copy_by_delta(self, item: PreItem, move_delta: Delta) -> list[PreItem]:
         root_item = self.get_next_pre_item(item, move_delta)
         # root_item.move(move_delta)
         item_list = [root_item]
         for decendent in self.get_decendents(item):
-            part_type = decendent.part_type
             d = decendent.data.copy()
-            d.set_part_type(part_type)
             d.ui = None
-            if root_item.question_number:
-                d.qn = root_item.question_number
-            if root_item.qnn:
-                d.qnn = root_item.qnn
+            d.parent_id = d.parent_id.replace(item.uid, root_item.uid)
             new_child = PreItem(d)
             new_child.move(move_delta)
             item_list.append(new_child)
         return item_list
-
-    def get_next_part_id(self) -> str:
-        id_list = [item.part_id for item in self.part_items]
-        return get_next_id(id_list, "1")
     
-    def get_next_answer_part_id(self, page_id: str | None) -> str:
-        if page_id:
-            id_list = [item.part_id for item in self.answer_part_items if item.page_id == page_id]
-        else:
-            id_list = [item.part_id for item in self.answer_part_items]
-        return get_next_id(id_list, "001")
-
-    def get_next_question_number(self, part_id: str) -> int:
-        id_list = [item.question_number for item in self.question_ref_items if item.part_id == part_id]
-        return get_next_id(id_list, 1)
-
-    def get_next_qnn(self, part_id: str, question_number: int, part_type: str) -> int:
-        id_list = [item.qnn for item in self.items if item.part_id == part_id and item.question_number == question_number and item.part_type == part_type and item.qnn is not None]
+    def get_next_seq(self, parent_id: str, part_type: str) -> int:
+        id_list = [item.seq for item in self.items if item.parent_id == parent_id and item.part_type == part_type]
         return get_next_id(id_list, 1)
     
     def get_next_pre_item(self, item: PreItem, move_delta: Delta = None):
@@ -137,44 +85,25 @@ class ManagerStat:
         d.ui = None
         d.active = False
         d.visible = True
-        part_type = item.part_type
-        question_number = item.question_number
-        if part_type == REF_PART_ITEM:
-            next_part_id = self.get_next_part_id()
-            d.set_part_id(next_part_id)
-        elif part_type == REF_QUESTION_ITEM:
-            d.qn = self.get_next_question_number(item.part_id)
-        elif part_type in CHILD_TYPES[REF_QUESTION_ITEM]:
-            d.qnn = self.get_next_qnn(item.part_id, question_number, part_type)
-        else:
-            raise Exception("unexpected type")
+        d.seq = self.get_next_seq(d.parent_id, d.part_type)
         next_item = PreItem(d)
         if move_delta:
             next_item.move(move_delta)
         return next_item
     
-    def get_child_options(self, item: PreItem):
-        page_id = item.page_id
-        part_type = item.part_type
-        part_id = item.part_id
-        question_number = item.question_number
-        if part_type == REF_PART_ITEM:
-            next_question_number = self.get_next_question_number(part_id)
-            next_question_option = "b"
-            child_options = [
-                (REF_QUESTION_ITEM, next_question_number),
-                (REF_OPTION_ITEM, next_question_option),
-            ]
-        elif part_type == REF_PAGE_ITEM:
-            next_answer_part_id = self.stat.get_next_answer_part_id(page_id)
-            child_options = [
-                (ANSWER_PART_ITEM, next_answer_part_id),
-            ]            
-        elif part_type == REF_QUESTION_ITEM:
-            next_q_word_boundary = self.stat.get_next_qnn(part_id, question_number, Q_WORD_BOUNDARY_PART_ITEM)
-            child_options = [
-                (Q_WORD_BOUNDARY_PART_ITEM, next_q_word_boundary),
-            ]
+    def get_child_options(self, parent_item: PreItem):
+        child_options = []
+        for part_type in ITEM_CHILD_TYPES[parent_item.part_type]:
+            next_seq = self.get_next_seq(parent_item.uid, part_type)
+            option = (part_type, next_seq)
+            child_options.append(option)
+        return child_options
+    
+    def get_unique_unit_item(self):
+        unit_items = [item for item in self.items if item.part_type == REF_UNIT_ITEM]
+        if len(unit_items) == 1:
+            return unit_items[0]
+        return len(unit_items)
 
 
 def get_next_str(value: str) -> str:
@@ -201,6 +130,3 @@ def get_next_id(id_list: list[str] | list[int], default: int | str = 1):
             return next_id
 
     return default
-
-
-

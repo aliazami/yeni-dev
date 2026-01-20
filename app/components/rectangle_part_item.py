@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsSimpleT
 from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QColor, QBrush, QPen, QFont, QPainterPath
 from app.constants import (
-    KEY_PRE_ITEM, KEY_RECT_STYLE, KEY_DEFAULT_TEXT
+    KEY_PRE_ITEM, KEY_RECT_STYLE, KEY_DEFAULT_TEXT, ITEM_Z_ORDER
 )
 
 from app.models import RectStyles
@@ -23,6 +23,9 @@ class RectanglePartItem(QGraphicsRectItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
             | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
+        z_order = ITEM_Z_ORDER.get(pre_item.part_type)
+        if isinstance(z_order, int):
+            self.setZValue(z_order)
         default_text = QGraphicsSimpleTextItem("", parent=self)
         default_text.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.setData(KEY_DEFAULT_TEXT, default_text)

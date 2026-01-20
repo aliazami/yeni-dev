@@ -2,9 +2,9 @@
 from PySide6.QtCore import QPointF
 from app.constants import (
     UI_SETTINGS,
-    REF_PART_ITEM, REF_QUESTION_ITEM, Q_WORD_BOUNDARY_PART_ITEM,
-    FIXED_SIZE, SERIALIZABLE, REPEATABLE, ACTIVABLE, SQUARE,
-    KEY_PRE_ITEM, REF_PAGE_ITEM
+    REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
+    KEY_PRE_ITEM, ITEM_SIGN, BAHAVE_INITIAL_VISIBLE, ITEM_SIGN,
+    BEHAVE_SQUARE
 )
 
 from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
@@ -15,11 +15,9 @@ from app.helpers.utils import resize_rect
 class PreItem:
     def __init__(self, d: PreItemData):
         self._part_type = d.part_type
-        self._part_id = d.part_id
-        self._page_id: str | None = d.page_id
+        self._parent_id = d.parent_id
+        self._seq = d.seq
         self._is_active = d.active
-        self._qn = d.qn
-        self._qnn = d.qnn
         self.is_visible = d.visible
         size: int = UI_SETTINGS.get(d.part_type, {}).get("size")
         x = d.x
@@ -35,6 +33,7 @@ class PreItem:
         self._width = width or size
         self._height = height or size
         self.ui = d.ui
+        self.tag = d.tag
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
 
@@ -46,18 +45,28 @@ class PreItem:
     
     def __repr__(self):
         return f"{self.uid} {id(self)}"
+    
+    def __eq__(self, value):
+        if isinstance(value, PreItem):
+            return self.uid == value.uid
+        return False
+    
+    def __ne__(self, value):
+        if isinstance(value, PreItem):
+            return self.uid != value.uid
+        return True
 
     @property
     def part_type(self):
         return self._part_type
     
     @property
-    def part_id(self):
-        return self._part_id
+    def parent_id(self):
+        return self._parent_id
     
     @property
-    def page_id(self):
-        return self._page_id
+    def seq(self):
+        return self._seq
     
     @property
     def settings(self) -> dict:
@@ -75,6 +84,31 @@ class PreItem:
     def height(self):
         return self._height
     
+    def is_my_ascendant(self, other):
+        if isinstance(other, PreItem):
+            return self.uid.startswith(other.uid) and self != other
+        raise ValueError
+    
+    def is_my_descendant(self, other):
+        if isinstance(other, PreItem):
+            return other.is_my_ascendant(self)
+        raise ValueError
+    
+    def is_my_parent(self, other):
+        if isinstance(other, PreItem):
+            return self.is_my_ascendant(other) and self.depth == other.depth + 1
+        raise ValueError
+    
+    def is_my_child(self, other):
+        if isinstance(other, PreItem):
+            return other.is_my_parent(self)
+        raise ValueError     
+
+    def is_my_sibling(self, other):
+        if isinstance(other, PreItem):
+            return self.parent_id == other.parent_id and self != other
+        raise ValueError   
+
     def move(self, delta: Delta):
         x = self.pos.x() + delta.dx
         y = self.pos.y() + delta.dy
@@ -88,16 +122,23 @@ class PreItem:
                 self.ui.setPos(self._pos)
 
     def set_width(self, value: float):
-        if self.fixed_size:
+        if self.part_type in BEHAVE_FIXED_SIZE:
             return
         self._width = value
         if self.ui:
             if not lengthes_are_very_similar(self._width, self.ui.rect().width()):
                 new_rect = resize_rect(self.ui.rect(), w=self._width, h=None)
                 self.ui.setRect(new_rect)
+        if self.part_type in BEHAVE_SQUARE:
+            self._set_height(value)
 
     def set_height(self, value: float):
-        if self.fixed_size:
+        if self.part_type in BEHAVE_SQUARE:
+            return        
+        self._set_height(value)
+
+    def _set_height(self, value: float):      
+        if self.part_type in BEHAVE_FIXED_SIZE:
             return        
         self._height = value
         if self.ui:
@@ -105,9 +146,14 @@ class PreItem:
                 new_rect = resize_rect(self.ui.rect(), w=None, h=self._height)
                 self.ui.setRect(new_rect)
 
+    
+
     @property
     def data(self):
-        d = PreItemData(self.part_type, self.part_id)
+        d = PreItemData()
+        d.part_type = self.part_type
+        d.parent_id = self.parent_id
+        d.seq = self.seq
         d.active = self._is_active
         d.visible = self.is_visible
         d.x = self.pos.x()
@@ -115,9 +161,6 @@ class PreItem:
         d.width = self.width
         d.height = self.height
         d.ui = self.ui
-        d.qn = self._qn
-        d.qnn = self._qnn
-        d.page_id = self.page_id
         return d
 
     @property
@@ -130,55 +173,24 @@ class PreItem:
             raise ValueError
         self._is_active = value
         self._refresh_ui()
-
-    @property
-    def question_number(self):
-        return self._qn
     
     @property
-    def qnn(self):
-        return self._qnn
-    
-    @property
-    def serializable(self):
-        return self.part_type in SERIALIZABLE
-    
-    @property
-    def activable(self):
-        return self.part_type in ACTIVABLE
-    
-    @property
-    def repeatable(self):
-        return self.part_type in REPEATABLE
-
-    @property
-    def fixed_size(self):
-        return self.part_type in FIXED_SIZE
-    
-    @property
-    def is_square(self):
-        return self.part_type in SQUARE
+    def seq(self):
+        return self._seq
 
     @property
     def uid(self) -> str:
-        item_uid = f"{self.part_type}::{self.part_id}"
-        if self.question_number:
-            item_uid = f"{item_uid}::{self.question_number}"
-            if self.qnn:
-                item_uid = f"{item_uid}::{self.qnn}"
-        return item_uid
+        parent_part = f"{self.parent_id}::" if self.parent_id else ""
+        return f"{parent_part}{self.default_text}"
+    
+    @property
+    def depth(self):
+        return self.uid.count("::")
     
     @property
     def default_text(self) -> str:
-        if self.part_type == REF_PAGE_ITEM:
-            return self.page_id        
-        if self.part_type == REF_PART_ITEM:
-            return self.part_id
-        if self.part_type == REF_QUESTION_ITEM:
-            return str(self.question_number)
-        if self.part_type in [Q_WORD_BOUNDARY_PART_ITEM]:
-            return str(self.qnn)        
-        return "???"
+        sign = ITEM_SIGN.get(self.part_type)
+        return f"{sign}{self.seq}" if sign else "???"
     
     @property
     def initial_pos(self):
@@ -204,34 +216,29 @@ class PreItem:
     def to_dict(self) -> dict | None:
         item_dict = {
             "part_type": self.part_type,
+            "parent_id": self.parent_id,
+            "seq": self.seq,
             "x": self.pos.x(),
             "y": self.pos.y(),
             "w": self.width,
             "h": self.height,
-            "part_id": self.part_id,
-            "page_id": self.page_id,
             "visible": self.is_visible,
         }
-        if self._qn:
-                item_dict["qn"] = self._qn
-        if self._qnn:
-                item_dict["qnn"] = self._qnn
+
         return item_dict
 
     @classmethod
     def from_dict(cls, data: dict):
-        part_type = data["part_type"]
-        part_id = data["part_id"]
-        d = PreItemData(part_type, part_id)
+        d = PreItemData()
+        d.part_type = data["part_type"]
+        d.parent_id = data["parent_id"]
+        d.seq = data["seq"]
         d.active = False
-        d.visible = part_type == REF_PART_ITEM
+        d.visible = d.part_type in BAHAVE_INITIAL_VISIBLE
         d.x = data.get("x")
         d.y = data.get("y")
         d.width = data.get("w")
         d.height = data.get("h")
-        d.qn = data.get("qn")
-        d.qnn = data.get("qnn")
-        d.page_id = data.get("page_id")
                 
         return cls(d)
     

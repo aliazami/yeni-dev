@@ -1,7 +1,7 @@
 # app/part_item.py
 from PySide6.QtCore import QPointF
 from PySide6.QtWidgets import QGraphicsSimpleTextItem
-from app.constants import KEY_DEFAULT_TEXT, REF_PAGE_ITEM
+from app.constants import KEY_DEFAULT_TEXT, REF_UNIT_ITEM
 from app.pre_item import PreItem
 from app.components.rectangle_part_item import RectanglePartItem
 
@@ -16,8 +16,8 @@ class ReferencePartItem(RectanglePartItem):
         super()._refresh_ui()
         default_text: QGraphicsSimpleTextItem = self.data(KEY_DEFAULT_TEXT)
 
-        if self.pre_item.part_type == REF_PAGE_ITEM:
-            default_text.setPos(17, 17)
+        if self.pre_item.part_type == REF_UNIT_ITEM:
+            default_text.setPos(2, 17)
         else:
             br = default_text.boundingRect()
             br_width = br.width()

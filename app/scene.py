@@ -23,6 +23,8 @@ from app.helpers.scene_misc_helper import calculate_move_command, calculate_resi
 from app.components.rectangle_part_item import RectanglePartItem
 from app.item_manager import ItemManager, get_ui
 
+from app.constants import WORD_BOUNDARY_ITEM, REF_UNIT_ITEM
+
 # # ==========================================
 # #                THE SCENE
 # # ==========================================
@@ -151,6 +153,7 @@ class EditorScene(QGraphicsScene):
 
     # --- Events ---
     def keyPressEvent(self, event: QEvent):
+        shif_key = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -172,7 +175,7 @@ class EditorScene(QGraphicsScene):
                 self.deserialize_scene(data)
             event.accept()
         elif event.key() == Qt.Key.Key_B:
-            mode = self.mgr.pre_create_boundary()
+            mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM)
             if mode is not None:
                 self.mode = mode
             event.accept()
@@ -192,21 +195,17 @@ class EditorScene(QGraphicsScene):
                 self.undo_stack.push(RemoveItemsCommand(self, [editing_item]))
                 self.mode = mode
             event.accept()
-        elif event.key() == Qt.Key.Key_A:
-            mode = self.mgr.pre_create_part_item()
+        elif event.key() == Qt.Key.Key_A and not shif_key:
+            mode = self.mgr.pre_create_item()
             if mode is not None:
                 self.mode = mode
             event.accept()
-        elif event.key() == Qt.Key.Key_P:
-            mode = self.mgr.pre_create_page_ref_item()
-            if mode is not None:
-                self.mode = mode
-            event.accept()            
-        elif event.key() == Qt.Key.Key_Q:
-            mode = self.mgr.pre_create_part_child_item()
+        elif event.key() == Qt.Key.Key_A and shif_key:
+            mode = self.mgr.pre_create_item(part_type=REF_UNIT_ITEM)
             if mode is not None:
                 self.mode = mode
             event.accept()
+            
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             if items:
@@ -276,10 +275,10 @@ class EditorScene(QGraphicsScene):
                 new_item = self.mgr.create(pos)
                 if new_item:
                     self.undo_stack.push(
-                        AddItemsCommand(self, new_item, f"Add {self.mode}")
+                        AddItemsCommand(self, new_item, f"Add {new_item.pre_item.uid}")
                     )
                     if self.mgr.is_repeating:
-                        self.mgr.repeat()
+                        self.mode = self.mgr.request_next_item()
                     else:
                         self.mode = SceneMode.SELECT
                 event.accept()
