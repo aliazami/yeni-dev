@@ -4,11 +4,11 @@ from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, ITEM_SIGN, BAHAVE_INITIAL_VISIBLE, ITEM_SIGN,
-    BEHAVE_SQUARE
+    BEHAVE_SQUARE, BAHAVE_HAS_CAPTION
 )
 
 from app.helpers.utils import points_are_very_near, lengthes_are_very_similar
-from app.models import Delta, PreItemData
+from app.models import Delta, PreItemData, Caption
 from app.helpers.utils import resize_rect
 
 
@@ -19,6 +19,7 @@ class PreItem:
         self._seq = d.seq
         self._is_active = d.active
         self.is_visible = d.visible
+        self._z_order = d.z_order
         size: int = UI_SETTINGS.get(d.part_type, {}).get("size")
         x = d.x
         y = d.y
@@ -34,6 +35,14 @@ class PreItem:
         self._height = height or size
         self.ui = d.ui
         self.tag = d.tag
+        if d.caption:
+            self.caption = d.caption.copy()
+        elif d.part_type in BAHAVE_HAS_CAPTION:
+            self.caption = Caption("")
+        else:
+            self.caption = None
+
+
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
 
@@ -84,6 +93,77 @@ class PreItem:
     def height(self):
         return self._height
     
+    @property
+    def z_order(self):
+        return self._z_order
+    
+    @z_order.setter
+    def z_order(self, value):
+        if not isinstance(value, int):
+            raise ValueError
+        if value != self.z_order:
+            self._z_order = value
+            self._refresh_ui()
+    
+    @property
+    def data(self):
+        d = PreItemData()
+        d.part_type = self.part_type
+        d.parent_id = self.parent_id
+        d.seq = self.seq
+        d.active = self._is_active
+        d.visible = self.is_visible
+        d.x = self.pos.x()
+        d.y = self.pos.y()
+        d.z_order = self.z_order
+        d.width = self.width
+        d.height = self.height
+        d.caption = self.caption
+        d.ui = self.ui
+        return d
+
+    @property
+    def is_active(self):
+        return self._is_active
+    
+    @is_active.setter
+    def is_active(self, value: bool):
+        if not isinstance(value, bool):
+            raise ValueError
+        if self._is_active != value:
+            self._is_active = value
+            self._refresh_ui()
+    
+    @property
+    def seq(self):
+        return self._seq
+
+    @property
+    def uid(self) -> str:
+        parent_part = f"{self.parent_id}::" if self.parent_id else ""
+        return f"{parent_part}{self.default_text}"
+    
+    @property
+    def depth(self):
+        return self.uid.count("::")
+    
+    @property
+    def default_text(self) -> str:
+        sign = ITEM_SIGN.get(self.part_type)
+        return f"{sign}{self.seq}" if sign else "???"
+    
+    @property
+    def caption_text(self):
+        return self.caption.text if self.caption else None
+    
+    @property
+    def initial_pos(self):
+        pos = QPointF(0, 0)
+        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
+          pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
+        return pos  
+
+
     def is_my_ascendant(self, other):
         if isinstance(other, PreItem):
             return self.uid.startswith(other.uid) and self != other
@@ -145,67 +225,7 @@ class PreItem:
             if not lengthes_are_very_similar(self._height, self.ui.rect().height()):
                 new_rect = resize_rect(self.ui.rect(), w=None, h=self._height)
                 self.ui.setRect(new_rect)
-
     
-
-    @property
-    def data(self):
-        d = PreItemData()
-        d.part_type = self.part_type
-        d.parent_id = self.parent_id
-        d.seq = self.seq
-        d.active = self._is_active
-        d.visible = self.is_visible
-        d.x = self.pos.x()
-        d.y = self.pos.y()
-        d.width = self.width
-        d.height = self.height
-        d.ui = self.ui
-        return d
-
-    @property
-    def is_active(self):
-        return self._is_active
-    
-    @is_active.setter
-    def is_active(self, value: bool):
-        if not isinstance(value, bool):
-            raise ValueError
-        self._is_active = value
-        self._refresh_ui()
-    
-    @property
-    def seq(self):
-        return self._seq
-
-    @property
-    def uid(self) -> str:
-        parent_part = f"{self.parent_id}::" if self.parent_id else ""
-        return f"{parent_part}{self.default_text}"
-    
-    @property
-    def depth(self):
-        return self.uid.count("::")
-    
-    @property
-    def default_text(self) -> str:
-        sign = ITEM_SIGN.get(self.part_type)
-        return f"{sign}{self.seq}" if sign else "???"
-    
-    @property
-    def initial_pos(self):
-        pos = QPointF(0, 0)
-        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
-          pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
-        return pos  
-    
-    def update_ui_data(self):
-        if not self.ui:
-            return
-        pos = self.ui.pos()
-        self.set_pos(pos.x(), pos.y())
-        self.set_width(self.ui.rect().width())
-        self.set_height(self.ui.rect().height())
 
     def _refresh_ui(self):
         if not self.ui:
@@ -220,10 +240,13 @@ class PreItem:
             "seq": self.seq,
             "x": self.pos.x(),
             "y": self.pos.y(),
+            "z_order": self.z_order,
             "w": self.width,
             "h": self.height,
             "visible": self.is_visible,
         }
+        if self.caption_text:
+            item_dict["caption"] = self.caption_text
 
         return item_dict
 
@@ -236,9 +259,12 @@ class PreItem:
         d.active = False
         d.visible = d.part_type in BAHAVE_INITIAL_VISIBLE
         d.x = data.get("x")
+        d.z_order = data.get("z_order", 0)
         d.y = data.get("y")
         d.width = data.get("w")
         d.height = data.get("h")
-                
+        caption_text = data.get("caption")
+        if caption_text:
+            d.caption = Caption(caption_text)
         return cls(d)
     

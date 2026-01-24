@@ -11,9 +11,9 @@ class ManagerStat:
         self.items = items
 
     def get_item(self, uid: str):
-        for item in self.items:
-            if item.uid == uid:
-                return item
+        for obj in self.items:
+            if obj.uid == uid:
+                return obj
             
     def add_item(self, item: PreItem):
         if self.get_item(item.uid):
@@ -48,15 +48,15 @@ class ManagerStat:
 
     
     def get_acendents(self, parent_item: PreItem):
-        acendants = [item for item in self.items if parent_item.is_my_ascendant(item)]
+        acendants = [obj for obj in self.items if parent_item.is_my_ascendant(obj)]
         return acendants
     
     def get_decendents(self, parent_item: PreItem):
-        decendants = [item for item in self.items if parent_item.is_my_descendant(item)]
+        decendants = [obj for obj in self.items if parent_item.is_my_descendant(obj)]
         return decendants
     
     def get_children(self, parent: PreItem):
-        children = [item for item in self.items if parent.is_my_child(item)]
+        children = [obj for obj in self.items if parent.is_my_child(obj)]
         return children
     
     def get_siblings(self, item: PreItem):
@@ -77,7 +77,7 @@ class ManagerStat:
         return item_list
     
     def get_next_seq(self, parent_id: str, part_type: str) -> int:
-        id_list = [item.seq for item in self.items if item.parent_id == parent_id and item.part_type == part_type]
+        id_list = [obj.seq for obj in self.items if obj.parent_id == parent_id and obj.part_type == part_type]
         return get_next_id(id_list, 1)
     
     def get_next_pre_item(self, item: PreItem, move_delta: Delta = None):
@@ -100,11 +100,30 @@ class ManagerStat:
         return child_options
     
     def get_unique_unit_item(self):
-        unit_items = [item for item in self.items if item.part_type == REF_UNIT_ITEM]
+        unit_items = [obj for obj in self.items if obj.part_type == REF_UNIT_ITEM]
         if len(unit_items) == 1:
             return unit_items[0]
         return len(unit_items)
-
+    
+    def bring_to_top(self, item: PreItem, one_step: bool):
+        max_z_order = max([obj.z_order for obj in self.items])
+        most_top_items = [obj for obj in self.items if obj.z_order == max_z_order]
+        if len(most_top_items) == 1 and most_top_items[0] == item:
+            return
+        if one_step and item.z_order <= max_z_order:
+            item.z_order += 1
+        else:
+            item.z_order = max_z_order + 1       
+        
+    def send_to_back(self, item: PreItem, one_step: bool):
+        if one_step and item.z_order >= 0:
+            item.z_order -= 1
+        else:
+            item.z_order = -1
+        if item.z_order < 0: 
+            min_z_order = min([obj.z_order for obj in self.items])
+            for obj in self.items:
+                obj.z_order = obj.z_order - min_z_order       
 
 def get_next_str(value: str) -> str:
     """Return next integer or alphabet character."""

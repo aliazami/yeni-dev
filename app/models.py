@@ -25,7 +25,22 @@ class Delta:
     @property
     def dy(self):
         return self._dy
+
+class Caption:
+    def __init__(self, text: str):
+        self._text: str = str(text)
+
+    @property
+    def text(self):
+        return self._text
     
+    @text.setter
+    def text(self, value):
+        self._text = value
+
+    def copy(self):
+        return Caption(self.text)
+
 
 class PreItemData:
     def __init__(self):
@@ -33,6 +48,7 @@ class PreItemData:
         self.part_type: str = "part_type?"
         self.parent_id: str = "parent_id?"
         self.seq: int = -1
+        self.z_order: int = 1
         self.active: bool = False
         self.visible: bool = True
         # optional
@@ -42,6 +58,7 @@ class PreItemData:
         self.width: int | None = None
         self.height: int | None = None
         self.ui: Any | None = None
+        self.caption: Caption | None = None
 
 
     def copy(self):
@@ -54,10 +71,12 @@ class PreItemData:
         # optional
         new.tag = self.tag
         new.x = self.x
+        new.z_order = self.z_order
         new.y = self.y
         new.width = self.width
         new.height = self.height
         new.ui = self.ui
+        new.caption = self.caption.copy() if self.caption else None
         return new
 
 

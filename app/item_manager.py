@@ -9,14 +9,14 @@ from app.constants import (
     REF_PART_ITEM, REF_QUESTION_ITEM, SceneMode, WORD_BOUNDARY_ITEM,
     CAPTION_ITEM, BOX_ITEM, REF_UNIT_ITEM,
     BAHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
-    BEHAVE_HAS_NO_PARENT
+    BEHAVE_HAS_NO_PARENT, BAHAVE_HAS_CAPTION
 )
 from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
 from app.components.word_boundary_part_item import WordBoundaryPartItem
-from app.dialogs import PartSelectDialog
+from app.dialogs import PartSelectDialog, CaptionEditDialog
 from app.models import Delta, PreItemData
-from app.manager_stat import ManagerStat, get_next_str
+from app.manager_stat import ManagerStat
 from app.manager_io import ManagerIO
 class ItemManager:
     def __init__(self):
@@ -148,7 +148,7 @@ class ItemManager:
         self._current_item = item
         self.stat.activate_item(item)
     
-    def request_edit(self):
+    def request_redraw_rect(self):
         if self._current_item and self._current_item.part_type in BEHAVE_RECTANGLE:
             self._editing_item = self._current_item.copy()
             ui: RectanglePartItem = self._current_item.ui
@@ -167,11 +167,44 @@ class ItemManager:
         if self._current_item:
             self._deep_copy_item = self._current_item
             return SceneMode.DEEP_COPY
+        
+    def bring_to_top(self, one_step: bool):
+        item = self._current_item
+        if not item:
+            return
+        max_z_order = max([obj.z_order for obj in self._items])
+        most_top_items = [obj for obj in self._items if obj.z_order == max_z_order]
+        if len(most_top_items) == 1 and most_top_items[0] == item:
+            return
+        if one_step and item.z_order <= max_z_order:
+            item.z_order += 1
+        else:
+            item.z_order = max_z_order + 1       
+        
+    def send_to_back(self, one_step: bool):
+        item = self._current_item
+        if not item:
+            return        
+        if one_step and item.z_order >= 0:
+            item.z_order -= 1
+        else:
+            item.z_order = -1
+        if item.z_order < 0: 
+            min_z_order = min([obj.z_order for obj in self._items])
+            for obj in self._items:
+                obj.z_order = obj.z_order - min_z_order
+    def edit_item(self):
+        if self._current_item and self._current_item.part_type in BAHAVE_HAS_CAPTION:
+            md_text = self._current_item.caption.text if self._current_item.caption else ""
+            dialog = CaptionEditDialog(md_text)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self._current_item.caption.text = dialog.get_mark_down()      
+
 
     def debug_print(self):
         print("============================")
-        for item in self.stat.items:
-            print(item)
+        for obj in self.stat.items:
+            print(obj)
         print(f"self._pre_item: {self._pre_item}")
 
     def to_dict(self):

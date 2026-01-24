@@ -39,7 +39,8 @@ class RectanglePartItem(QGraphicsRectItem):
         styles: RectStyles = self.data(KEY_RECT_STYLE)
         default_text: QGraphicsSimpleTextItem = self.data(KEY_DEFAULT_TEXT)
         default_text.setText(self.pre_item.default_text)
-        
+        if self.pre_item.z_order is not None:
+            self.setZValue(self.pre_item.z_order)
         if self.pre_item.is_active:
             self.setBrush(QBrush(QColor(styles.bg_color_active)))
             self.setPen(QPen(QColor(styles.border_color_active), 2))

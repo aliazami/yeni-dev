@@ -8,8 +8,10 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QLineEdit,
     QDialogButtonBox,
-    QComboBox
+    QComboBox,
+    QTextEdit,
 )
+from PySide6.QtGui import QKeySequence, QShortcut, QFont
 
 # ==========================================
 #              GUI COMPONENTS
@@ -72,6 +74,92 @@ class PartSelectDialog(QDialog):
     def get_data(self):
         return self.combo_box.currentText(), int(self.id_input.text().strip())
 
+
+class CaptionEditDialog(QDialog):
+    def __init__(self, md_text: str = ""):
+        super().__init__(None)
+        self.setWindowTitle("Edit Caption")
+        self.resize(300, 150)
+        layout = QVBoxLayout(self)
+        self.text_edit = QTextEdit()
+        self.text_edit.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextEditorInteraction |  # Basic editing
+            Qt.TextInteractionFlag.TextSelectableByMouse |  # Select with mouse
+            Qt.TextInteractionFlag.TextSelectableByKeyboard # Select with keyboard
+        )
+        self.text_edit.setMarkdown(md_text)
+        self.setup_shortcuts()
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)        
+        layout.addWidget(self.text_edit)
+        layout.addWidget(buttons)
+
+    def setup_shortcuts(self):
+        """Explicitly set up formatting shortcuts"""
+        
+        # Bold - Ctrl+B
+        bold_shortcut = QShortcut(QKeySequence("Ctrl+B"), self.text_edit)
+        bold_shortcut.activated.connect(self.toggle_bold)
+        
+        # Italic - Ctrl+I
+        italic_shortcut = QShortcut(QKeySequence("Ctrl+I"), self.text_edit)
+        italic_shortcut.activated.connect(self.toggle_italic)
+        
+        # Underline - Ctrl+U
+        underline_shortcut = QShortcut(QKeySequence("Ctrl+U"), self.text_edit)
+        underline_shortcut.activated.connect(self.toggle_underline)
+        
+        # Strikethrough - Ctrl+S (not standard, but useful)
+        strike_shortcut = QShortcut(QKeySequence("Ctrl+S"), self.text_edit)
+        strike_shortcut.activated.connect(self.toggle_strikethrough)
+        
+    def toggle_bold(self):
+        cursor = self.text_edit.textCursor()
+        if cursor.hasSelection():
+            fmt = cursor.charFormat()
+            weight = QFont.Weight.Bold if fmt.fontWeight() != QFont.Weight.Bold else QFont.Weight.Normal
+            new_fmt = cursor.charFormat()
+            new_fmt.setFontWeight(weight)
+            cursor.mergeCharFormat(new_fmt)
+            
+    def toggle_italic(self):
+        cursor = self.text_edit.textCursor()
+        if cursor.hasSelection():
+            fmt = cursor.charFormat()
+            italic = not fmt.fontItalic()
+            new_fmt = cursor.charFormat()
+            new_fmt.setFontItalic(italic)
+            cursor.mergeCharFormat(new_fmt)
+            
+    def toggle_underline(self):
+        cursor = self.text_edit.textCursor()
+        if cursor.hasSelection():
+            fmt = cursor.charFormat()
+            underline = not fmt.fontUnderline()
+            new_fmt = cursor.charFormat()
+            new_fmt.setFontUnderline(underline)
+            cursor.mergeCharFormat(new_fmt)
+            
+    def toggle_strikethrough(self):
+        cursor = self.text_edit.textCursor()
+        if cursor.hasSelection():
+            fmt = cursor.charFormat()
+            strikeout = not fmt.fontStrikeOut()
+            new_fmt = cursor.charFormat()
+            new_fmt.setFontStrikeOut(strikeout)
+            cursor.mergeCharFormat(new_fmt)
+
+    def get_html(self):
+        return self.text_edit.toHtml()
+    
+    def get_mark_down(self):
+        return self.text_edit.toMarkdown()    
+    
+    def get_plain_text(self):
+        return self.text_edit.toPlainText()
 
 class HelpWindow(QWidget):
     def __init__(self):

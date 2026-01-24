@@ -153,7 +153,9 @@ class EditorScene(QGraphicsScene):
 
     # --- Events ---
     def keyPressEvent(self, event: QEvent):
-        shif_key = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+        shif_key = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
+        print(shif_key)
+        print(event.key())
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -190,7 +192,7 @@ class EditorScene(QGraphicsScene):
                 self.mode = mode
             event.accept()                      
         elif event.key() == Qt.Key.Key_E:
-            mode, editing_item = self.mgr.request_edit()
+            mode, editing_item = self.mgr.request_redraw_rect()
             if mode is not None and editing_item:
                 self.undo_stack.push(RemoveItemsCommand(self, [editing_item]))
                 self.mode = mode
@@ -205,15 +207,29 @@ class EditorScene(QGraphicsScene):
             if mode is not None:
                 self.mode = mode
             event.accept()
-            
+        elif event.key() == Qt.Key.Key_BracketLeft:
+            mode = self.mgr.send_to_back(True)
+            event.accept()
+        elif event.key() == Qt.Key.Key_BraceLeft:
+            mode = self.mgr.send_to_back(False)
+            event.accept()
+        elif event.key() == Qt.Key.Key_BracketRight:
+            mode = self.mgr.bring_to_top(True)
+            event.accept()
+        elif event.key() == Qt.Key.Key_BraceRight:
+            mode = self.mgr.bring_to_top(False)
+            event.accept()
+        elif event.key() == Qt.Key.Key_Enter:
+            mode = self.mgr.edit_item()
+            event.accept()                     
         elif event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             if items:
                 deleting_items = []
-                for item in items:
-                    if isinstance(item, RectanglePartItem):
-                        if self.mgr.stat.remove_item(item.pre_item.uid):
-                            deleting_items.append(item)
+                for obj in items:
+                    if isinstance(obj, RectanglePartItem):
+                        if self.mgr.stat.remove_item(obj.pre_item.uid):
+                            deleting_items.append(obj)
                 self.undo_stack.push(RemoveItemsCommand(self, deleting_items))
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
@@ -295,15 +311,15 @@ class EditorScene(QGraphicsScene):
                 super().mousePressEvent(event)
                 items = self.selectedItems()
                 self.drag_start_positions = {}
-                for item in items:
-                    rectangle_part_item: RectanglePartItem = item
+                for obj in items:
+                    rectangle_part_item: RectanglePartItem = obj
                     drag_start_positions = self.drag_start_positions
-                    drag_start_positions[rectangle_part_item.pre_item.uid] = item.pos()
+                    drag_start_positions[rectangle_part_item.pre_item.uid] = obj.pos()
                     self.drag_start_positions = drag_start_positions
                 items_at_pos = self.items(event.scenePos())
-                for item in items_at_pos:
-                    if isinstance(item, RectanglePartItem):
-                        self.mgr.activate_item(item.pre_item.uid)
+                for obj in items_at_pos:
+                    if isinstance(obj, RectanglePartItem):
+                        self.mgr.activate_item(obj.pre_item.uid)
                         self.update_scene()
 
 
@@ -383,10 +399,10 @@ class EditorScene(QGraphicsScene):
             self.setSceneRect(rect)   
 
     def update_scene(self):
-        for item in self.items():
-            if isinstance(item, RectanglePartItem) and not self.mgr.stat.get_item(item.pre_item.uid):
+        for obj in self.items():
+            if isinstance(obj, RectanglePartItem) and not self.mgr.stat.get_item(obj.pre_item.uid):
                 # has been removed before
-                self.removeItem(item)
+                self.removeItem(obj)
             
         for pre_item in self.mgr.stat.items:
             if pre_item.is_visible:

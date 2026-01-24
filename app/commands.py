@@ -71,23 +71,23 @@ class ResizeItemsCommand(QUndoCommand):
 
 def add_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
     update_flag = False
-    for item in items:
-        if isinstance(item, RectanglePartItem) and not scene.mgr.stat.get_item(item.pre_item.uid):
-            scene.mgr.stat.add_item(item.pre_item)
+    for obj in items:
+        if isinstance(obj, RectanglePartItem) and not scene.mgr.stat.get_item(obj.pre_item.uid):
+            scene.mgr.stat.add_item(obj.pre_item)
             update_flag = True
-        elif item.scene() != scene:
-            scene.addItem(item)
+        elif obj.scene() != scene:
+            scene.addItem(obj)
     if update_flag:
         scene.update_scene()
 
 def remove_items(scene: QGraphicsScene, items: list[QGraphicsItem]):
     update_flag = False
-    for item in items:
-        if isinstance(item, RectanglePartItem) and scene.mgr.stat.get_item(item.pre_item.uid):
-            scene.mgr.stat.remove_item(item.pre_item.uid)
+    for obj in items:
+        if isinstance(obj, RectanglePartItem) and scene.mgr.stat.get_item(obj.pre_item.uid):
+            scene.mgr.stat.remove_item(obj.pre_item.uid)
             update_flag = True
-        elif item.scene() == scene:
-            scene.removeItem(item)
+        elif obj.scene() == scene:
+            scene.removeItem(obj)
     if update_flag:
         scene.update_scene()
 

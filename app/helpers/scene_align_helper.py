@@ -6,18 +6,18 @@ def align_items_helper(items:  list[QGraphicsItem], direction):
         return
     target = 0.0
     if direction == "left":
-        target = min(item.sceneBoundingRect().left() for item in items)
+        target = min(obj.sceneBoundingRect().left() for obj in items)
     elif direction == "right":
-        target = max(item.sceneBoundingRect().right() for item in items)
+        target = max(obj.sceneBoundingRect().right() for obj in items)
     elif direction == "top":
-        target = min(item.sceneBoundingRect().top() for item in items)
+        target = min(obj.sceneBoundingRect().top() for obj in items)
     elif direction == "bottom":
-        target = max(item.sceneBoundingRect().bottom() for item in items)
+        target = max(obj.sceneBoundingRect().bottom() for obj in items)
 
     move_data = {}
-    for item in items:
-        rect = item.sceneBoundingRect()
-        start_pos = item.pos()
+    for obj in items:
+        rect = obj.sceneBoundingRect()
+        start_pos = obj.pos()
         dx, dy = 0, 0
         if direction == "left":
             dx = target - rect.left()
@@ -28,7 +28,7 @@ def align_items_helper(items:  list[QGraphicsItem], direction):
         elif direction == "bottom":
             dy = target - rect.bottom()
         if dx != 0 or dy != 0:
-            move_data[item] = (
+            move_data[obj] = (
                 start_pos,
                 QPointF(start_pos.x() + dx, start_pos.y() + dy),
             )
