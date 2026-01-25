@@ -1,19 +1,17 @@
 {
-    "words": [
+    "background_image": "/home/azami/Documents/azami/yeni-dev/test.webp",
+    "page": "test",
+    "items": [
         {
-            "word": "1.<empty>",
-            "x": 398,
-            "y": 158
-        },
-        {
-            "word": "2.<empty>",
-            "x": 403,
-            "y": 250
-        },
-        {
-            "word": "3.<empty>",
-            "x": 406,
-            "y": 338
+            "part_type": "REF_UNIT_ITEM",
+            "parent_id": null,
+            "seq": 1,
+            "x": 556.0,
+            "y": 202.0,
+            "z_order": 1,
+            "w": 50,
+            "h": 50,
+            "visible": true
         }
     ]
 }

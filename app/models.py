@@ -51,6 +51,7 @@ class PreItemData:
         self.z_order: int = 1
         self.active: bool = False
         self.visible: bool = True
+        self.is_dirty: bool = True
         # optional
         self.tag: str | None = None
         self.x: int | None = None
@@ -68,6 +69,7 @@ class PreItemData:
         new.seq = self.seq
         new.active = self.active
         new.visible = self.visible
+        new.is_dirty = self.is_dirty
         # optional
         new.tag = self.tag
         new.x = self.x

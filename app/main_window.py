@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
         self.align_toolbar = None
         self.help_window = HelpWindow()
         self.scene.helpRequested.connect(self.show_help_window)
+        self.scene.saveRequested.connect(self.save_file)
         self.scene.toggleToolbarRequested.connect(self.toggle_align_toolbar)
         self.scene.docNameRequested.connect(self.doc_name_request)
 
@@ -113,6 +114,7 @@ class MainWindow(QMainWindow):
             with open(path, "w") as f:
                 json.dump(data, f, indent=4)
             print(f"Saved to {path}")
+            self.scene.update_doc_title()
         except Exception as e:
             QMessageBox.critical(self, "Save Error", str(e))
 

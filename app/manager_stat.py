@@ -1,14 +1,15 @@
 from app.constants import (
-    REF_PART_ITEM, REF_QUESTION_ITEM, WORD_BOUNDARY_ITEM, 
-    ITEM_CHILD_TYPES, REF_ANSWER_ITEM, REF_OPTION_ITEM, REF_UNIT_ITEM, BAHAVE_INITIAL_VISIBLE
+    ITEM_CHILD_TYPES, REF_UNIT_ITEM, BAHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM
 )
 from app.pre_item import PreItem
 from app.models import Delta
 
 class ManagerStat:
 
-    def __init__(self, items: list[PreItem]):
-        self.items = items
+    def __init__(self):
+        self.items: list[PreItem] = []
+        self.answer_items: set[PreItem] = {}
+        self._is_dirty = False
 
     def get_item(self, uid: str):
         for obj in self.items:
@@ -18,6 +19,7 @@ class ManagerStat:
     def add_item(self, item: PreItem):
         if self.get_item(item.uid):
             raise Exception(f"Duplicate pre-item")
+        self._is_dirty = True
         self.items.append(item.copy())
 
     def remove_item(self, item: str | PreItem):
@@ -33,6 +35,7 @@ class ManagerStat:
         for child in self.get_decendents(item):
             self.items.remove(child)
         self.items.remove(item)
+        self._is_dirty = True
         return True
     
     def activate_item(self, item: PreItem):
@@ -85,6 +88,7 @@ class ManagerStat:
         d.ui = None
         d.active = False
         d.visible = True
+        d.caption = None
         d.seq = self.get_next_seq(d.parent_id, d.part_type)
         next_item = PreItem(d)
         if move_delta:
@@ -123,7 +127,16 @@ class ManagerStat:
         if item.z_order < 0: 
             min_z_order = min([obj.z_order for obj in self.items])
             for obj in self.items:
-                obj.z_order = obj.z_order - min_z_order       
+                obj.z_order = obj.z_order - min_z_order
+
+    def get_is_dirty(self):
+        return self._is_dirty or any([obj.is_dirty for obj in self.items])
+    
+    def signal_clear_dirty(self):
+        self._is_dirty = False
+    
+    def get_has_answers(self):
+        return any([obj.part_type == REF_ANSWER_PART_ITEM for obj in self.items])
 
 def get_next_str(value: str) -> str:
     """Return next integer or alphabet character."""

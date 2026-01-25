@@ -1,29 +1,22 @@
 # # app/scene.py
 from enum import StrEnum
 from PySide6.QtCore import Signal, Qt, QRectF, QPointF, QEvent
-from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor
+from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor, QUndoCommand
 from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
     QGraphicsRectItem,
+    QMessageBox,
 )
 
 from app.constants import SceneMode
-from app.commands import (
-    AddItemsCommand,
-    MoveItemsCommand,
-    RemoveItemsCommand,
-    ResizeItemsCommand,
-    add_items,
-)
-
 from app.components.background import Background
 from app.helpers.scene_align_helper import align_items_helper, distribute_items_helper
 from app.helpers.scene_misc_helper import calculate_move_command, calculate_resize_command
 from app.components.rectangle_part_item import RectanglePartItem
 from app.item_manager import ItemManager, get_ui
 
-from app.constants import WORD_BOUNDARY_ITEM, REF_UNIT_ITEM
+from app.constants import WORD_BOUNDARY_ITEM, REF_UNIT_ITEM, CAPTION_ITEM, REF_QUESTION_ITEM, GAP_ITEM
 
 # # ==========================================
 # #                THE SCENE
@@ -41,12 +34,13 @@ class Prop(StrEnum):
 
 class EditorScene(QGraphicsScene):
     helpRequested = Signal()
+    saveRequested = Signal()
     toggleToolbarRequested = Signal()
     docNameRequested = Signal(str)
 
     def __init__(self, x, y, w, h, parent=None):
         super().__init__(x, y, w, h, parent)
-        self.undo_stack = QUndoStack(self)
+        self.setProperty(Prop.undo_stack, QUndoStack(self))
         self.undo_stack.setUndoLimit(100)
         self.temp_rect_item: QGraphicsRectItem | None = None
         self.mode = SceneMode.SELECT
@@ -54,17 +48,12 @@ class EditorScene(QGraphicsScene):
         self.drag_start_positions = {}
         self.setProperty(Prop.mgr, ItemManager())
         # Background Management
-        # self.set_background()
 
 #     # --- Properties ---
     @property
     def undo_stack(self):
         undo_stack: QUndoStack = self.property(Prop.undo_stack)
         return undo_stack
-
-    @undo_stack.setter
-    def undo_stack(self, value):
-        self.setProperty(Prop.undo_stack, value)
 
     @property
     def mode(self):
@@ -115,28 +104,23 @@ class EditorScene(QGraphicsScene):
         self.setProperty(Prop.background_item, value)
 
     # --- Serialization Logic ---
-    def deserialize_scene(self, data: dict):
+    def recreate_scene(self, old_background: Background | None, new_background: Background | None, ui_items: list[RectanglePartItem]):
         # 1. Clear everything (C++ objects are deleted)
         self.clear()
         self.undo_stack.clear()
         self.temp_rect_item = None
-        self.setProperty(Prop.mgr, ItemManager())
-        
-        background_image = data.get("background_image")
-        if background_image:
-           old_background, new_background = self.mgr.io.open_image(file_path=background_image)
-           self.set_background(old_background, new_background)
-        # 3. Restore Items
-        ui_items = []
-        for item_data in data.get("items", []):
-            ui_item = self.mgr.create_from_dict(item_data)
-            if ui_item:
-                ui_items.append(ui_item)
-        add_items(self, ui_items)
+        if old_background and old_background in self.items():
+            self.removeItem(old_background)
+        if new_background:
+            rect = QRectF(new_background.pixmap().rect())
+            self.addItem(new_background)
+            self.setSceneRect(rect)
+        add_items(self, ui_items, signal_clear_dirty=True)
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
         data = self.mgr.to_dict()
+        self.mgr.stat.signal_clear_dirty()
         return data
 
     def align_items(self, direction):
@@ -154,8 +138,6 @@ class EditorScene(QGraphicsScene):
     # --- Events ---
     def keyPressEvent(self, event: QEvent):
         shif_key = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
-        print(shif_key)
-        print(event.key())
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -163,24 +145,39 @@ class EditorScene(QGraphicsScene):
             self.helpRequested.emit()
             event.accept()
         elif event.key() == Qt.Key.Key_I:
-            old_background, new_background = self.mgr.open_image()
-            if old_background and old_background in self.items():
-                self.removeItem(old_background)
-            if new_background:
-                self.docNameRequested.emit(self.mgr.io.image_name)
-                self.clear()
-                rect = QRectF(new_background.pixmap().rect())
-                self.addItem(new_background)
-                self.setSceneRect(rect)
-            data = self.mgr.io.load_json()
-            if data:
-                self.deserialize_scene(data)
+            if self.mgr.stat.get_is_dirty():
+                reply = QMessageBox.question(None, 'Confirmation', 'Save?',
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)
+                if reply == QMessageBox.StandardButton.Abort:
+                    return            
+                elif reply == QMessageBox.StandardButton.Yes:
+                    self.saveRequested.emit()
+                elif reply == QMessageBox.StandardButton.No:
+                    pass
+            old_background, new_background, ui_items = self.mgr.open_image()
+            self.recreate_scene(old_background, new_background, ui_items)
+            self.update_doc_title()
             event.accept()
         elif event.key() == Qt.Key.Key_B:
-            mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM)
+            mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM, auto_seq=not shif_key)
             if mode is not None:
                 self.mode = mode
             event.accept()
+        elif event.key() == Qt.Key.Key_C:
+            mode = self.mgr.pre_create_item(CAPTION_ITEM, auto_seq=not shif_key)
+            if mode is not None:
+                self.mode = mode
+            event.accept()
+        elif event.key() == Qt.Key.Key_G:
+            mode = self.mgr.pre_create_item(GAP_ITEM, auto_seq=not shif_key)
+            if mode is not None:
+                self.mode = mode
+            event.accept()            
+        elif event.key() == Qt.Key.Key_Q:
+            mode = self.mgr.pre_create_item(REF_QUESTION_ITEM, auto_seq=not shif_key)
+            if mode is not None:
+                self.mode = mode
+            event.accept()          
         elif event.key() == Qt.Key.Key_N:
             mode = self.mgr.request_next_item()
             if mode is not None:
@@ -197,6 +194,9 @@ class EditorScene(QGraphicsScene):
                 self.undo_stack.push(RemoveItemsCommand(self, [editing_item]))
                 self.mode = mode
             event.accept()
+        elif event.key() == Qt.Key.Key_0:
+            mode = self.mgr.read_item()
+            event.accept()            
         elif event.key() == Qt.Key.Key_A and not shif_key:
             mode = self.mgr.pre_create_item()
             if mode is not None:
@@ -364,7 +364,6 @@ class EditorScene(QGraphicsScene):
                     self.undo_stack.push(
                         AddItemsCommand(self, new_item, f"{command} {new_item.pre_item.uid}")
                     )
-
             self.mode = SceneMode.SELECT
             event.accept()
 
@@ -380,7 +379,7 @@ class EditorScene(QGraphicsScene):
                         moved = True
                         move_data[uid] = (start_pos, end_pos)
                 if moved:
-                    for uid, (start, end) in move_data.items():
+                    for uid, (start, _) in move_data.items():
                         pre_item = self.mgr.stat.get_item(uid)
                         pre_item.ui.setPos(start)
                     self.undo_stack.push(
@@ -389,14 +388,6 @@ class EditorScene(QGraphicsScene):
                 self.drag_start_positions = {}
         else:
             super().mouseReleaseEvent(event)
-
-    def set_background(self, old_background: Background, new_background: Background):
-        if old_background and old_background in self.items():
-            self.removeItem(old_background)
-        if new_background:
-            rect = QRectF(new_background.pixmap().rect())
-            self.addItem(new_background)
-            self.setSceneRect(rect)   
 
     def update_scene(self):
         for obj in self.items():
@@ -412,6 +403,104 @@ class EditorScene(QGraphicsScene):
             elif not pre_item.is_visible and pre_item.ui.scene() == self:
                 self.removeItem(pre_item.ui)
 
+    def update_doc_title(self):
+        doc_title = self.mgr.get_doc_title()
+        self.docNameRequested.emit(doc_title)
 
 
-    
+
+# ==========================================
+#              UNDO COMMANDS
+# ==========================================
+
+
+class AddItemsCommand(QUndoCommand):
+    def __init__(self, scene: EditorScene, items: list[RectanglePartItem] | RectanglePartItem, description="Add Items"):
+        super().__init__(description)
+        self.scene = scene
+        self.items = items if isinstance(items, list) else [items]
+
+    def redo(self):
+        add_items(self.scene, self.items)
+
+    def undo(self):
+        remove_items(self.scene, self.items)
+
+class RemoveItemsCommand(QUndoCommand):
+    def __init__(self, scene: EditorScene, items: list[RectanglePartItem] | RectanglePartItem, description="Delete Items"):
+        super().__init__(description)
+        self.scene = scene
+        self.items = items if isinstance(items, list) else [items]
+
+    def redo(self):
+        remove_items(self.scene, self.items)
+
+    def undo(self):
+        add_items(self.scene, self.items)
+
+
+class MoveItemsCommand(QUndoCommand):
+    def __init__(self, scene: EditorScene, move_data, description="Move Items"):
+        super().__init__(description)
+        self.scene = scene
+        self.move_data = move_data
+
+    def redo(self):
+        for uid, (_, end) in self.move_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.ui.setPos(end)
+        self.scene.update_doc_title()
+
+    def undo(self):
+        for uid, (start, _) in self.move_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.ui.setPos(start)
+        self.scene.update_doc_title()            
+
+
+class ResizeItemsCommand(QUndoCommand):
+    def __init__(self, scene: EditorScene, resize_data, description="Move Items"):
+        super().__init__(description)
+        self.scene = scene
+        self.resize_data = resize_data
+
+    def redo(self):
+        for uid, (_, end) in self.resize_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.set_width(end[0])
+            pre_item.set_height(end[1])
+        self.scene.update_doc_title()            
+
+    def undo(self):
+        for uid, (start, _) in self.resize_data.items():
+            pre_item = self.scene.mgr.stat.get_item(uid)
+            pre_item.set_width(start[0])
+            pre_item.set_height(start[1])
+        self.scene.update_doc_title()            
+
+
+def add_items(scene: EditorScene, items: list[RectanglePartItem], signal_clear_dirty = False):
+    update_flag = False
+    for obj in items:
+        if isinstance(obj, RectanglePartItem) and not scene.mgr.stat.get_item(obj.pre_item.uid):
+            scene.mgr.stat.add_item(obj.pre_item)
+            update_flag = True
+        elif obj.scene() != scene:
+            scene.addItem(obj)
+    if signal_clear_dirty:
+        scene.mgr.stat.signal_clear_dirty()
+    if update_flag:
+        scene.update_scene()
+        scene.update_doc_title()
+
+def remove_items(scene: EditorScene, items: list[RectanglePartItem]):
+    update_flag = False
+    for obj in items:
+        if isinstance(obj, RectanglePartItem) and scene.mgr.stat.get_item(obj.pre_item.uid):
+            scene.mgr.stat.remove_item(obj.pre_item.uid)
+            update_flag = True
+        elif obj.scene() == scene:
+            scene.removeItem(obj)
+    if update_flag:
+        scene.update_scene()
+        scene.update_doc_title()

@@ -40,6 +40,10 @@ class ManagerIO:
         return os.path.join(self._image_folder, self.json_name)
     
     @property
+    def answers_json_path(self):
+        return os.path.join(self._image_folder, "answers.json")    
+    
+    @property
     def page_id(self):
         return self._image_stem or "<?>"
     
@@ -47,10 +51,11 @@ class ManagerIO:
     
     def open_image(self, file_path=None, image_name=None):
         _file_path = None
+        result = (None, None, None, None)
         if not file_path and not image_name and self._image_folder:
             image_name, ok = QInputDialog.getText(None, "Enter page number", "Enter page number:")
             if not ok:
-                return None, None
+                return result
         if file_path and os.path.exists(file_path):
             _file_path = file_path
         elif self._image_folder and image_name:
@@ -71,17 +76,28 @@ class ManagerIO:
             old_background = self._background
             self._background = Background(_file_path)
             # re-create stat if image is going to change
-            return old_background, self._background
+            data_json, answer_json = self._load_json()
+            result = (old_background, self._background, data_json, answer_json)
     
-        return None, None
+        return result
     
-    def load_json(self) -> dict:
+    def _load_json(self) -> tuple[dict | None, dict | None]:
         json_path = self.json_path
+        answers_json_path = self.answers_json_path
+        data_json = answer_json = None
         if self.is_loaded and os.path.exists(json_path):
             try:
-                with open(self.json_path, "r") as f:
-                    data = json.load(f)
+                with open(json_path, "r") as f:
+                    data_json = json.load(f)
                 print(f"Loaded from {json_path}")
-                return data
             except Exception as e:
                 QMessageBox.critical(self, "Load Error", str(e))
+
+        if self.is_loaded and os.path.exists(answers_json_path):
+            try:
+                with open(answers_json_path, "r") as f:
+                    answer_json = json.load(f)
+                print(f"Answers Loaded from {answers_json_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Load Error", str(e))
+        return data_json, answer_json 

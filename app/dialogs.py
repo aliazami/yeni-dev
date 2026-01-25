@@ -156,7 +156,7 @@ class CaptionEditDialog(QDialog):
         return self.text_edit.toHtml()
     
     def get_mark_down(self):
-        return self.text_edit.toMarkdown()    
+        return self.text_edit.toMarkdown().strip()
     
     def get_plain_text(self):
         return self.text_edit.toPlainText()

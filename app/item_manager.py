@@ -1,4 +1,5 @@
 from PySide6.QtCore import QPointF
+from easyocr import Reader
 from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
@@ -6,10 +7,10 @@ from PySide6.QtWidgets import (
 )
 from app.pre_item import PreItem
 from app.constants import (
-    REF_PART_ITEM, REF_QUESTION_ITEM, SceneMode, WORD_BOUNDARY_ITEM,
-    CAPTION_ITEM, BOX_ITEM, REF_UNIT_ITEM,
+    REF_PART_ITEM, SceneMode, REF_UNIT_ITEM,
     BAHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
-    BEHAVE_HAS_NO_PARENT, BAHAVE_HAS_CAPTION
+    BEHAVE_HAS_NO_PARENT, BEHAVE_HAS_CAPTION, BEHAVE_READABLE,
+    BEHAVE_CENTER_NUMBER, BEHAVE_TOP_LEFT_CAPTION, BEHAVE_ANSWER_ITEMS
 )
 from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
@@ -18,19 +19,35 @@ from app.dialogs import PartSelectDialog, CaptionEditDialog
 from app.models import Delta, PreItemData
 from app.manager_stat import ManagerStat
 from app.manager_io import ManagerIO
+from app.helpers.ocr import ImageReader
+
+
 class ItemManager:
     def __init__(self):
-        self._items: list[PreItem] = []
-        self._stat = ManagerStat(self._items)
+        self._stat = ManagerStat()
         self.io = ManagerIO()
         self.is_repeating = False
         self._pre_item: PreItem | None = None
         self._current_item: PreItem | None = None
         self._editing_item: PreItem | None = None
         self._deep_copy_item: PreItem | None = None
+        self.image_reader = ImageReader()
 
-    # @property
-    # def current_file_path(self):
+    def escape(self):
+        self.is_repeating = False
+        self._editing_item = None
+        self._deep_copy_item = None
+
+    def _clear(self):
+        # self.io = ManagerIO()   <preserved>
+        # self.image_reader = ImageReader() <preserved>
+        self._stat = ManagerStat()
+        self._pre_item = None
+        self._current_item = None
+        self.escape()
+
+
+
 
     @property
     def stat(self):
@@ -87,13 +104,13 @@ class ItemManager:
         new_items = self.stat.deep_copy_by_delta(item, move_delta)
         if not new_items:
             return
-        new_uis = []
+        new_uis: list[RectanglePartItem] = []
         for new_item in new_items:
             self._pre_item = new_item
             new_uis.append(self.create())
         return new_uis 
     
-    def pre_create_item(self, part_type: str | None = None, parent_item: PreItem | None = None):
+    def pre_create_item(self, part_type: str | None = None, parent_item: PreItem | None = None, auto_seq = False):
         seq = ok = None
         if parent_item is None and self._current_item:
             parent_item = self._current_item
@@ -118,8 +135,11 @@ class ItemManager:
         elif parent_item and part_type and part_type not in ITEM_CHILD_TYPES[parent_item.part_type]:
             raise Exception(f"{part_type} is not a child of {parent_item.part_type}")
         elif parent_item and part_type and part_type in ITEM_CHILD_TYPES[parent_item.part_type]:
-            next_seq = self.stat.get_next_seq(parent_item.id, part_type)
-            seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=next_seq)
+            next_seq = self.stat.get_next_seq(parent_item.uid, part_type)
+            if auto_seq:
+                seq, ok = next_seq, True
+            else:
+                seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=next_seq)
         elif parent_item and not part_type:
             child_options = self.stat.get_child_options(parent_item)
             dialog = PartSelectDialog(child_options)
@@ -172,8 +192,8 @@ class ItemManager:
         item = self._current_item
         if not item:
             return
-        max_z_order = max([obj.z_order for obj in self._items])
-        most_top_items = [obj for obj in self._items if obj.z_order == max_z_order]
+        max_z_order = max([obj.z_order for obj in self.stat.items])
+        most_top_items = [obj for obj in self.stat.items if obj.z_order == max_z_order]
         if len(most_top_items) == 1 and most_top_items[0] == item:
             return
         if one_step and item.z_order <= max_z_order:
@@ -190,16 +210,16 @@ class ItemManager:
         else:
             item.z_order = -1
         if item.z_order < 0: 
-            min_z_order = min([obj.z_order for obj in self._items])
-            for obj in self._items:
+            min_z_order = min([obj.z_order for obj in self.stat.items])
+            for obj in self.stat.items:
                 obj.z_order = obj.z_order - min_z_order
+    
     def edit_item(self):
-        if self._current_item and self._current_item.part_type in BAHAVE_HAS_CAPTION:
+        if self._current_item and self._current_item.part_type in BEHAVE_HAS_CAPTION:
             md_text = self._current_item.caption.text if self._current_item.caption else ""
             dialog = CaptionEditDialog(md_text)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                self._current_item.caption.text = dialog.get_mark_down()      
-
+                self._current_item.set_caption(dialog.get_mark_down())
 
     def debug_print(self):
         print("============================")
@@ -209,41 +229,97 @@ class ItemManager:
 
     def to_dict(self):
         items = []
-        for per_item in self.stat.items:
-            items.append(per_item.to_dict())
+        answer_items = []
+        contains_answer = self.stat.get_has_answers()
+        for pre_item in self.stat.items:
+            if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
+                answer_items.append(pre_item)
+            items.append(pre_item.to_dict())
         return {
             "background_image": self.io.image_path,
             "page": self.io.page_id,
             "items": items,
         }        
 
-    def escape(self):
-        self.is_repeating = False
-        self._editing_item = None
-        self._deep_copy_item = None
-
     def open_image(self):
-        old_background, new_background = self.io.open_image()
+        old_background, new_background, data_json, answer_json = self.io.open_image()
         if new_background:
-            self._items: list[PreItem] = []
-            self._stat = ManagerStat(self._items)
-            self.is_repeating = False
-            self._pre_item: PreItem | None = None
-            self._current_item: PreItem | None = None
-            self._editing_item: PreItem | None = None
-            self._deep_copy_item: PreItem | None = None
-        return old_background, new_background
+            self._clear()
+            ui_items = []
+            for item_data in data_json.get("items", []):
+                ui_item = self.create_from_dict(item_data)
+                if ui_item:
+                    ui_items.append(ui_item)
+            if isinstance(answer_json, dict):
+                self.stat.answer_items.update(answer_json)
+        return old_background, new_background, ui_items
+    
+    def read_item(self):
+        item = self._current_item
+        if not item:
+            return
+        success = 0
+        failed = 0
+        result = self.read_content(item, self.io.image_path)
+        if result == True:
+            success += 1
+        elif result == False:
+            failed += 1
+        for obj in self.stat.get_decendents(item):
+            result = self.read_content(obj, self.io.image_path)
+            if result == True:
+                success += 1
+            elif result == False:
+                failed += 1
+        QMessageBox.information(None, "Completed", f"Success: {success}, Failed: {failed}")
+    
+    def get_doc_title(self):
+        doc_title = "No page"
+        is_dirty = self.stat.get_is_dirty()
+        if self.io.image_name:
+            star = "*" if is_dirty else ""
+            doc_title = self.io.image_name + star
+        return doc_title
+
+    def read_all_items(self):
+        for obj in self.stat.items:
+            if obj.part_type in BEHAVE_READABLE and not obj.caption_text:
+                self.read_content(obj, self.io.image_path)
+
+    def read_content(self, item:PreItem, image_path: str):
+        
+        if item.part_type not in BEHAVE_READABLE:
+            return None
+        
+        if not item.pos or not item.width or not item.height:
+            return False
+        x1 = int(item.pos.x())
+        y1 = int(item.pos.y())
+        x2 = int(x1 + item.width)
+        y2 = int(y1 + item.height)
+        rect = (x1, y1, x2, y2)
+        result = False
+        if rect and image_path:
+            item._refresh_ui()
+            text = self.image_reader.read_image(image_path, rect)
+            if text:
+                item.set_caption(text)
+                result = True
+            item._refresh_ui()
+        return result                    
+
 
 def get_ui(item: PreItem) -> RectanglePartItem:
     current_ui: RectanglePartItem | None = item.ui
     if current_ui:
         return current_ui
-    if item.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_UNIT_ITEM]:
+    if item.part_type in BEHAVE_CENTER_NUMBER:
         current_ui = ReferencePartItem(item)
-    elif item.part_type in [WORD_BOUNDARY_ITEM, BOX_ITEM, CAPTION_ITEM]:
+    elif item.part_type in BEHAVE_TOP_LEFT_CAPTION:
         current_ui = WordBoundaryPartItem(item)    
     else:
-        print("Warning: No current_ui in get_ui()")
+        current_ui = None
+        QMessageBox.warning(None, "Error", f"Warning: No {item.part_type} in get_ui()")
     return current_ui
 
 def get_scene_mode(item_or_type: PreItem | str):
