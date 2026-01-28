@@ -15,7 +15,8 @@ class ManagerStat:
         for obj in self.items:
             if obj.uid == uid:
                 return obj
-            
+        return None
+
     def add_item(self, item: PreItem):
         if self.get_item(item.uid):
             raise Exception(f"Duplicate pre-item")
@@ -32,14 +33,14 @@ class ManagerStat:
         item = self.get_item(uid)
         if not item:
             raise Exception(f"item {uid} not found")
-        for child in self.get_decendents(item):
+        for child in self.get_descendants(item):
             self.items.remove(child)
         self.items.remove(item)
         self._is_dirty = True
         return True
     
     def activate_item(self, item: PreItem):
-        ascendants = self.get_acendents(item)
+        ascendants = self.get_ascendants(item)
         siblings = self.get_siblings(item)
         children = self.get_children(item)
         visible_items = ascendants + siblings + children
@@ -50,13 +51,13 @@ class ManagerStat:
         item.is_active = True
 
     
-    def get_acendents(self, parent_item: PreItem):
-        acendants = [obj for obj in self.items if parent_item.is_my_ascendant(obj)]
-        return acendants
+    def get_ascendants(self, parent_item: PreItem):
+        ascendants = [obj for obj in self.items if parent_item.is_my_ascendant(obj)]
+        return ascendants
     
-    def get_decendents(self, parent_item: PreItem):
-        decendants = [obj for obj in self.items if parent_item.is_my_descendant(obj)]
-        return decendants
+    def get_descendants(self, parent_item: PreItem):
+        descendants = [obj for obj in self.items if parent_item.is_my_descendant(obj)]
+        return descendants
     
     def get_children(self, parent: PreItem):
         children = [obj for obj in self.items if parent.is_my_child(obj)]
@@ -70,8 +71,8 @@ class ManagerStat:
         root_item = self.get_next_pre_item(item, move_delta)
         # root_item.move(move_delta)
         item_list = [root_item]
-        for decendent in self.get_decendents(item):
-            d = decendent.data.copy()
+        for descendant in self.get_descendants(item):
+            d = descendant.data.copy()
             d.ui = None
             d.parent_id = d.parent_id.replace(item.uid, root_item.uid)
             new_child = PreItem(d)
@@ -102,7 +103,10 @@ class ManagerStat:
             option = (part_type, next_seq)
             child_options.append(option)
         return child_options
-    
+
+    def get_is_ok(self, item: PreItem):
+        return item.is_ok and not any([ not obj.is_ok for obj in self.get_descendants(item)])
+
     def get_unique_unit_item(self):
         unit_items = [obj for obj in self.items if obj.part_type == REF_UNIT_ITEM]
         if len(unit_items) == 1:

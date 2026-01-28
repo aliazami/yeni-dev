@@ -124,7 +124,7 @@ class ItemManager:
                 seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=1)
             elif isinstance(unique_unit_item, int) and unique_unit_item > 1:
                 QMessageBox.warning(None, "Error", "More Than 1 UNIT exists, select one of them")
-                return
+                return None
             elif isinstance(unique_unit_item, PreItem):
                 # default to add the next REF_PART_ITEM
                 part_type = REF_PART_ITEM
@@ -148,6 +148,7 @@ class ItemManager:
                 ok = True
         else:
             raise Exception("unpredicted condition")
+
         if ok and seq:
             d = PreItemData()
             d.part_type = part_type
@@ -159,8 +160,9 @@ class ItemManager:
             else:
                 self.is_repeating = part_type in BEHAVE_REPEATABLE_INSERT
                 self._pre_item = pre_item
-                return get_scene_mode(pre_item)        
-    
+                return get_scene_mode(pre_item)
+        return None
+
     def activate_item(self, uid: str):
         item = self.stat.get_item(uid)
         if not item:
@@ -175,6 +177,7 @@ class ItemManager:
             if not self.stat.remove_item(self._current_item):
                 raise Exception("unexpected condition")
             return SceneMode.EDIT_RECT, ui
+        return None
 
     def request_next_item(self):
         if self._current_item and self._current_item.part_type in BEHAVE_REPEATABLE_INSERT:
@@ -187,7 +190,8 @@ class ItemManager:
         if self._current_item:
             self._deep_copy_item = self._current_item
             return SceneMode.DEEP_COPY
-        
+        return None
+
     def bring_to_top(self, one_step: bool):
         item = self._current_item
         if not item:
@@ -243,9 +247,9 @@ class ItemManager:
 
     def open_image(self):
         old_background, new_background, data_json, answer_json = self.io.open_image()
+        ui_items = []
         if new_background:
             self._clear()
-            ui_items = []
             if data_json:
                 for item_data in data_json.get("items", []):
                     ui_item = self.create_from_dict(item_data)
@@ -258,22 +262,23 @@ class ItemManager:
     def read_item(self):
         item = self._current_item
         if not item:
-            return
+            return None
         success = 0
         failed = 0
         result = self.read_content(item, self.io.image_path)
-        if result == True:
+        if isinstance(result, bool) and result == True:
             success += 1
         elif result == False:
             failed += 1
-        for obj in self.stat.get_decendents(item):
+        for obj in self.stat.get_descendants(item):
             result = self.read_content(obj, self.io.image_path)
-            if result == True:
+            if isinstance(result, bool) and result == True:
                 success += 1
             elif result == False:
                 failed += 1
         QMessageBox.information(None, "Completed", f"Success: {success}, Failed: {failed}")
-    
+        return None
+
     def get_doc_title(self):
         doc_title = "No page"
         is_dirty = self.stat.get_is_dirty()
@@ -301,12 +306,12 @@ class ItemManager:
         rect = (x1, y1, x2, y2)
         result = False
         if rect and image_path:
-            item._refresh_ui()
+            item.refresh_ui()
             text = self.image_reader.read_image(image_path, rect)
             if text:
                 item.set_caption(text)
                 result = True
-            item._refresh_ui()
+            item.refresh_ui()
         return result                    
 
 

@@ -3,11 +3,11 @@ from PySide6.QtCore import QPointF
 from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
-    KEY_PRE_ITEM, ITEM_SIGN, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
+    KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
     BEHAVE_SQUARE, BEHAVE_HAS_CAPTION,
 )
 
-from app.helpers.utils import points_are_very_near, lengthes_are_very_similar, resize_rect
+from app.helpers.utils import points_are_very_near, lengths_are_very_similar, resize_rect
 from app.models import Delta, PreItemData, Caption
 
 
@@ -42,6 +42,10 @@ class PreItem:
         else:
             self.caption = None
 
+        if d.input:
+            self.input = d.input.copy()
+        else:
+            self.input = None
 
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
@@ -111,7 +115,7 @@ class PreItem:
         if value != self.z_order:
             self.set_dirty()
             self._z_order = value
-            self._refresh_ui()       
+            self.refresh_ui()
     
     @property
     def data(self):
@@ -122,8 +126,8 @@ class PreItem:
         d.active = self._is_active
         d.visible = self.is_visible
         d.is_dirty = self._is_dirty
-        d.x = self.pos.x()
-        d.y = self.pos.y()
+        d.x = int(self.pos.x())
+        d.y = int(self.pos.y())
         d.z_order = self.z_order
         d.width = self.width
         d.height = self.height
@@ -141,11 +145,7 @@ class PreItem:
             raise ValueError
         if self._is_active != value:
             self._is_active = value
-            self._refresh_ui()
-    
-    @property
-    def seq(self):
-        return self._seq
+            self.refresh_ui()
 
     @property
     def uid(self) -> str:
@@ -171,7 +171,11 @@ class PreItem:
         pos = QPointF(0, 0)
         if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
           pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
-        return pos  
+        return pos
+
+    @property
+    def is_ok(self) -> bool:
+        return self.input is None or self.input.is_ok
 
     def is_my_ascendant(self, other):
         if isinstance(other, PreItem):
@@ -228,8 +232,8 @@ class PreItem:
             self.set_dirty()
         self._width = value
         if self.ui:
-            if not lengthes_are_very_similar(self._width, self.ui.rect().width()):
-                new_rect = resize_rect(self.ui.rect(), w=self._width, h=None)
+            if not lengths_are_very_similar(self._width, self.ui.rect().width()):
+                new_rect = resize_rect(self.ui.rect(), w=int(self._width), h=None)
                 self.ui.setRect(new_rect)
         if self.part_type in BEHAVE_SQUARE:
             self._set_height(value)
@@ -246,12 +250,12 @@ class PreItem:
             self.set_dirty()
         self._height = value
         if self.ui:
-            if not lengthes_are_very_similar(self._height, self.ui.rect().height()):
-                new_rect = resize_rect(self.ui.rect(), w=None, h=self._height)
+            if not lengths_are_very_similar(self._height, self.ui.rect().height()):
+                new_rect = resize_rect(self.ui.rect(), w=None, h=int(self._height))
                 self.ui.setRect(new_rect)
     
 
-    def _refresh_ui(self):
+    def refresh_ui(self):
         if not self.ui:
             return
         self.ui._refresh_ui()
