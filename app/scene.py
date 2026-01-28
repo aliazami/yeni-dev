@@ -440,7 +440,7 @@ class RemoveItemsCommand(QUndoCommand):
 
 
 class MoveItemsCommand(QUndoCommand):
-    def __init__(self, scene: EditorScene, move_data, description="Move Items"):
+    def __init__(self, scene: EditorScene, move_data: dict, description="Move Items"):
         super().__init__(description)
         self.scene = scene
         self.move_data = move_data
@@ -459,7 +459,7 @@ class MoveItemsCommand(QUndoCommand):
 
 
 class ResizeItemsCommand(QUndoCommand):
-    def __init__(self, scene: EditorScene, resize_data, description="Move Items"):
+    def __init__(self, scene: EditorScene, resize_data: dict, description="Move Items"):
         super().__init__(description)
         self.scene = scene
         self.resize_data = resize_data

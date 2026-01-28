@@ -3,7 +3,7 @@ from PySide6.QtCore import QPointF
 from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
-    KEY_PRE_ITEM, ITEM_SIGN, BAHAVE_INITIAL_VISIBLE, ITEM_SIGN,
+    KEY_PRE_ITEM, ITEM_SIGN, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
     BEHAVE_SQUARE, BEHAVE_HAS_CAPTION,
 )
 
@@ -281,7 +281,7 @@ class PreItem:
         d.parent_id = data["parent_id"]
         d.seq = data["seq"]
         d.active = False
-        d.visible = d.part_type in BAHAVE_INITIAL_VISIBLE
+        d.visible = d.part_type in BEHAVE_INITIAL_VISIBLE
         d.is_dirty = False
         d.x = data.get("x")
         d.z_order = data.get("z_order", 0)

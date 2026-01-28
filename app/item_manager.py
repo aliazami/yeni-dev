@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from app.pre_item import PreItem
 from app.constants import (
     REF_PART_ITEM, SceneMode, REF_UNIT_ITEM,
-    BAHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
+    BEHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
     BEHAVE_HAS_NO_PARENT, BEHAVE_HAS_CAPTION, BEHAVE_READABLE,
     BEHAVE_CENTER_NUMBER, BEHAVE_TOP_LEFT_CAPTION, BEHAVE_ANSWER_ITEMS
 )
@@ -157,7 +157,7 @@ class ItemManager:
             if self.stat.get_item(pre_item.uid):
                 QMessageBox.warning(None, "Error", "Exists!")
             else:
-                self.is_repeating = part_type in BAHAVE_REPEATABLE_INSERT
+                self.is_repeating = part_type in BEHAVE_REPEATABLE_INSERT
                 self._pre_item = pre_item
                 return get_scene_mode(pre_item)        
     
@@ -177,7 +177,7 @@ class ItemManager:
             return SceneMode.EDIT_RECT, ui
 
     def request_next_item(self):
-        if self._current_item and self._current_item.part_type in BAHAVE_REPEATABLE_INSERT:
+        if self._current_item and self._current_item.part_type in BEHAVE_REPEATABLE_INSERT:
             pre_item = self.stat.get_next_pre_item(self._current_item)
             self._pre_item = pre_item
             return get_scene_mode(pre_item)
@@ -246,12 +246,13 @@ class ItemManager:
         if new_background:
             self._clear()
             ui_items = []
-            for item_data in data_json.get("items", []):
-                ui_item = self.create_from_dict(item_data)
-                if ui_item:
-                    ui_items.append(ui_item)
-            if isinstance(answer_json, dict):
-                self.stat.answer_items.update(answer_json)
+            if data_json:
+                for item_data in data_json.get("items", []):
+                    ui_item = self.create_from_dict(item_data)
+                    if ui_item:
+                        ui_items.append(ui_item)
+                if isinstance(answer_json, dict):
+                    self.stat.answer_items.update(answer_json)
         return old_background, new_background, ui_items
     
     def read_item(self):

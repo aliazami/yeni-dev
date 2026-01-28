@@ -1,5 +1,5 @@
 from app.constants import (
-    ITEM_CHILD_TYPES, REF_UNIT_ITEM, BAHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM
+    ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -44,7 +44,7 @@ class ManagerStat:
         children = self.get_children(item)
         visible_items = ascendants + siblings + children
         for other in self.items:
-            other.is_visible = other.part_type in BAHAVE_INITIAL_VISIBLE or other in visible_items
+            other.is_visible = other.part_type in BEHAVE_INITIAL_VISIBLE or other in visible_items
             other.is_active = False
         item.is_visible = True
         item.is_active = True
