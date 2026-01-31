@@ -1,7 +1,7 @@
 # # app/scene.py
 from enum import StrEnum
-from PySide6.QtCore import Signal, Qt, QRectF, QPointF, QEvent
-from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor, QUndoCommand
+from PySide6.QtCore import Signal, Qt, QRectF, QPointF
+from PySide6.QtGui import QUndoStack, QBrush, QPen, QColor, QCursor, QUndoCommand, QKeyEvent
 from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
@@ -89,6 +89,7 @@ class EditorScene(QGraphicsScene):
     @property
     def background_item(self):
         prop = str(Prop.background_item)
+        background_item_value = None
         try:
             background_item_value: Background | None = self.property(prop)
         except Exception as e:
@@ -136,8 +137,8 @@ class EditorScene(QGraphicsScene):
             )
 
     # --- Events ---
-    def keyPressEvent(self, event: QEvent):
-        shif_key = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
+    def keyPressEvent(self, event: QKeyEvent):
+        shift_key = event.modifiers() == Qt.KeyboardModifier.ShiftModifier
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
@@ -145,6 +146,9 @@ class EditorScene(QGraphicsScene):
             self.helpRequested.emit()
             event.accept()
         elif event.key() == Qt.Key.Key_I:
+            self.mgr.select_input_type()
+            event.accept()
+        elif event.key() == Qt.Key.Key_O:
             if self.mgr.stat.get_is_dirty():
                 reply = QMessageBox.question(None, 'Confirmation', 'Save?',
                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)
@@ -157,24 +161,25 @@ class EditorScene(QGraphicsScene):
             old_background, new_background, ui_items = self.mgr.open_image()
             self.recreate_scene(old_background, new_background, ui_items)
             self.update_doc_title()
+            self.mgr.stat.check_doc_is_ok()
             event.accept()
         elif event.key() == Qt.Key.Key_B:
-            mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM, auto_seq=not shif_key)
+            mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM, auto_seq=not shift_key)
             if mode is not None:
                 self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_C:
-            mode = self.mgr.pre_create_item(CAPTION_ITEM, auto_seq=not shif_key)
+            mode = self.mgr.pre_create_item(CAPTION_ITEM, auto_seq=not shift_key)
             if mode is not None:
                 self.mode = mode
             event.accept()
         elif event.key() == Qt.Key.Key_G:
-            mode = self.mgr.pre_create_item(GAP_ITEM, auto_seq=not shif_key)
+            mode = self.mgr.pre_create_item(GAP_ITEM, auto_seq=not shift_key)
             if mode is not None:
                 self.mode = mode
             event.accept()            
         elif event.key() == Qt.Key.Key_Q:
-            mode = self.mgr.pre_create_item(REF_QUESTION_ITEM, auto_seq=not shif_key)
+            mode = self.mgr.pre_create_item(REF_QUESTION_ITEM, auto_seq=not shift_key)
             if mode is not None:
                 self.mode = mode
             event.accept()          
@@ -197,12 +202,12 @@ class EditorScene(QGraphicsScene):
         elif event.key() == Qt.Key.Key_0:
             mode = self.mgr.read_item()
             event.accept()            
-        elif event.key() == Qt.Key.Key_A and not shif_key:
+        elif event.key() == Qt.Key.Key_A and not shift_key:
             mode = self.mgr.pre_create_item()
             if mode is not None:
                 self.mode = mode
             event.accept()
-        elif event.key() == Qt.Key.Key_A and shif_key:
+        elif event.key() == Qt.Key.Key_A and shift_key:
             mode = self.mgr.pre_create_item(part_type=REF_UNIT_ITEM)
             if mode is not None:
                 self.mode = mode

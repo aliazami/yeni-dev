@@ -10,13 +10,14 @@ from app.constants import (
     REF_PART_ITEM, SceneMode, REF_UNIT_ITEM,
     BEHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
     BEHAVE_HAS_NO_PARENT, BEHAVE_HAS_CAPTION, BEHAVE_READABLE,
-    BEHAVE_CENTER_NUMBER, BEHAVE_TOP_LEFT_CAPTION, BEHAVE_ANSWER_ITEMS
+    BEHAVE_CENTER_NUMBER, BEHAVE_TOP_LEFT_CAPTION, BEHAVE_ANSWER_ITEMS, ALL_INPUT_TYPES,
+    INPUT_CHILD_TYPES
 )
 from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
 from app.components.word_boundary_part_item import WordBoundaryPartItem
-from app.dialogs import PartSelectDialog, CaptionEditDialog
-from app.models import Delta, PreItemData
+from app.dialogs import PartSelectDialog, CaptionEditDialog, InputSelectDialog
+from app.models import Delta, PreItemData, Input
 from app.manager_stat import ManagerStat
 from app.manager_io import ManagerIO
 from app.helpers.ocr import ImageReader
@@ -46,13 +47,9 @@ class ItemManager:
         self._current_item = None
         self.escape()
 
-
-
-
     @property
     def stat(self):
         return self._stat
-
     
     def create(self, pos: QPointF | None = None) -> RectanglePartItem | None:
         item = self._pre_item.copy()
@@ -109,7 +106,23 @@ class ItemManager:
             self._pre_item = new_item
             new_uis.append(self.create())
         return new_uis 
-    
+
+    def select_input_type(self):
+        item = self._current_item
+        if not item:
+            return
+        input_types: set[str] = set()
+        for input_type in ALL_INPUT_TYPES:
+            if item.part_type in INPUT_CHILD_TYPES[input_type]:
+                input_types.add(input_type)
+        if len(input_types) < 1:
+            return
+        dialog = InputSelectDialog(input_types, None)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            input_type = dialog.get_data()
+            item.input = Input(input_type)
+            self.stat.check_doc_is_ok()
+
     def pre_create_item(self, part_type: str | None = None, parent_item: PreItem | None = None, auto_seq = False):
         seq = ok = None
         if parent_item is None and self._current_item:

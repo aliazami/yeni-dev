@@ -1,7 +1,9 @@
 from typing import Any
 
-from app.constants import INPUT_TRUE_FALSE, INPUT_NUMBERS, INPUT_SELECT_WORDS
-from constants import ALL_INPUT_TYPES, INPUT_KEYBOARD
+from app.constants import (
+    INPUT_TRUE_FALSE, INPUT_NUMBERS, INPUT_SELECT_WORDS, ALL_INPUT_TYPES, INPUT_KEYBOARD
+)
+
 
 
 def can_build(parts: list[str], target: str) -> bool:

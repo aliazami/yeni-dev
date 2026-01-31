@@ -1,5 +1,6 @@
 from app.constants import (
-    ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM
+    ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM,
+    BEHAVE_INPUT_ITEMS, BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, REF_QUESTION_ITEM
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -103,9 +104,20 @@ class ManagerStat:
             option = (part_type, next_seq)
             child_options.append(option)
         return child_options
-
-    def get_is_ok(self, item: PreItem):
-        return item.is_ok and not any([ not obj.is_ok for obj in self.get_descendants(item)])
+    
+    def check_doc_is_ok(self):
+        for root_item in [obj for obj in self.items if obj.part_type in BEHAVE_HAS_NO_PARENT]:
+            root_item_ok = True
+            for ref_item in [obj for obj in self.get_children(root_item) if obj.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]]:
+                ref_item_ok = True
+                for input_item in [obj for obj in self.get_children(ref_item)]:
+                    ref_item_ok = ref_item_ok and input_item.is_ok
+                    input_item.refresh_ui()
+                ref_item.is_ok = ref_item_ok
+                ref_item.refresh_ui()
+                root_item_ok = root_item_ok and ref_item_ok
+            root_item.is_ok = root_item_ok
+            root_item.refresh_ui()
 
     def get_unique_unit_item(self):
         unit_items = [obj for obj in self.items if obj.part_type == REF_UNIT_ITEM]

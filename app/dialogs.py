@@ -75,6 +75,28 @@ class PartSelectDialog(QDialog):
         return self.combo_box.currentText(), int(self.id_input.text().strip())
 
 
+class InputSelectDialog(QDialog):
+    def __init__(self, input_types: set[str], parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Select Input Type")
+        self.resize(300, 150)
+        layout = QVBoxLayout(self)
+        self.combo_box = QComboBox()
+        for input_type in input_types:
+            self.combo_box.addItem(input_type)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(self.combo_box)
+        layout.addWidget(buttons)
+        self.combo_box.setCurrentIndex(0)
+
+    def get_data(self):
+        return self.combo_box.currentText()
+
+
 class CaptionEditDialog(QDialog):
     def __init__(self, md_text: str = ""):
         super().__init__(None)

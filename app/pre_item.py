@@ -1,15 +1,14 @@
-
 from PySide6.QtCore import QPointF
 from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
-    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION,
+    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, REF_UNIT_ITEM,
+    BEHAVE_INPUT_ITEMS
 )
 
 from app.helpers.utils import points_are_very_near, lengths_are_very_similar, resize_rect
 from app.models import Delta, PreItemData, Caption
-
 
 class PreItem:
     def __init__(self, d: PreItemData):
@@ -33,6 +32,7 @@ class PreItem:
         self._pos = QPointF(x, y)
         self._width = width or size
         self._height = height or size
+        self._last_ok_state = None
         self.ui = d.ui
         self.tag = d.tag
         if d.caption:
@@ -160,7 +160,8 @@ class PreItem:
     def default_text(self) -> str:
         caption = f" ({self.caption_text})" if self.caption_text else ""
         sign = ITEM_SIGN.get(self.part_type)
-        return f"{sign}{self.seq}{caption}" if sign else "???"
+        is_ok = "" if self.is_ok else "!"
+        return f"{is_ok}{sign}{self.seq}{caption}" if sign else "???"
     
     @property
     def caption_text(self):
@@ -175,7 +176,16 @@ class PreItem:
 
     @property
     def is_ok(self) -> bool:
-        return self.input is None or self.input.is_ok
+        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_UNIT_ITEM]:
+            return self._last_ok_state
+
+        return self.part_type not in BEHAVE_INPUT_ITEMS or (self.input and self.input.is_ok)
+
+    @is_ok.setter
+    def is_ok(self, value: bool):
+        if self.part_type not in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_UNIT_ITEM]:
+            raise Exception("Assign to wrong type")
+        
 
     def is_my_ascendant(self, other):
         if isinstance(other, PreItem):
