@@ -19,8 +19,10 @@ class ImageReader:
         # Define crop rectangle (x, y, width, height) or (y1:y2, x1:x2)
         x1, y1, x2, y2 = target_rect
         cropped_image = big_image[y1:y2, x1:x2]
+        cv2.imwrite("/home/azami/Downloads/cropped.jpg", cropped_image)
+        print("writen: /home/azami/Downloads/cropped.jpg ")
 
         # Use EasyOCR on the cropped image
-        result = self.reader.readtext(cropped_image)  # Pass numpy array directly
+        result = self.reader.readtext(cropped_image, paragraph=True)  # Pass numpy array directly
         if result:
             return result[0][1]
