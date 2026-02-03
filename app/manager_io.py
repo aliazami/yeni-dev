@@ -96,8 +96,11 @@ class ManagerIO:
         if self.is_loaded and os.path.exists(answers_json_path):
             try:
                 with open(answers_json_path, "r") as f:
-                    answer_json = json.load(f)
-                print(f"Answers Loaded from {answers_json_path}")
+                    try:
+                        answer_json = json.load(f)
+                        print(f"Answers Loaded from {answers_json_path}")
+                    except Exception as e:
+                        print(f"Error Loading Answers: {e}")
             except Exception as e:
                 QMessageBox.critical(self, "Load Error", str(e))
         return data_json, answer_json 

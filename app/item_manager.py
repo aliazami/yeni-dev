@@ -1,5 +1,4 @@
 from PySide6.QtCore import QPointF
-from easyocr import Reader
 from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
@@ -234,6 +233,7 @@ class ItemManager:
     def edit_item(self):
         if self._current_item and self._current_item.part_type in BEHAVE_HAS_CAPTION:
             md_text = self._current_item.caption.text if self._current_item.caption else ""
+            print(md_text)
             dialog = CaptionEditDialog(md_text)
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 self._current_item.set_caption(dialog.get_mark_down())
@@ -246,17 +246,20 @@ class ItemManager:
 
     def to_dict(self):
         items = []
-        answer_items = []
+        asnwers = []
         contains_answer = self.stat.get_has_answers()
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
-                answer_items.append(pre_item)
+                self.stat.answer_items.add(pre_item)
             items.append(pre_item.to_dict())
-        return {
+        for pre_item in self.stat.answer_items:
+            asnwers.append(pre_item.to_dict())
+        data = {
             "background_image": self.io.image_path,
             "page": self.io.page_id,
             "items": items,
-        }        
+        }
+        return data, asnwers
 
     def open_image(self):
         old_background, new_background, data_json, answer_json = self.io.open_image()

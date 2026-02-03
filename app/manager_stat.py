@@ -9,7 +9,7 @@ class ManagerStat:
 
     def __init__(self):
         self.items: list[PreItem] = []
-        self.answer_items: set[PreItem] = {}
+        self.answer_items: set[PreItem] = set()
         self._is_dirty = False
 
     def get_item(self, uid: str):

@@ -16,7 +16,7 @@ from app.helpers.scene_misc_helper import calculate_move_command, calculate_resi
 from app.components.rectangle_part_item import RectanglePartItem
 from app.item_manager import ItemManager, get_ui
 
-from app.constants import WORD_BOUNDARY_ITEM, REF_UNIT_ITEM, CAPTION_ITEM, REF_QUESTION_ITEM, GAP_ITEM
+from app.constants import WORD_BOUNDARY_ITEM, REF_UNIT_ITEM, CAPTION_ITEM, REF_QUESTION_ITEM, GAP_ITEM, BLOCK_ITEM
 
 # # ==========================================
 # #                THE SCENE
@@ -120,9 +120,9 @@ class EditorScene(QGraphicsScene):
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        data = self.mgr.to_dict()
+        data, asnwers = self.mgr.to_dict()
         self.mgr.stat.signal_clear_dirty()
-        return data
+        return data, asnwers
 
     def align_items(self, direction):
         move_data = align_items_helper(self.selectedItems(), direction)
@@ -163,11 +163,16 @@ class EditorScene(QGraphicsScene):
             self.update_doc_title()
             self.mgr.stat.check_doc_is_ok()
             event.accept()
-        elif event.key() == Qt.Key.Key_B:
+        elif event.key() == Qt.Key.Key_W:
             mode = self.mgr.pre_create_item(WORD_BOUNDARY_ITEM, auto_seq=not shift_key)
             if mode is not None:
                 self.mode = mode
             event.accept()
+        elif event.key() == Qt.Key.Key_B:
+            mode = self.mgr.pre_create_item(BLOCK_ITEM, auto_seq=not shift_key)
+            if mode is not None:
+                self.mode = mode
+            event.accept()            
         elif event.key() == Qt.Key.Key_C:
             mode = self.mgr.pre_create_item(CAPTION_ITEM, auto_seq=not shift_key)
             if mode is not None:
