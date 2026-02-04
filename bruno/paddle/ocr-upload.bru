@@ -1,0 +1,19 @@
+meta {
+  name: /ocr/upload
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/ocr/upload/
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(C:\Users\aliaz\OneDrive\Pictures\020.jpg)
+}
+
+settings {
+  encodeUrl: true
+}
