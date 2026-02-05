@@ -4,20 +4,23 @@ import json
 from typing import Dict, Any, Optional
 import numpy as np
 from io import BytesIO
+from PySide6.QtCore import QRectF
 
+debug = True
 class ImageReader:
     def __init__(self, base_url: str = "http://127.0.0.1:8080"):
         self.base_url = base_url
     
-    def read_image(self, image_path: str, target_rect) -> Dict[str, Any]:
+    def read_image(self, image_path: str, target_rect: QRectF) -> Dict[str, Any]:
         # Read and crop the image
         big_image = cv2.imread(image_path)
         if big_image is None:
             raise ValueError(f"Could not read image from {image_path}")
-        
-        x1, y1, x2, y2 = target_rect
+        x1, y1, x2, y2 = map(int, target_rect.getCoords())
         cropped_image = big_image[y1:y2, x1:x2]
-        
+        if debug:
+            print("writing debug image")
+            cv2.imwrite("/home/azami/Documents/azami/debug.jpg", cropped_image)
         # Prepare the multipart request
         files = {'file': self._image_to_bytes(cropped_image)}
         

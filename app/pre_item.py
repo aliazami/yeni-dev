@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPointF
+from PySide6.QtCore import QPointF, QRectF
 from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
@@ -99,6 +99,12 @@ class PreItem:
     @property
     def height(self):
         return self._height
+    
+    @property
+    def rect(self):
+        top = self.pos.y()
+        left = self.pos.x()
+        return QRectF(left, top, self.width, self.height)
 
     @property
     def is_dirty(self):

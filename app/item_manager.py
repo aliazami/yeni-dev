@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPointF
+from PySide6.QtCore import QPointF, QRectF
 from PySide6.QtWidgets import (
     QInputDialog,
     QMessageBox,
@@ -6,11 +6,22 @@ from PySide6.QtWidgets import (
 )
 from app.pre_item import PreItem
 from app.constants import (
-    REF_PART_ITEM, SceneMode, REF_UNIT_ITEM,
-    BEHAVE_REPEATABLE_INSERT, BEHAVE_RECTANGLE, ITEM_CHILD_TYPES,
-    BEHAVE_HAS_NO_PARENT, BEHAVE_HAS_CAPTION, BEHAVE_READABLE,
-    BEHAVE_CENTER_NUMBER, BEHAVE_TOP_LEFT_CAPTION, BEHAVE_ANSWER_ITEMS, ALL_INPUT_TYPES,
-    INPUT_CHILD_TYPES
+    REF_PART_ITEM,
+    SceneMode,
+    REF_UNIT_ITEM,
+    BEHAVE_REPEATABLE_INSERT,
+    BEHAVE_RECTANGLE,
+    ITEM_CHILD_TYPES,
+    BEHAVE_HAS_NO_PARENT,
+    BEHAVE_HAS_CAPTION,
+    BEHAVE_READABLE,
+    BEHAVE_CENTER_NUMBER,
+    BEHAVE_TOP_LEFT_CAPTION,
+    BEHAVE_ANSWER_ITEMS,
+    ALL_INPUT_TYPES,
+    INPUT_CHILD_TYPES,
+    CAPTION_ITEM,
+    GAP_ITEM,
 )
 from app.components.reference_part_item import ReferencePartItem
 from app.components.rectangle_part_item import RectanglePartItem
@@ -20,6 +31,8 @@ from app.models import Delta, PreItemData, Input
 from app.manager_stat import ManagerStat
 from app.manager_io import ManagerIO
 from app.helpers.ocr import ImageReader
+from app.helpers.reader import read_gap_caption
+from app.helpers.utils import is_gap_in_caption
 
 
 class ItemManager:
@@ -49,7 +62,7 @@ class ItemManager:
     @property
     def stat(self):
         return self._stat
-    
+
     def create(self, pos: QPointF | None = None) -> RectanglePartItem | None:
         item = self._pre_item.copy()
         if not self.is_repeating:
@@ -61,11 +74,11 @@ class ItemManager:
         item.ui = get_ui(item)
         # self.activate_item(item.uid)
         return item.ui
-    
-    def create_from_dict(self, item_data: dict)-> RectanglePartItem | None:
+
+    def create_from_dict(self, item_data: dict) -> RectanglePartItem | None:
         self._pre_item = PreItem.from_dict(item_data)
         return self.create()
-    
+
     def create_rect(self, pos: QPointF, w: float, h: float):
         if not self._pre_item:
             return
@@ -79,7 +92,7 @@ class ItemManager:
         pre_item = PreItem(d)
         self._pre_item = pre_item
         return self.create()
-    
+
     def edit_rect(self, pos: QPointF, w: float, h: float):
         pre_item = self._editing_item.copy()
         pre_item.ui = None
@@ -89,7 +102,7 @@ class ItemManager:
         pre_item.set_height(h)
         self._pre_item = pre_item
         return self.create()
-    
+
     def deep_copy(self, pos: QPointF):
         item = self._deep_copy_item
         if not item:
@@ -104,7 +117,7 @@ class ItemManager:
         for new_item in new_items:
             self._pre_item = new_item
             new_uis.append(self.create())
-        return new_uis 
+        return new_uis
 
     def select_input_type(self):
         item = self._current_item
@@ -122,20 +135,31 @@ class ItemManager:
             item.input = Input(input_type)
             self.stat.check_doc_is_ok()
 
-    def pre_create_item(self, part_type: str | None = None, parent_item: PreItem | None = None, auto_seq = False):
+    def pre_create_item(
+        self,
+        part_type: str | None = None,
+        parent_item: PreItem | None = None,
+        auto_seq=False,
+    ):
         seq = ok = None
         if parent_item is None and self._current_item:
             parent_item = self._current_item
 
         if parent_item is None and part_type in BEHAVE_HAS_NO_PARENT:
-            seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=1)
+            seq, ok = QInputDialog.getInt(
+                None, f"Add {part_type}", f"{part_type}:", value=1
+            )
         elif parent_item is None and part_type not in BEHAVE_HAS_NO_PARENT:
             unique_unit_item = self.stat.get_unique_unit_item()
             if isinstance(unique_unit_item, int) and unique_unit_item == 0:
                 part_type = REF_UNIT_ITEM
-                seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=1)
+                seq, ok = QInputDialog.getInt(
+                    None, f"Add {part_type}", f"{part_type}:", value=1
+                )
             elif isinstance(unique_unit_item, int) and unique_unit_item > 1:
-                QMessageBox.warning(None, "Error", "More Than 1 UNIT exists, select one of them")
+                QMessageBox.warning(
+                    None, "Error", "More Than 1 UNIT exists, select one of them"
+                )
                 return None
             elif isinstance(unique_unit_item, PreItem):
                 # default to add the next REF_PART_ITEM
@@ -144,14 +168,24 @@ class ItemManager:
                 parent_item = unique_unit_item
             else:
                 raise Exception("unexpected condition")
-        elif parent_item and part_type and part_type not in ITEM_CHILD_TYPES[parent_item.part_type]:
+        elif (
+            parent_item
+            and part_type
+            and part_type not in ITEM_CHILD_TYPES[parent_item.part_type]
+        ):
             raise Exception(f"{part_type} is not a child of {parent_item.part_type}")
-        elif parent_item and part_type and part_type in ITEM_CHILD_TYPES[parent_item.part_type]:
+        elif (
+            parent_item
+            and part_type
+            and part_type in ITEM_CHILD_TYPES[parent_item.part_type]
+        ):
             next_seq = self.stat.get_next_seq(parent_item.uid, part_type)
             if auto_seq:
                 seq, ok = next_seq, True
             else:
-                seq, ok = QInputDialog.getInt(None, f"Add {part_type}", f"{part_type}:", value=next_seq)
+                seq, ok = QInputDialog.getInt(
+                    None, f"Add {part_type}", f"{part_type}:", value=next_seq
+                )
         elif parent_item and not part_type:
             child_options = self.stat.get_child_options(parent_item)
             dialog = PartSelectDialog(child_options)
@@ -181,7 +215,7 @@ class ItemManager:
             raise Exception(f"item {uid} not found")
         self._current_item = item
         self.stat.activate_item(item)
-    
+
     def request_redraw_rect(self):
         if self._current_item and self._current_item.part_type in BEHAVE_RECTANGLE:
             self._editing_item = self._current_item.copy()
@@ -192,12 +226,15 @@ class ItemManager:
         return None
 
     def request_next_item(self):
-        if self._current_item and self._current_item.part_type in BEHAVE_REPEATABLE_INSERT:
+        if (
+            self._current_item
+            and self._current_item.part_type in BEHAVE_REPEATABLE_INSERT
+        ):
             pre_item = self.stat.get_next_pre_item(self._current_item)
             self._pre_item = pre_item
             return get_scene_mode(pre_item)
         return SceneMode.SELECT
-        
+
     def request_deep_copy(self):
         if self._current_item:
             self._deep_copy_item = self._current_item
@@ -215,24 +252,26 @@ class ItemManager:
         if one_step and item.z_order <= max_z_order:
             item.z_order += 1
         else:
-            item.z_order = max_z_order + 1       
-        
+            item.z_order = max_z_order + 1
+
     def send_to_back(self, one_step: bool):
         item = self._current_item
         if not item:
-            return        
+            return
         if one_step and item.z_order >= 0:
             item.z_order -= 1
         else:
             item.z_order = -1
-        if item.z_order < 0: 
+        if item.z_order < 0:
             min_z_order = min([obj.z_order for obj in self.stat.items])
             for obj in self.stat.items:
                 obj.z_order = obj.z_order - min_z_order
-    
+
     def edit_item(self):
         if self._current_item and self._current_item.part_type in BEHAVE_HAS_CAPTION:
-            md_text = self._current_item.caption.text if self._current_item.caption else ""
+            md_text = (
+                self._current_item.caption.text if self._current_item.caption else ""
+            )
             print(md_text)
             dialog = CaptionEditDialog(md_text)
             if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -274,7 +313,7 @@ class ItemManager:
                 if isinstance(answer_json, dict):
                     self.stat.answer_items.update(answer_json)
         return old_background, new_background, ui_items
-    
+
     def read_item(self):
         item = self._current_item
         if not item:
@@ -292,7 +331,9 @@ class ItemManager:
                 success += 1
             elif result == False:
                 failed += 1
-        QMessageBox.information(None, "Completed", f"Success: {success}, Failed: {failed}")
+        QMessageBox.information(
+            None, "Completed", f"Success: {success}, Failed: {failed}"
+        )
         return None
 
     def get_doc_title(self):
@@ -308,27 +349,43 @@ class ItemManager:
             if obj.part_type in BEHAVE_READABLE and not obj.caption_text:
                 self.read_content(obj, self.io.image_path)
 
-    def read_content(self, item:PreItem, image_path: str):
-        
+    def read_content(self, item: PreItem, image_path: str):
+        result = False
         if item.part_type not in BEHAVE_READABLE:
             return None
-        
+
         if not item.pos or not item.width or not item.height:
             return False
-        x1 = int(item.pos.x())
-        y1 = int(item.pos.y())
-        x2 = int(x1 + item.width)
-        y2 = int(y1 + item.height)
-        rect = (x1, y1, x2, y2)
+        if item.part_type == CAPTION_ITEM:
+            parent_item = self.stat.get_parent_ref_item(item)
+            if parent_item:
+                child_gaps_rects: list[QRectF] = [
+                    obj.rect
+                    for obj in self.stat.get_children(parent_item)
+                    if obj.part_type == GAP_ITEM
+                    and is_gap_in_caption(item.rect, obj.rect)
+                ]
+                if child_gaps_rects:
+                    sorted_child_gaps_rects = sorted(
+                        child_gaps_rects, key=lambda rect: rect.x()
+                    )
+                    text_parts = read_gap_caption(
+                        item.rect, sorted_child_gaps_rects, image_path
+                    )
+                    item.set_caption("\n\n".join(text_parts))
+                    item.refresh_ui()
+                    return True
+
+        rect = item.rect
         result = False
         if rect and image_path:
-            item.refresh_ui()
             text = self.image_reader.read_image(image_path, rect)
             if text:
                 item.set_caption(text)
                 result = True
+        if result:
             item.refresh_ui()
-        return result                    
+        return result
 
 
 def get_ui(item: PreItem) -> RectanglePartItem:
@@ -338,11 +395,12 @@ def get_ui(item: PreItem) -> RectanglePartItem:
     if item.part_type in BEHAVE_CENTER_NUMBER:
         current_ui = ReferencePartItem(item)
     elif item.part_type in BEHAVE_TOP_LEFT_CAPTION:
-        current_ui = WordBoundaryPartItem(item)    
+        current_ui = WordBoundaryPartItem(item)
     else:
         current_ui = None
         QMessageBox.warning(None, "Error", f"Warning: No {item.part_type} in get_ui()")
     return current_ui
+
 
 def get_scene_mode(item_or_type: PreItem | str):
     part_type = None
@@ -352,4 +410,6 @@ def get_scene_mode(item_or_type: PreItem | str):
         part_type = item_or_type
     else:
         raise ValueError
-    return SceneMode.DRAWING_RECT if part_type in BEHAVE_RECTANGLE else SceneMode.ADD_ITEM
+    return (
+        SceneMode.DRAWING_RECT if part_type in BEHAVE_RECTANGLE else SceneMode.ADD_ITEM
+    )

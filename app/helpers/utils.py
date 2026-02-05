@@ -1,5 +1,5 @@
 # app/utils.py
-from PySide6.QtCore import Qt, QPointF, QPoint, QRect
+from PySide6.QtCore import Qt, QPointF, QPoint, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QIcon
 from app.constants import UI_SETTINGS
 
@@ -58,9 +58,19 @@ def points_are_very_near(pnt1: QPoint | QPointF, pnt2: QPoint | QPointF):
         return False
     return True
 
-def resize_rect(rect: QRect, w: int | None, h: int | None):
+def resize_rect(rect: QRectF, w: int | None, h: int | None):
     x = rect.x()
     y = rect.y()
     width = w if w is not None else rect.width()
     height = h if h is not None else rect.height()
-    return QRect(x, y, width, height)
+    return QRectF(x, y, width, height)
+
+def is_gap_in_caption(caption: QRectF, gap:QRectF):
+    if not isinstance(caption, QRectF) or not isinstance(gap, QRectF):
+        raise ValueError
+    right = caption.right() < gap.right()
+    left = caption.left() > gap.left()
+    top = caption.top() < gap.bottom()
+    bottom = caption.bottom() > gap.top()
+    return not (right and left and top and bottom)
+

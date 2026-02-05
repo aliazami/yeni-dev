@@ -1,6 +1,6 @@
 from app.constants import (
     ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM,
-    BEHAVE_INPUT_ITEMS, BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, REF_QUESTION_ITEM
+    BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, REF_QUESTION_ITEM, CAPTION_ITEM
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -97,6 +97,13 @@ class ManagerStat:
             next_item.move(move_delta)
         return next_item
     
+    def get_parent_ref_item(self, child_item: PreItem):
+        for obj in self.items:
+            if obj.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM] and child_item.is_my_parent(obj):
+                return obj
+        
+        return None
+    
     def get_child_options(self, parent_item: PreItem):
         child_options = []
         for part_type in ITEM_CHILD_TYPES[parent_item.part_type]:
@@ -153,6 +160,11 @@ class ManagerStat:
     
     def get_has_answers(self):
         return any([obj.part_type == REF_ANSWER_PART_ITEM for obj in self.items])
+    
+    def is_gap_in_caption(self, item: PreItem):
+        if item.part_type != CAPTION_ITEM:
+            return False
+        
 
 def get_next_str(value: str) -> str:
     """Return next integer or alphabet character."""
