@@ -3,12 +3,11 @@ from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
-    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, REF_UNIT_ITEM,
-    BEHAVE_INPUT_ITEMS
+    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, 
 )
 
 from app.helpers.utils import points_are_very_near, lengths_are_very_similar, resize_rect
-from app.models import Delta, PreItemData, Caption
+from app.models import Delta, PreItemData, Caption, Input
 
 class PreItem:
     def __init__(self, d: PreItemData):
@@ -41,14 +40,13 @@ class PreItem:
             self.caption = Caption("")
         else:
             self.caption = None
-
+        self.input = None
         if d.input:
             self.input = d.input.copy()
-        else:
-            self.input = None
-
         if self.ui:
             self.ui.setData(KEY_PRE_ITEM, self)
+
+        self.child_error = ""
 
     def copy(self):
         return PreItem(self.data)
@@ -139,6 +137,7 @@ class PreItem:
         d.height = self.height
         d.caption = self.caption
         d.ui = self.ui
+        d.input = self.input
         return d
 
     @property
@@ -156,17 +155,26 @@ class PreItem:
     @property
     def uid(self) -> str:
         parent_part = f"{self.parent_id}::" if self.parent_id else ""
-        return f"{parent_part}{self.default_text}"
+        return f"{parent_part}{self.default_text.replace("!", "")}"
     
     @property
     def depth(self):
         return self.uid.count("::")
     
     @property
+    def is_ok(self):
+        return not self.error
+    
+    @property
+    def error(self):
+        self_error = "" if not self.input or not self.input.error else self.input.error
+        return self_error or self.child_error
+
+    @property
     def default_text(self) -> str:
         caption = f" ({self.caption_text})" if self.caption_text else ""
         sign = ITEM_SIGN.get(self.part_type)
-        is_ok = "" if self.is_ok == True or self.is_ok is None else "!"
+        is_ok = "" if self.is_ok else "!"
         return f"{is_ok}{sign}{self.seq}{caption}" if sign else "???"
     
     @property
@@ -179,20 +187,7 @@ class PreItem:
         if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
           pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
         return pos
-
-    @property
-    def is_ok(self) -> bool:
-        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_UNIT_ITEM]:
-            return self._last_ok_state
-
-        return self.part_type not in BEHAVE_INPUT_ITEMS or (self.input and self.input.is_ok)
-
-    @is_ok.setter
-    def is_ok(self, value: bool):
-        if self.part_type not in [REF_PART_ITEM, REF_QUESTION_ITEM, REF_UNIT_ITEM]:
-            raise Exception("Assign to wrong type")
         
-
     def is_my_ascendant(self, other):
         if isinstance(other, PreItem):
             return self.uid.startswith(other.uid) and self != other
@@ -291,6 +286,8 @@ class PreItem:
         }
         if self.caption_text:
             item_dict["caption"] = self.caption_text
+        if self.input:
+            item_dict["input"] = self.input.to_dict()
         self._is_dirty = False
         return item_dict
 
@@ -311,5 +308,8 @@ class PreItem:
         caption_text = data.get("caption")
         if caption_text:
             d.caption = Caption(caption_text)
+        input_dict = data.get("input")
+        if input_dict:
+            d.input = Input.from_dict(input_dict)
         return cls(d)
     

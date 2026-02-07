@@ -129,10 +129,14 @@ class ItemManager:
                 input_types.add(input_type)
         if len(input_types) < 1:
             return
-        dialog = InputSelectDialog(input_types, None)
+        dialog = InputSelectDialog(input_types, item.input, None)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            input_type = dialog.get_data()
+            input_type, correct_answer, options  = dialog.get_data()
             item.input = Input(input_type)
+            if correct_answer:
+                item.input.correct_answer = correct_answer
+            if options:
+                item.input.options = options           
             self.stat.check_doc_is_ok()
 
     def pre_create_item(
@@ -335,6 +339,16 @@ class ItemManager:
             None, "Completed", f"Success: {success}, Failed: {failed}"
         )
         return None
+    
+    def get_error(self):
+        item = self._current_item
+        if not item:
+            return None
+        if item.is_ok:
+            return None
+        QMessageBox.information(
+            None, "Error", item.error
+        )
 
     def get_doc_title(self):
         doc_title = "No page"

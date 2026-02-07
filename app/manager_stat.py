@@ -4,6 +4,7 @@ from app.constants import (
 )
 from app.pre_item import PreItem
 from app.models import Delta
+from app.helpers.part_item_helper import check_part_item
 
 class ManagerStat:
 
@@ -20,7 +21,7 @@ class ManagerStat:
 
     def add_item(self, item: PreItem):
         if self.get_item(item.uid):
-            raise Exception(f"Duplicate pre-item")
+            raise Exception("Duplicate pre-item")
         self._is_dirty = True
         self.items.append(item.copy())
 
@@ -114,16 +115,14 @@ class ManagerStat:
     
     def check_doc_is_ok(self):
         for root_item in [obj for obj in self.items if obj.part_type in BEHAVE_HAS_NO_PARENT]:
-            root_item_ok = True
-            for ref_item in [obj for obj in self.get_children(root_item) if obj.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]]:
-                ref_item_ok = True
-                for input_item in [obj for obj in self.get_children(ref_item)]:
-                    ref_item_ok = ref_item_ok and input_item.is_ok
-                    input_item.refresh_ui()
-                ref_item.is_ok = ref_item_ok
-                ref_item.refresh_ui()
-                root_item_ok = root_item_ok and ref_item_ok
-            root_item.is_ok = root_item_ok
+            root_item_error = ""
+            part_items = [obj for obj in self.get_children(root_item) if obj.part_type == REF_PART_ITEM]
+            for part_item in part_items:
+                descendants = self.get_descendants(part_item)
+                check_part_item(part_item, descendants)
+                part_item.refresh_ui()
+                root_item_error = root_item_error or part_item.error
+            root_item.child_error = root_item_error
             root_item.refresh_ui()
 
     def get_unique_unit_item(self):

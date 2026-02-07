@@ -73,7 +73,8 @@ class Input:
             raise ValueError(f"Invalid input type: {input_type}")
         self._input_type: str = input_type
         self.correct_answer = ""
-        self.word_options: list[str] = []
+        self.options = ""
+        self.error = ""
 
     @property
     def input_type(self):
@@ -82,8 +83,23 @@ class Input:
     def copy(self):
         new = Input(self.input_type)
         new.correct_answer = str(self.correct_answer)
-        new.word_options = self.word_options
+        new.options = self.options
+        new.error = self.error
         return new
+    
+    def to_dict(self):
+        return {
+            "input_type": self._input_type,
+            "correct_answer": self.correct_answer,
+            "options": self.options,
+        }
+    
+    @staticmethod
+    def from_dict(data: dict):
+        new_input = Input(data["input_type"])
+        new_input.correct_answer = data["correct_answer"]
+        new_input.options = data["options"]
+        return new_input
 
     @property
     def is_ok(self):
@@ -97,7 +113,7 @@ class Input:
             return self.correct_answer.isdigit()
         if self._input_type == INPUT_SELECT_WORDS:
             target = trim(self.correct_answer)
-            parts = [trim(part) for part in self.word_options]
+            parts = [trim(part) for part in self.options]
             return can_build(parts, target)
         raise ValueError
 

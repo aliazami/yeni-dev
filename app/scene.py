@@ -148,6 +148,9 @@ class EditorScene(QGraphicsScene):
         elif event.key() == Qt.Key.Key_I:
             self.mgr.select_input_type()
             event.accept()
+        elif event.key() == Qt.Key.Key_Exclam:
+            self.mgr.get_error()
+            event.accept()            
         elif event.key() == Qt.Key.Key_O:
             if self.mgr.stat.get_is_dirty():
                 reply = QMessageBox.question(None, 'Confirmation', 'Save?',
