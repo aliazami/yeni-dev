@@ -3,7 +3,7 @@ from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
-    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, 
+    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, BEHAVE_INPUT_ITEMS, BEHAVE_SAMPLE_INPUT_ITEMS
 )
 
 from app.helpers.utils import points_are_very_near, lengths_are_very_similar, resize_rect
@@ -155,7 +155,8 @@ class PreItem:
     @property
     def uid(self) -> str:
         parent_part = f"{self.parent_id}::" if self.parent_id else ""
-        return f"{parent_part}{self.default_text.replace("!", "")}"
+        sign = ITEM_SIGN.get(self.part_type)
+        return f"{parent_part}{sign}{self.seq}"
     
     @property
     def depth(self):
@@ -176,11 +177,17 @@ class PreItem:
         sign = ITEM_SIGN.get(self.part_type)
         is_ok = "" if self.is_ok else "!"
         return f"{is_ok}{sign}{self.seq}{caption}" if sign else "???"
-    
+
+    @property
+    def center_text(self):
+        if self.part_type in [*BEHAVE_INPUT_ITEMS, *BEHAVE_SAMPLE_INPUT_ITEMS]:
+            return self.input.correct_answer if self.input else ""
+
+
     @property
     def caption_text(self):
         return self.caption.text if self.caption else None
-    
+
     @property
     def initial_pos(self):
         pos = QPointF(0, 0)
@@ -190,7 +197,7 @@ class PreItem:
         
     def is_my_ascendant(self, other):
         if isinstance(other, PreItem):
-            return self.uid.startswith(other.uid) and self != other
+            return self.uid.startswith(other.uid + "::") and self != other
         raise ValueError
     
     def is_my_descendant(self, other):

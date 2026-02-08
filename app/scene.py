@@ -142,6 +142,10 @@ class EditorScene(QGraphicsScene):
         if event.key() == Qt.Key.Key_1:
             self.toggleToolbarRequested.emit()
             event.accept()
+        elif event.key() == Qt.Key.Key_2:
+            self.mgr.show_descendants()
+            self.update_scene()
+            event.accept()            
         elif event.key() == Qt.Key.Key_H:
             self.helpRequested.emit()
             event.accept()

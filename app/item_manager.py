@@ -9,6 +9,7 @@ from app.constants import (
     REF_PART_ITEM,
     SceneMode,
     REF_UNIT_ITEM,
+    REF_ANSWER_PART_ITEM,
     BEHAVE_REPEATABLE_INSERT,
     BEHAVE_RECTANGLE,
     ITEM_CHILD_TYPES,
@@ -124,11 +125,15 @@ class ItemManager:
         if not item:
             return
         input_types: set[str] = set()
+        answer_options = {}
         for input_type in ALL_INPUT_TYPES:
             if item.part_type in INPUT_CHILD_TYPES[input_type]:
                 input_types.add(input_type)
         if len(input_types) < 1:
             return
+        if item.part_type == REF_PART_ITEM:
+            if answers := self.stat.get_part_answers(item):
+                answer_options[REF_ANSWER_PART_ITEM] = answers
         dialog = InputSelectDialog(input_types, item.input, None)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             input_type, correct_answer, options  = dialog.get_data()
@@ -220,6 +225,12 @@ class ItemManager:
         self._current_item = item
         self.stat.activate_item(item)
 
+    def show_descendants(self):
+        item = self._current_item
+        if not item:
+            return
+        self.stat.show_descendants(item)
+
     def request_redraw_rect(self):
         if self._current_item and self._current_item.part_type in BEHAVE_RECTANGLE:
             self._editing_item = self._current_item.copy()
@@ -289,14 +300,14 @@ class ItemManager:
 
     def to_dict(self):
         items = []
-        asnwers = []
+        asnwers = {}
         contains_answer = self.stat.get_has_answers()
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
                 self.stat.answer_items.add(pre_item)
             items.append(pre_item.to_dict())
-        for pre_item in self.stat.answer_items:
-            asnwers.append(pre_item.to_dict())
+        for pre_item in self.stat.answer_items.values():
+            asnwers[pre_item.uid] = pre_item.to_dict()
         data = {
             "background_image": self.io.image_path,
             "page": self.io.page_id,
@@ -316,6 +327,10 @@ class ItemManager:
                         ui_items.append(ui_item)
                 if isinstance(answer_json, dict):
                     self.stat.answer_items.update(answer_json)
+                elif isinstance(answer_json, list):
+                    for answer_data in answer_json:
+                        temp_item = PreItem.from_dict(answer_data)
+                        self.stat.answer_items[temp_item.uid] = temp_item
         return old_background, new_background, ui_items
 
     def read_item(self):

@@ -1,4 +1,5 @@
 # app/utils.py
+import re
 from PySide6.QtCore import Qt, QPointF, QPoint, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QIcon
 from app.constants import UI_SETTINGS
@@ -73,4 +74,9 @@ def is_gap_in_caption(caption: QRectF, gap:QRectF):
     top = caption.top() < gap.bottom()
     bottom = caption.bottom() > gap.top()
     return not (right and left and top and bottom)
+
+def get_answer_from_line(line: str):
+    if re.search(r'^\d+\s+\w+', line):
+        return re.sub(r'^\d+\s+', "", line)
+    return line
 

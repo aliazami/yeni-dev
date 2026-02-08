@@ -1,7 +1,6 @@
 # app/part_item.py
-from PySide6.QtCore import QPointF
 from PySide6.QtWidgets import QGraphicsSimpleTextItem
-from app.constants import KEY_DEFAULT_TEXT, REF_UNIT_ITEM
+from app.constants import KEY_DEFAULT_TEXT
 from app.pre_item import PreItem
 from app.components.rectangle_part_item import RectanglePartItem
 
@@ -15,11 +14,10 @@ class ReferencePartItem(RectanglePartItem):
     def _refresh_ui(self):
         super()._refresh_ui()
         default_text: QGraphicsSimpleTextItem = self.data(KEY_DEFAULT_TEXT)
-
-        if self.pre_item.part_type == REF_UNIT_ITEM:
-            default_text.setPos(2, 17)
-        else:
-            br = default_text.boundingRect()
-            br_width = br.width()
-            br_height = br.height()
-            default_text.setPos(-br_width / 2, -br_height / 2)
+        r_rect = self.rect()                # The QRectF(0, 0, 300, 100)
+        t_rect = default_text.boundingRect()  # The size of the "hello" string
+        
+        # Calculate center: (ParentCenter - ChildHalfSize)
+        x = r_rect.center().x() - t_rect.width() / 2
+        y = r_rect.center().y() - t_rect.height() / 2
+        default_text.setPos(x, y)

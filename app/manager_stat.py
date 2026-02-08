@@ -5,12 +5,13 @@ from app.constants import (
 from app.pre_item import PreItem
 from app.models import Delta
 from app.helpers.part_item_helper import check_part_item
+from app.helpers.utils import get_answer_from_line
 
 class ManagerStat:
 
     def __init__(self):
         self.items: list[PreItem] = []
-        self.answer_items: set[PreItem] = set()
+        self.answer_items: dict[str, PreItem] = {}
         self._is_dirty = False
 
     def get_item(self, uid: str):
@@ -52,7 +53,15 @@ class ManagerStat:
         item.is_visible = True
         item.is_active = True
 
-    
+    def show_descendants(self, item: PreItem):
+        descendants = self.get_descendants(item)
+        for other in self.items:
+            other.is_visible = other.part_type in BEHAVE_INITIAL_VISIBLE or other in descendants
+            other.is_active = False
+        item.is_visible = True
+        item.is_active = True    
+
+
     def get_ascendants(self, parent_item: PreItem):
         ascendants = [obj for obj in self.items if parent_item.is_my_ascendant(obj)]
         return ascendants
@@ -163,6 +172,23 @@ class ManagerStat:
     def is_gap_in_caption(self, item: PreItem):
         if item.part_type != CAPTION_ITEM:
             return False
+        
+    def get_part_answers(self, part_item: PreItem):
+        def get_uid(seq):
+            uid = f"{part_item.parent_id}::A{part_item.seq}::b{seq}"
+            return uid
+        if part_item.part_type != REF_PART_ITEM:
+            raise Exception(f"{part_item} is not a part item")
+        seq = 1
+        items = []
+        while block_item := self.answer_items.get(get_uid(seq)):
+            if not block_item.caption_text:
+                return
+            items.extend((get_answer_from_line(line) for line in block_item.caption_text.split("\n\n")))
+        return items
+
+
+        
         
 
 def get_next_str(value: str) -> str:
