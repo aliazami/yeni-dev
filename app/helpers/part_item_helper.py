@@ -1,16 +1,15 @@
-import re
 from app.pre_item import PreItem
 from app.models import Input
 from app.constants import (
     REF_PART_ITEM, REF_QUESTION_ITEM,
     INPUT_TRUE_FALSE, INPUT_KEYBOARD, INPUT_NUMBERS,
-    BOX_ITEM, GAP_ITEM,
+    BOX_ITEM, GAP_ITEM, TAIL_ITEM,
 )
-from app.helpers.utils import get_answer_from_line
+from app.helpers.utils import get_answer_from_line, get_answer_lines
 
 def find_place_holder(stack: list[PreItem], seq: int):
     question_item = next((obj for obj in stack if obj.seq == seq and obj.part_type == REF_QUESTION_ITEM), None)
-    return next((obj for obj in stack if obj.is_my_parent(question_item) and obj.part_type in [GAP_ITEM, BOX_ITEM]), None)
+    return next((obj for obj in stack if obj.is_my_parent(question_item) and obj.part_type in [GAP_ITEM, BOX_ITEM, TAIL_ITEM]), None)
 
 def check_part_item(part_item: PreItem, descendants: list[PreItem]):
     if part_item.part_type != REF_PART_ITEM:
@@ -19,8 +18,9 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
         questions = [obj for obj in descendants if obj.part_type == REF_QUESTION_ITEM]
         boxes = [obj for obj in descendants if obj.part_type == BOX_ITEM]
         gaps = [obj for obj in descendants if obj.part_type == GAP_ITEM]
-        place_holders = boxes or gaps
-        correct_answers_lines = part_item.input.correct_answer.split("\n\n")
+        tails = [obj for obj in descendants if obj.part_type == TAIL_ITEM]
+        place_holders = boxes or gaps or tails
+        correct_answers_lines = get_answer_lines(part_item.input.correct_answer)
         correct_answers = [get_answer_from_line(answer) for answer in correct_answers_lines]
         if not correct_answers:
             part_item.input.error = f"No correct answers. ({part_item.uid})"

@@ -14,7 +14,6 @@ from app.constants import (
     BEHAVE_RECTANGLE,
     ITEM_CHILD_TYPES,
     BEHAVE_HAS_NO_PARENT,
-    BEHAVE_HAS_CAPTION,
     BEHAVE_READABLE,
     BEHAVE_CENTER_NUMBER,
     BEHAVE_TOP_LEFT_CAPTION,
@@ -125,16 +124,16 @@ class ItemManager:
         if not item:
             return
         input_types: set[str] = set()
-        answer_options = {}
+        answers = {}
         for input_type in ALL_INPUT_TYPES:
             if item.part_type in INPUT_CHILD_TYPES[input_type]:
                 input_types.add(input_type)
         if len(input_types) < 1:
             return
         if item.part_type == REF_PART_ITEM:
-            if answers := self.stat.get_part_answers(item):
-                answer_options[REF_ANSWER_PART_ITEM] = answers
-        dialog = InputSelectDialog(input_types, item.input, None)
+            if part_answers := self.stat.get_part_answers(item):
+                answers[REF_ANSWER_PART_ITEM] = "\n\n".join(part_answers)
+        dialog = InputSelectDialog(input_types, input_obj=item.input, answers=answers, parent=None)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             input_type, correct_answer, options  = dialog.get_data()
             item.input = Input(input_type)
@@ -283,7 +282,7 @@ class ItemManager:
                 obj.z_order = obj.z_order - min_z_order
 
     def edit_item(self):
-        if self._current_item and self._current_item.part_type in BEHAVE_HAS_CAPTION:
+        if self._current_item and self._current_item.part_type in BEHAVE_READABLE:
             md_text = (
                 self._current_item.caption.text if self._current_item.caption else ""
             )
@@ -326,7 +325,9 @@ class ItemManager:
                     if ui_item:
                         ui_items.append(ui_item)
                 if isinstance(answer_json, dict):
-                    self.stat.answer_items.update(answer_json)
+                    for answer_data in answer_json.values():
+                        temp_item = PreItem.from_dict(answer_data)
+                        self.stat.answer_items[temp_item.uid] = temp_item
                 elif isinstance(answer_json, list):
                     for answer_data in answer_json:
                         temp_item = PreItem.from_dict(answer_data)

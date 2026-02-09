@@ -3,7 +3,7 @@ from app.constants import (
     UI_SETTINGS,
     REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
-    BEHAVE_SQUARE, BEHAVE_HAS_CAPTION, BEHAVE_INPUT_ITEMS, BEHAVE_SAMPLE_INPUT_ITEMS
+    BEHAVE_SQUARE, BEHAVE_READABLE, BEHAVE_INPUT_ITEMS, BEHAVE_SAMPLE_INPUT_ITEMS
 )
 
 from app.helpers.utils import points_are_very_near, lengths_are_very_similar, resize_rect
@@ -36,7 +36,7 @@ class PreItem:
         self.tag = d.tag
         if d.caption:
             self.caption = d.caption.copy()
-        elif d.part_type in BEHAVE_HAS_CAPTION:
+        elif d.part_type in BEHAVE_READABLE:
             self.caption = Caption("")
         else:
             self.caption = None

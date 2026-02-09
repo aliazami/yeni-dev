@@ -463,9 +463,13 @@ class MoveItemsCommand(QUndoCommand):
         self.move_data = move_data
 
     def redo(self):
-        for uid, (_, end) in self.move_data.items():
+        items = self.move_data.items()
+        for uid, (_, end) in items:
             pre_item = self.scene.mgr.stat.get_item(uid)
-            pre_item.ui.setPos(end)
+            if pre_item:
+                pre_item.ui.setPos(end)
+            else:
+                print(f"Warning: {uid} not found")
         self.scene.update_doc_title()
 
     def undo(self):

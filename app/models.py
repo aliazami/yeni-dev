@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.constants import (
-    INPUT_TRUE_FALSE, INPUT_NUMBERS, INPUT_SELECT_WORDS, ALL_INPUT_TYPES, INPUT_KEYBOARD
+    INPUT_TRUE_FALSE, INPUT_NUMBERS, INPUT_SELECT_WORDS_SHARED, ALL_INPUT_TYPES, INPUT_KEYBOARD
 )
 
 
@@ -111,7 +111,7 @@ class Input:
             return self.correct_answer.upper() in {"T", "F"}
         if self._input_type == INPUT_NUMBERS:
             return self.correct_answer.isdigit()
-        if self._input_type == INPUT_SELECT_WORDS:
+        if self._input_type == INPUT_SELECT_WORDS_SHARED:
             target = trim(self.correct_answer)
             parts = [trim(part) for part in self.options]
             return can_build(parts, target)

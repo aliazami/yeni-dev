@@ -5,7 +5,7 @@ from app.constants import (
 from app.pre_item import PreItem
 from app.models import Delta
 from app.helpers.part_item_helper import check_part_item
-from app.helpers.utils import get_answer_from_line
+from app.helpers.utils import get_answer_from_line, get_answer_lines
 
 class ManagerStat:
 
@@ -123,7 +123,8 @@ class ManagerStat:
         return child_options
     
     def check_doc_is_ok(self):
-        for root_item in [obj for obj in self.items if obj.part_type in BEHAVE_HAS_NO_PARENT]:
+        root_items = [obj for obj in self.items if obj.part_type in BEHAVE_HAS_NO_PARENT]
+        for root_item in root_items:
             root_item_error = ""
             part_items = [obj for obj in self.get_children(root_item) if obj.part_type == REF_PART_ITEM]
             for part_item in part_items:
@@ -183,8 +184,10 @@ class ManagerStat:
         items = []
         while block_item := self.answer_items.get(get_uid(seq)):
             if not block_item.caption_text:
-                return
-            items.extend((get_answer_from_line(line) for line in block_item.caption_text.split("\n\n")))
+                return items
+            answer_lines = get_answer_lines(block_item.caption_text)
+            items.extend((get_answer_from_line(line) for line in answer_lines))
+            seq += 1
         return items
 
 

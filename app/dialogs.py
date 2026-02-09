@@ -13,10 +13,22 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QKeySequence, QShortcut, QFont
 from app.models import Input
+from app.constants import (
+    INPUT_TRUE_FALSE,
+    INPUT_KEYBOARD,
+    INPUT_SELECT_WORDS_SHARED,
+    INPUT_SELECT_WORDS_NON_SHARED,
+    INPUT_NUMBERS,
+)
+
 
 # ==========================================
 #              GUI COMPONENTS
 # ==========================================
+
+EMPTY = "<none>"
+COPY_ANSWERS = "COPY_ANSWERS"
+
 
 
 class RectInputDialog(QDialog):
@@ -77,42 +89,99 @@ class PartSelectDialog(QDialog):
 
 
 class InputSelectDialog(QDialog):
-    def __init__(self, input_types: set[str], input_obj: Input = None, parent=None):
+    def __init__(self, input_types: set[str], input_obj: Input = None, answers: dict[str, str] = None, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Select Input Type")
         self.resize(300, 150)
+        self.buttons = QDialogButtonBox(
+                QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+            )
+        self.ok_button = self.buttons.button(QDialogButtonBox.StandardButton.Ok)
+        self.ok_button.setEnabled(False)
         layout = QVBoxLayout(self)
-        self.combo_box = QComboBox()
-        for input_type in input_types:
-            self.combo_box.addItem(input_type)
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
-
+        self.answers = answers
         self.text_correct_answer = MyTextEdit()
+        self.combo_input_type = QComboBox()
+        self.combo_input_type.addItem(EMPTY)
+        self.combo_input_type.currentTextChanged.connect(self.combo_input_type_change)
+        self.combo_answers = QComboBox()
+        self.combo_answers.addItem(EMPTY)
+        self.combo_answers.setEnabled(False)
+        self.combo_options = QComboBox()
+        self.combo_options.addItem(EMPTY)
+        self.combo_options.addItem(COPY_ANSWERS)
+        self.combo_options.currentTextChanged.connect(self.combo_options_change)
+
+        for input_type in input_types:
+            self.combo_input_type.addItem(input_type)
+        if answers:
+            for key in answers.keys():
+                self.combo_answers.addItem(key)
+                self.combo_options.addItem(key)
+            self.combo_answers.setEnabled(True)
+            self.combo_answers.currentTextChanged.connect(self.combo_answers_change)
+            self.combo_answers.setCurrentIndex(0)
+            self.combo_answers_change(selected_key=next(iter(answers)))
+
         self.text_correct_answer.setup()
 
         self.text_options = MyTextEdit()
         self.text_options.setup()
    
         if input_obj:
-            self.combo_box.setCurrentText(input_obj.input_type)
+            self.combo_input_type.setCurrentText(input_obj.input_type)
             self.text_correct_answer.setMarkdown(input_obj.correct_answer)
             self.text_options.setMarkdown(input_obj.options)
         else:
-            self.combo_box.setCurrentIndex(0)
+            self.combo_input_type.setCurrentIndex(0)
 
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(self.combo_box)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(QLabel("input type"))
+        layout.addWidget(self.combo_input_type)
+        layout.addWidget(QLabel("answer type"))
+        layout.addWidget(self.combo_answers)        
         layout.addWidget(QLabel("correct answer"))
         layout.addWidget(self.text_correct_answer)
+        layout.addWidget(QLabel("option type"))
+        layout.addWidget(self.combo_options)         
         layout.addWidget(QLabel("options"))
         layout.addWidget(self.text_options)        
-        layout.addWidget(buttons)
+        layout.addWidget(self.buttons)
+
+    def check_form(self):
+        check = True
+        if self.combo_input_type.currentText() == EMPTY or self.combo_answers.currentText() == EMPTY:
+            check = False
+        self.ok_button.setEnabled(check)
+
+    def combo_options_change(self, selected_key):
+        if selected_key == COPY_ANSWERS:
+            self.text_options.setMarkdown(self.text_correct_answer.get_mark_down())
+        elif ans_value := self.answers.get(selected_key):
+            self.text_options.setMarkdown(ans_value)
+        
+        self.check_form()
+
+    def combo_answers_change(self, selected_key):
+        if not self.answers.get(selected_key):
+            return
+        self.text_correct_answer.setMarkdown(self.answers[selected_key])
+        self.check_form()
+
+    def combo_input_type_change(self, selected_key):
+        if selected_key in [INPUT_SELECT_WORDS_SHARED, INPUT_SELECT_WORDS_NON_SHARED]:
+            self.combo_options.setEnabled(True)
+            self.text_options.setEnabled(True)           
+        else:
+            self.combo_options.setCurrentText(EMPTY)
+            self.text_options.setText("")
+            self.combo_options.setEnabled(False)
+            self.text_options.setEnabled(False)               
+        self.check_form()
 
     def get_data(self):
-        return self.combo_box.currentText(), self.text_correct_answer.get_mark_down(), self.text_options.get_mark_down()
+        return self.combo_input_type.currentText(), self.text_correct_answer.get_mark_down(), self.text_options.get_mark_down()
 
 class MyTextEdit(QTextEdit):
     def __init_subclass__(cls):

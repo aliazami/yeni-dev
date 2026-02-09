@@ -1,7 +1,8 @@
 from PySide6.QtCore import QPointF
 from PySide6.QtWidgets import QGraphicsItem
+from app.components.rectangle_part_item import RectanglePartItem
 
-def align_items_helper(items:  list[QGraphicsItem], direction):
+def align_items_helper(items:  list[RectanglePartItem], direction):
     if len(items) < 2:
         return
     target = 0.0
@@ -28,7 +29,7 @@ def align_items_helper(items:  list[QGraphicsItem], direction):
         elif direction == "bottom":
             dy = target - rect.bottom()
         if dx != 0 or dy != 0:
-            move_data[obj] = (
+            move_data[obj.pre_item.uid] = (
                 start_pos,
                 QPointF(start_pos.x() + dx, start_pos.y() + dy),
             )
@@ -37,7 +38,7 @@ def align_items_helper(items:  list[QGraphicsItem], direction):
 
 
 
-def distribute_items_helper(items: list[QGraphicsItem], orientation):
+def distribute_items_helper(items: list[RectanglePartItem], orientation):
     if len(items) < 3:
         return
     move_data = {}
@@ -51,7 +52,7 @@ def distribute_items_helper(items: list[QGraphicsItem], orientation):
             target_center = start + (i * step)
             dx = target_center - current_center
             if abs(dx) > 0.1:
-                move_data[item] = (
+                move_data[item.pre_item.uid] = (
                     item.pos(),
                     QPointF(item.pos().x() + dx, item.pos().y()),
                 )
@@ -65,7 +66,7 @@ def distribute_items_helper(items: list[QGraphicsItem], orientation):
             target_center = start + (i * step)
             dy = target_center - current_center
             if abs(dy) > 0.1:
-                move_data[item] = (
+                move_data[item.pre_item.uid] = (
                     item.pos(),
                     QPointF(item.pos().x(), item.pos().y() + dy),
                 )

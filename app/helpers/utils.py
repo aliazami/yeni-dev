@@ -77,6 +77,10 @@ def is_gap_in_caption(caption: QRectF, gap:QRectF):
 
 def get_answer_from_line(line: str):
     if re.search(r'^\d+\s+\w+', line):
-        return re.sub(r'^\d+\s+', "", line)
+        return re.sub(r'^\d+\s+', "", line).strip()
     return line
+
+def get_answer_lines(answer_text: str):
+    single_newline = re.sub(r'\n\n+', "\n", answer_text)
+    return single_newline.split("\n")
 
