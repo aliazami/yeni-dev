@@ -1,0 +1,106 @@
+{
+    "background_image": "/home/azami/Documents/azami/owse2/030.jpg",
+    "page": "030",
+    "items": [
+        {
+            "part_type": "REF_UNIT_ITEM",
+            "parent_id": null,
+            "seq": 11,
+            "x": 141.0,
+            "y": 143.0,
+            "z_order": 1,
+            "w": 50,
+            "h": 50,
+            "visible": true
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U11",
+            "seq": 1,
+            "x": 162.0,
+            "y": 1171.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U11::P1",
+            "seq": 1,
+            "x": 348.0,
+            "y": 1273.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "WORD_BOUNDARY_ITEM",
+            "parent_id": "U11::P1::Q1",
+            "seq": 1,
+            "x": 294.0,
+            "y": 1238.0,
+            "z_order": 1,
+            "w": 172.0,
+            "h": 34.0,
+            "visible": false
+        },
+        {
+            "part_type": "WORD_BOUNDARY_ITEM",
+            "parent_id": "U11::P1::Q1",
+            "seq": 2,
+            "x": 341.0,
+            "y": 1253.0,
+            "z_order": 2,
+            "w": 79.0,
+            "h": 32.0,
+            "visible": false
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U11::P1",
+            "seq": 2,
+            "x": 228.0,
+            "y": 1292.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "WORD_BOUNDARY_ITEM",
+            "parent_id": "U11::P1::Q2",
+            "seq": 1,
+            "x": 295.0,
+            "y": 1274.0,
+            "z_order": 1,
+            "w": 111.0,
+            "h": 32.0,
+            "visible": false
+        },
+        {
+            "part_type": "WORD_BOUNDARY_ITEM",
+            "parent_id": "U11::P1::Q2",
+            "seq": 2,
+            "x": 462.0,
+            "y": 1275.0,
+            "z_order": 1,
+            "w": 98.0,
+            "h": 33.0,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U11::P1",
+            "seq": 1,
+            "x": 252.0,
+            "y": 1160.0,
+            "z_order": 1,
+            "w": 336.0,
+            "h": 42.0,
+            "visible": true,
+            "caption": "Hello it's **Me**\n\n"
+        }
+    ]
+}

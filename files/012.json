@@ -1,0 +1,1173 @@
+{
+    "background_image": "/home/azami/Documents/azami/owse2/012.jpg",
+    "page": "012",
+    "items": [
+        {
+            "part_type": "REF_UNIT_ITEM",
+            "parent_id": null,
+            "seq": 1,
+            "x": 162.0,
+            "y": 149.0,
+            "z_order": 1,
+            "w": 50,
+            "h": 50,
+            "visible": true
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U1",
+            "seq": 1,
+            "x": 153.0,
+            "y": 1138.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "1 T\n\n2 F\n\n3 T\n\n4 T\n\n5 F\n\n6 T\n\n7 F\n\n8 F\n\n9 T\n\n10 T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 1,
+            "x": 250.0,
+            "y": 1113.0,
+            "z_order": 1,
+            "w": 996.0,
+            "h": 45.0,
+            "visible": false,
+            "caption": "Tick ( ) the things you can put in a bag. Put a cross (X) by the things you can't."
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 1,
+            "x": 212.0,
+            "y": 1242.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q1",
+            "seq": 1,
+            "x": 274.0,
+            "y": 1232.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "pencil"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q1",
+            "seq": 1,
+            "x": 384.0,
+            "y": 1234.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 2,
+            "x": 553.0,
+            "y": 1177.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q2",
+            "seq": 1,
+            "x": 602.0,
+            "y": 1160.0,
+            "z_order": 1,
+            "w": 143.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "desk"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q2",
+            "seq": 1,
+            "x": 742.0,
+            "y": 1162.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "F",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 3,
+            "x": 555.0,
+            "y": 1214.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q3",
+            "seq": 1,
+            "x": 603.0,
+            "y": 1196.0,
+            "z_order": 1,
+            "w": 143.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "notice"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q3",
+            "seq": 1,
+            "x": 743.0,
+            "y": 1198.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 4,
+            "x": 556.0,
+            "y": 1250.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q4",
+            "seq": 1,
+            "x": 605.0,
+            "y": 1233.0,
+            "z_order": 1,
+            "w": 143.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "CD player"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q4",
+            "seq": 1,
+            "x": 745.0,
+            "y": 1235.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 5,
+            "x": 853.0,
+            "y": 1178.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q5",
+            "seq": 1,
+            "x": 920.0,
+            "y": 1162.0,
+            "z_order": 1,
+            "w": 163.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "table"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q5",
+            "seq": 1,
+            "x": 1082.0,
+            "y": 1164.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "F",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 6,
+            "x": 855.0,
+            "y": 1213.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q6",
+            "seq": 1,
+            "x": 922.0,
+            "y": 1197.0,
+            "z_order": 1,
+            "w": 163.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "coursebook"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q6",
+            "seq": 1,
+            "x": 1084.0,
+            "y": 1199.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 7,
+            "x": 852.0,
+            "y": 1249.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q7",
+            "seq": 1,
+            "x": 919.0,
+            "y": 1233.0,
+            "z_order": 1,
+            "w": 163.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "chair"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q7",
+            "seq": 1,
+            "x": 1081.0,
+            "y": 1235.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "F",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 8,
+            "x": 1204.0,
+            "y": 1179.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q8",
+            "seq": 1,
+            "x": 1257.0,
+            "y": 1164.0,
+            "z_order": 1,
+            "w": 163.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "noticeboard"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q8",
+            "seq": 1,
+            "x": 1433.0,
+            "y": 1165.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "F",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 9,
+            "x": 1205.0,
+            "y": 1212.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q9",
+            "seq": 1,
+            "x": 1254.0,
+            "y": 1199.0,
+            "z_order": 1,
+            "w": 163.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "dictionary"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q9",
+            "seq": 1,
+            "x": 1434.0,
+            "y": 1198.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 10,
+            "x": 1207.0,
+            "y": 1249.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::Q10",
+            "seq": 1,
+            "x": 1255.0,
+            "y": 1234.0,
+            "z_order": 1,
+            "w": 173.0,
+            "h": 35.0,
+            "visible": false,
+            "caption": "piece of paper"
+        },
+        {
+            "part_type": "BOX_ITEM",
+            "parent_id": "U1::P1::Q10",
+            "seq": 1,
+            "x": 1436.0,
+            "y": 1235.0,
+            "z_order": 1,
+            "w": 31.0,
+            "h": 31.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": "T\n\nF"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 1,
+            "x": 196.0,
+            "y": 1159.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::QS1",
+            "seq": 1,
+            "x": 285.0,
+            "y": 1160.0,
+            "z_order": 1,
+            "w": 83.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "pen"
+        },
+        {
+            "part_type": "BOX_SAMPLE_ITEM",
+            "parent_id": "U1::P1::QS1",
+            "seq": 1,
+            "x": 384.0,
+            "y": 1162.0,
+            "z_order": 1,
+            "w": 30.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "T",
+                "options": ""
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U1::P1",
+            "seq": 2,
+            "x": 194.0,
+            "y": 1192.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P1::QS2",
+            "seq": 1,
+            "x": 291.0,
+            "y": 1192.0,
+            "z_order": 1,
+            "w": 83.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "board"
+        },
+        {
+            "part_type": "BOX_SAMPLE_ITEM",
+            "parent_id": "U1::P1::QS2",
+            "seq": 1,
+            "x": 383.0,
+            "y": 1197.0,
+            "z_order": 1,
+            "w": 30.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_TRUE_FALSE",
+                "correct_answer": "F",
+                "options": ""
+            }
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U1",
+            "seq": 2,
+            "x": 157.0,
+            "y": 1313.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 1,
+            "x": 250.0,
+            "y": 1297.0,
+            "z_order": 1,
+            "w": 423.0,
+            "h": 39.0,
+            "visible": false,
+            "caption": "Complete the words or phrases."
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 1,
+            "x": 203.0,
+            "y": 1338.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::QS1",
+            "seq": 1,
+            "x": 295.0,
+            "y": 1335.0,
+            "z_order": 1,
+            "w": 53.0,
+            "h": 35.0,
+            "visible": false,
+            "caption": "note"
+        },
+        {
+            "part_type": "TAIL_SAMPLE_ITEM",
+            "parent_id": "U1::P2::QS1",
+            "seq": 1,
+            "x": 347.0,
+            "y": 1333.0,
+            "z_order": 1,
+            "w": 183.0,
+            "h": 32.0,
+            "visible": false,
+            "caption": "book"
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 1,
+            "x": 217.0,
+            "y": 1392.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q1",
+            "seq": 1,
+            "x": 286.0,
+            "y": 1370.0,
+            "z_order": 1,
+            "w": 78.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "board"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q1",
+            "seq": 1,
+            "x": 368.0,
+            "y": 1369.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "board pen",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 2,
+            "x": 224.0,
+            "y": 1428.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q2",
+            "seq": 1,
+            "x": 292.0,
+            "y": 1407.0,
+            "z_order": 1,
+            "w": 78.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "course"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q2",
+            "seq": 1,
+            "x": 374.0,
+            "y": 1406.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "coursebook",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 3,
+            "x": 656.0,
+            "y": 1389.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q3",
+            "seq": 1,
+            "x": 721.0,
+            "y": 1368.0,
+            "z_order": 1,
+            "w": 78.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "notice"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q3",
+            "seq": 1,
+            "x": 805.0,
+            "y": 1369.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "noticeboard",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 4,
+            "x": 652.0,
+            "y": 1420.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q4",
+            "seq": 1,
+            "x": 719.0,
+            "y": 1407.0,
+            "z_order": 1,
+            "w": 98.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "exercise"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q4",
+            "seq": 1,
+            "x": 819.0,
+            "y": 1407.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "exercise book",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 5,
+            "x": 1096.0,
+            "y": 1387.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q5",
+            "seq": 1,
+            "x": 1150.0,
+            "y": 1373.0,
+            "z_order": 1,
+            "w": 101.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "piece of"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q5",
+            "seq": 1,
+            "x": 1254.0,
+            "y": 1372.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "piece of paper",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P2",
+            "seq": 6,
+            "x": 1094.0,
+            "y": 1429.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P2::Q6",
+            "seq": 1,
+            "x": 1145.0,
+            "y": 1410.0,
+            "z_order": 1,
+            "w": 48.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "CD"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P2::Q6",
+            "seq": 1,
+            "x": 1198.0,
+            "y": 1408.0,
+            "z_order": 1,
+            "w": 185.0,
+            "h": 32.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "CD player",
+                "options": "board pen\n\ncoursebook\n\nnoticeboard\n\nexercise book\n\npiece of paper\n\nCD player"
+            }
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U1",
+            "seq": 3,
+            "x": 163.0,
+            "y": 1490.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD \n\na bag\n\na coursebook",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 1,
+            "x": 211.0,
+            "y": 1562.75,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q1",
+            "seq": 1,
+            "x": 293.0,
+            "y": 1544.0,
+            "z_order": 1,
+            "w": 309.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "The teacher writes on this."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q1",
+            "seq": 1,
+            "x": 750.0,
+            "y": 1548.0,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a whiteboard/board",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 2,
+            "x": 211.0,
+            "y": 1597.5,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q2",
+            "seq": 1,
+            "x": 287.0,
+            "y": 1575.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "You find the meaning of words in this."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q2",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1583.2857142857142,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a dictionary",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 3,
+            "x": 211.0,
+            "y": 1632.25,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q3",
+            "seq": 1,
+            "x": 284.0,
+            "y": 1615.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "You sit behind one of these."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q3",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1618.5714285714287,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a desk/table",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 4,
+            "x": 211.0,
+            "y": 1667.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q4",
+            "seq": 1,
+            "x": 284.0,
+            "y": 1651.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "You write in one of these."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q4",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1654.0,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a notebook / an exercise book",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 5,
+            "x": 211.0,
+            "y": 1701.75,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q5",
+            "seq": 1,
+            "x": 283.0,
+            "y": 1682.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "The teacher puts information on this."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q5",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1689.142857142857,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a noticeboard",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 6,
+            "x": 211.0,
+            "y": 1736.5,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q6",
+            "seq": 1,
+            "x": 287.0,
+            "y": 1721.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "The teacher can play one of these."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q6",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1724.4285714285713,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a CD ",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 7,
+            "x": 211.0,
+            "y": 1771.25,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q7",
+            "seq": 1,
+            "x": 289.0,
+            "y": 1760.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "You can put your books in this."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q7",
+            "seq": 1,
+            "x": 751.0,
+            "y": 1759.7142857142858,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a bag",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 8,
+            "x": 211.0,
+            "y": 1806.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::Q8",
+            "seq": 1,
+            "x": 286.0,
+            "y": 1792.0,
+            "z_order": 1,
+            "w": 429.0,
+            "h": 38.0,
+            "visible": true,
+            "caption": "You study from one of these."
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U1::P3::Q8",
+            "seq": 1,
+            "x": 750.0,
+            "y": 1795.0,
+            "z_order": 1,
+            "w": 350.0,
+            "h": 30.0,
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a coursebook",
+                "options": "a whiteboard/board\n\na dictionary\n\na desk/table\n\na notebook / an exercise book\n\na noticeboard\n\na CD\n\na bag\n\na coursebook"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U1::P3",
+            "seq": 1,
+            "x": 196.0,
+            "y": 1513.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U1::P3::QS1",
+            "seq": 1,
+            "x": 291.0,
+            "y": 1509.0,
+            "z_order": 1,
+            "w": 278.0,
+            "h": 39.0,
+            "visible": true,
+            "caption": "You sit on one of these."
+        },
+        {
+            "part_type": "TAIL_SAMPLE_ITEM",
+            "parent_id": "U1::P3::QS1",
+            "seq": 1,
+            "x": 749.0,
+            "y": 1510.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 32.0,
+            "visible": true,
+            "caption": "a chair"
+        }
+    ]
+}

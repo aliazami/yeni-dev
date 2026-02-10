@@ -1,0 +1,106 @@
+{
+    "background_image": "/home/azami/Documents/azami/owse2/016.jpg",
+    "page": "016",
+    "items": [
+        {
+            "part_type": "REF_UNIT_ITEM",
+            "parent_id": null,
+            "seq": 4,
+            "x": 202.0,
+            "y": 139.0,
+            "z_order": 1,
+            "w": 50,
+            "h": 50,
+            "visible": true
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U4",
+            "seq": 1,
+            "x": 153.0,
+            "y": 1063.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "REF_PART_ITEM",
+            "parent_id": "U4",
+            "seq": 2,
+            "x": 151.0,
+            "y": 1487.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U4::P2",
+            "seq": 1,
+            "x": 200.0,
+            "y": 1553.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U4::P2",
+            "seq": 2,
+            "x": 200.0,
+            "y": 1595.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U4::P2::Q2",
+            "seq": 1,
+            "x": 279.0,
+            "y": 1577.0,
+            "z_order": 1,
+            "w": 1075.0,
+            "h": 40.0,
+            "visible": true,
+            "caption": "Write down new words in a\n\nIt's important to\n\na record of them."
+        },
+        {
+            "part_type": "GAP_ITEM",
+            "parent_id": "U4::P2::Q2",
+            "seq": 1,
+            "x": 592.0,
+            "y": 1579.0,
+            "z_order": 1,
+            "w": 179.0,
+            "h": 35.0,
+            "visible": true
+        },
+        {
+            "part_type": "GAP_ITEM",
+            "parent_id": "U4::P2::Q2",
+            "seq": 2,
+            "x": 962.0,
+            "y": 1583.0,
+            "z_order": 1,
+            "w": 186.0,
+            "h": 30.0,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U4::P1",
+            "seq": 1,
+            "x": 242.0,
+            "y": 1045.0,
+            "z_order": 1,
+            "w": 508.0,
+            "h": 44.0,
+            "visible": false
+        }
+    ]
+}
