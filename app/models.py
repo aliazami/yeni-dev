@@ -75,6 +75,7 @@ class Input:
         self.correct_answer = ""
         self.options = ""
         self.error = ""
+        self.style = ""
 
     @property
     def input_type(self):
@@ -85,20 +86,27 @@ class Input:
         new.correct_answer = str(self.correct_answer)
         new.options = self.options
         new.error = self.error
+        new.style = self.style
         return new
     
     def to_dict(self):
-        return {
+
+        data_dict = {
             "input_type": self._input_type,
             "correct_answer": self.correct_answer,
-            "options": self.options,
         }
+        if self.options:
+            data_dict["options"] = self.options
+        if self.style:
+            data_dict["style"] = self.style
+        return data_dict
     
     @staticmethod
     def from_dict(data: dict):
         new_input = Input(data["input_type"])
         new_input.correct_answer = data["correct_answer"]
-        new_input.options = data["options"]
+        new_input.options = data.get("options")
+        new_input.style = data.get("style")
         return new_input
 
     @property

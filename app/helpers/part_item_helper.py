@@ -2,14 +2,21 @@ from app.pre_item import PreItem
 from app.models import Input
 from app.constants import (
     REF_PART_ITEM, REF_QUESTION_ITEM,
-    INPUT_TRUE_FALSE, INPUT_KEYBOARD, INPUT_NUMBERS,
-    BOX_ITEM, GAP_ITEM, TAIL_ITEM,
+    INPUT_TRUE_FALSE, WORD_BOUNDARY_ITEM, INPUT_NUMBERS, INPUT_BOUNDARY_MULTI, INPUT_BOUNDARY_SINGLE,
+    BOX_ITEM, GAP_ITEM, TAIL_ITEM, CAPTION_ITEM, ALL_PLACE_HOLDER_ITEMS
 )
 from app.helpers.utils import get_answer_from_line, get_answer_lines
 
 def find_place_holder(stack: list[PreItem], seq: int):
     question_item = next((obj for obj in stack if obj.seq == seq and obj.part_type == REF_QUESTION_ITEM), None)
-    return next((obj for obj in stack if obj.is_my_parent(question_item) and obj.part_type in [GAP_ITEM, BOX_ITEM, TAIL_ITEM]), None)
+    return next((obj for obj in stack if obj.is_my_parent(question_item) and obj.part_type in ALL_PLACE_HOLDER_ITEMS), None)
+
+def find_children_by_types(stack: list[PreItem], parent: PreItem, types: list[str]):
+    return [obj for obj in stack if obj.is_my_parent(parent) and obj.part_type in types]
+
+def find_child(stack: list[PreItem], seq: int, types):
+    return ((obj for obj in stack if obj.seq == seq and obj.part_type in types), None)
+
 
 def check_part_item(part_item: PreItem, descendants: list[PreItem]):
     if part_item.part_type != REF_PART_ITEM:
@@ -26,7 +33,7 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
             part_item.input.error = f"No correct answers. ({part_item.uid})"
             return    
 
-        if not place_holders:
+        if not place_holders and part_item.input.input_type not in [INPUT_BOUNDARY_MULTI, INPUT_BOUNDARY_SINGLE]:
             part_item.input.error = f"No place_holders. ({part_item.uid})"
             return
                 
@@ -47,10 +54,42 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
                 part_item.input.error = f"At least one answer is not either T or F ({part_item.uid})"
                 return
 
-        if part_item.input.input_type in [INPUT_KEYBOARD, INPUT_NUMBERS]:
-            if part_item.input.input_type in [INPUT_NUMBERS] and any([not answer.isdigit() for answer in correct_answers]):
-                part_item.input.error = f"At least one answer is not a digit in INPUT_NUMBERS ({part_item.uid})"
-                return                         
+        if part_item.input.input_type in [INPUT_NUMBERS] and any([not answer.isdigit() for answer in correct_answers]):
+            part_item.input.error = f"At least one answer is not a digit in INPUT_NUMBERS ({part_item.uid})"
+            return
+
+        if part_item.input.input_type in [INPUT_BOUNDARY_MULTI, INPUT_BOUNDARY_SINGLE]:
+            for question_item in questions:
+                correct_answer = correct_answers[question_item.seq - 1]
+
+                caption_items = find_children_by_types(descendants, question_item, [CAPTION_ITEM])
+                if not caption_items or len(caption_items) != 1:
+                    part_item.input.error = f"There shold be only one caption item for ({question_item.uid})"
+                    return
+                caption_item = caption_items[0]
+                if not caption_item.caption_text :
+                    part_item.input.error = f"No caption text found for ({question_item.uid})"
+                    return
+                word_boundary_items = find_children_by_types(descendants, question_item, [WORD_BOUNDARY_ITEM])
+                if not word_boundary_items:
+                    part_item.input.error = f"No boundary items found for ({question_item.uid})"
+                    return
+                if any(not obj.caption_text for obj in word_boundary_items):
+                    part_item.input.error = f"At least one boundary item without caption found for ({question_item.uid})"
+                    return
+                word_boundary_texts = [obj.caption_text for obj in word_boundary_items if obj.caption_text]            
+                for correct_answer_item in correct_answer.split(";"):
+                    if correct_answer_item not in [word_boundary_texts]:
+                        part_item.input.error = f"The answer `{correct_answer_item}` was not found word boundaries for ({question_item.uid})"
+                        return
+                for word_boundary in word_boundary_texts:
+                    if word_boundary not in caption_item.caption_text:
+                        part_item.input.error = f"The word boundary `{word_boundary}` was not found in caption `{caption_item.caption_text}` for ({question_item.uid})"
+                        return
+                part_item.input.error = ""
+                return
+             
+
         
         for i in range(len(correct_answers)):
             place_holder = find_place_holder(descendants, i + 1)

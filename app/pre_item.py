@@ -1,3 +1,4 @@
+import re
 from PySide6.QtCore import QPointF, QRectF
 from app.constants import (
     UI_SETTINGS,
@@ -186,6 +187,13 @@ class PreItem:
     def center_text(self):
         if self.part_type in [*BEHAVE_INPUT_ITEMS, *BEHAVE_SAMPLE_INPUT_ITEMS]:
             return self.input.correct_answer if self.input else ""
+        
+    # @property
+    # def parent_type(self):
+    #     if not self.parent_id:
+    #         return
+    #     sign = re.sub(r'\d+$', "", self.parent_id.split("::")[-1])
+    #     return next((k for k, v in ITEM_SIGN.items() if v == sign), None)
 
 
     @property

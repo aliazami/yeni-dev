@@ -1,6 +1,6 @@
 from app.constants import (
     ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM,
-    BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, REF_QUESTION_ITEM, CAPTION_ITEM
+    BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, REF_QUESTION_ITEM, CAPTION_ITEM, ALL_REF_ITEMS
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -109,7 +109,7 @@ class ManagerStat:
     
     def get_parent_ref_item(self, child_item: PreItem):
         for obj in self.items:
-            if obj.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM] and child_item.is_my_parent(obj):
+            if obj.part_type in ALL_REF_ITEMS and child_item.is_my_parent(obj):
                 return obj
         
         return None
@@ -192,10 +192,6 @@ class ManagerStat:
             items.extend((get_answer_from_line(line) for line in answer_lines))
             seq += 1
         return items
-
-
-        
-        
 
 def get_next_str(value: str) -> str:
     """Return next integer or alphabet character."""

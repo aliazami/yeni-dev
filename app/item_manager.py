@@ -33,7 +33,7 @@ from app.manager_io import ManagerIO
 from app.helpers.ocr import ImageReader
 from app.helpers.reader import read_gap_caption
 from app.helpers.utils import is_gap_in_caption
-
+from app.helpers.text_recognition_helper import reorder_numbered_text
 
 class ItemManager:
     def __init__(self):
@@ -135,12 +135,14 @@ class ItemManager:
                 answers[REF_ANSWER_PART_ITEM] = "\n\n".join(part_answers)
         dialog = InputSelectDialog(input_types, input_obj=item.input, answers=answers, parent=None)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            input_type, correct_answer, options  = dialog.get_data()
+            input_type, correct_answer, options, input_style  = dialog.get_data()
             item.input = Input(input_type)
             if correct_answer:
                 item.input.correct_answer = correct_answer
             if options:
-                item.input.options = options           
+                item.input.options = options
+            if input_style:
+                item.input.style = input_style                        
             self.stat.check_doc_is_ok()
 
     def pre_create_item(
@@ -302,6 +304,11 @@ class ItemManager:
         items = []
         asnwers = {}
         contains_answer = self.stat.get_has_answers()
+        if contains_answer:
+            for pre_item in self.stat.items:
+                if pre_item.part_type == REF_ANSWER_PART_ITEM:
+                    for child_item in self.stat.get_ascendants(pre_item):
+                        self.stat.answer_items.pop(child_item.uid)
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
                 self.stat.answer_items[pre_item.uid] = pre_item
@@ -412,6 +419,9 @@ class ItemManager:
         if rect and image_path:
             text = self.image_reader.read_image(image_path, rect)
             if text:
+                parent = self.stat.get_parent_ref_item(item)
+                if parent and parent.part_type == REF_ANSWER_PART_ITEM:
+                    text = reorder_numbered_text(text)
                 item.set_caption(text)
                 result = True
         if result:

@@ -14,11 +14,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QKeySequence, QShortcut, QFont
 from app.models import Input
 from app.constants import (
-    INPUT_TRUE_FALSE,
-    INPUT_KEYBOARD,
+    ALL_INPUT_STYLES,
     INPUT_SELECT_WORDS_SHARED,
     INPUT_SELECT_WORDS_NON_SHARED,
-    INPUT_NUMBERS,
 )
 
 
@@ -106,7 +104,9 @@ class InputSelectDialog(QDialog):
         self.combo_input_type.currentTextChanged.connect(self.combo_input_type_change)
         self.combo_answers = QComboBox()
         self.combo_answers.addItem(EMPTY)
-        self.combo_answers.setEnabled(False)
+        self.combo_input_style = QComboBox()
+        self.combo_input_style.addItem(EMPTY)
+        self.combo_input_style.setEnabled(False)        
         self.combo_options = QComboBox()
         self.combo_options.addItem(EMPTY)
         self.combo_options.addItem(COPY_ANSWERS)
@@ -132,6 +132,8 @@ class InputSelectDialog(QDialog):
             self.combo_input_type.setCurrentText(input_obj.input_type)
             self.text_correct_answer.setMarkdown(input_obj.correct_answer)
             self.text_options.setMarkdown(input_obj.options)
+            if input_obj.style:
+                self.combo_input_style.setCurrentText(input_obj.style)
         else:
             self.combo_input_type.setCurrentIndex(0)
 
@@ -146,7 +148,9 @@ class InputSelectDialog(QDialog):
         layout.addWidget(QLabel("option type"))
         layout.addWidget(self.combo_options)         
         layout.addWidget(QLabel("options"))
-        layout.addWidget(self.text_options)        
+        layout.addWidget(self.text_options)
+        layout.addWidget(QLabel("input style"))
+        layout.addWidget(self.combo_input_style)                
         layout.addWidget(self.buttons)
 
     def check_form(self):
@@ -178,10 +182,23 @@ class InputSelectDialog(QDialog):
             self.text_options.setText("")
             self.combo_options.setEnabled(False)
             self.text_options.setEnabled(False)               
+        self.combo_input_style.clear()
+        self.combo_input_style.addItem(EMPTY)
+        if style_options := ALL_INPUT_STYLES.get(selected_key):
+            self.combo_input_style.addItems(style_options)
+            self.combo_input_style.setEnabled(True)
+        else:
+            self.combo_input_style.setEnabled(False)               
         self.check_form()
 
     def get_data(self):
-        return self.combo_input_type.currentText(), self.text_correct_answer.get_mark_down(), self.text_options.get_mark_down()
+        input_type = self.combo_input_type.currentText()
+        correct_answer = self.text_correct_answer.get_mark_down()
+        options = self.text_options.get_mark_down()
+        combo_input_style = self.combo_input_style.currentText()
+        input_style = combo_input_style if combo_input_style != EMPTY else ""
+        return input_type, correct_answer, options, input_style 
+
 
 class MyTextEdit(QTextEdit):
     def __init_subclass__(cls):
