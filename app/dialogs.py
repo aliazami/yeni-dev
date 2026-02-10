@@ -277,6 +277,9 @@ class CaptionEditDialog(QDialog):
         layout.addWidget(self.text_edit)
         layout.addWidget(buttons)
 
+    def get_data(self):
+        return self.text_edit.get_mark_down()
+
 
 class HelpWindow(QWidget):
     def __init__(self):

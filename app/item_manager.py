@@ -289,7 +289,8 @@ class ItemManager:
             print(md_text)
             dialog = CaptionEditDialog(md_text)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                self._current_item.set_caption(dialog.get_mark_down())
+                caption = dialog.get_data()
+                self._current_item.set_caption(caption)
 
     def debug_print(self):
         print("============================")
@@ -303,7 +304,7 @@ class ItemManager:
         contains_answer = self.stat.get_has_answers()
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
-                self.stat.answer_items.add(pre_item)
+                self.stat.answer_items[pre_item.uid] = pre_item
             items.append(pre_item.to_dict())
         for pre_item in self.stat.answer_items.values():
             asnwers[pre_item.uid] = pre_item.to_dict()

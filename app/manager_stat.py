@@ -128,6 +128,9 @@ class ManagerStat:
             root_item_error = ""
             part_items = [obj for obj in self.get_children(root_item) if obj.part_type == REF_PART_ITEM]
             for part_item in part_items:
+                if not part_item.input:
+                    root_item_error = root_item_error or f"{part_item} has no input"
+                    continue
                 descendants = self.get_descendants(part_item)
                 check_part_item(part_item, descendants)
                 part_item.refresh_ui()

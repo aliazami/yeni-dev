@@ -175,7 +175,11 @@ class PreItem:
     def default_text(self) -> str:
         caption = f" ({self.caption_text})" if self.caption_text else ""
         sign = ITEM_SIGN.get(self.part_type)
-        is_ok = "" if self.is_ok else "!"
+        is_ok = "!"
+        if self.part_type == REF_PART_ITEM and not self.input:
+            is_ok = "!!"
+        elif self.is_ok:
+            is_ok = ""
         return f"{is_ok}{sign}{self.seq}{caption}" if sign else "???"
 
     @property

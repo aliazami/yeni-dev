@@ -1,5 +1,4 @@
 from PySide6.QtCore import QPointF
-from PySide6.QtWidgets import QGraphicsItem
 from app.components.rectangle_part_item import RectanglePartItem
 
 def align_items_helper(items:  list[RectanglePartItem], direction):
