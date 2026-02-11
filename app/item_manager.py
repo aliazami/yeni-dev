@@ -31,6 +31,7 @@ from app.models import Delta, PreItemData, Input
 from app.manager_stat import ManagerStat
 from app.manager_io import ManagerIO
 from app.helpers.ocr import ImageReader
+from app.helpers.pre_item_relations import PreItemRelations
 from app.helpers.reader import read_gap_caption
 from app.helpers.utils import is_gap_in_caption
 from app.helpers.text_recognition_helper import reorder_numbered_text
@@ -305,14 +306,15 @@ class ItemManager:
         asnwers = {}
         contains_answer = self.stat.get_has_answers()
         if contains_answer:
+            pir = PreItemRelations(self.stat.answer_items)      
             for pre_item in self.stat.items:
                 if pre_item.part_type == REF_ANSWER_PART_ITEM:
-                    for child_item in self.stat.get_ascendants(pre_item):
-                        self.stat.answer_items.pop(child_item.uid)
+                    pir.remove_item(pre_item.uid)
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
-                self.stat.answer_items[pre_item.uid] = pre_item
+                pir.add_item(pre_item)
             items.append(pre_item.to_dict())
+        self.stat.answer_items = pir.items.copy()
         for pre_item in self.stat.answer_items.values():
             asnwers[pre_item.uid] = pre_item.to_dict()
         data = {
