@@ -1,4 +1,7 @@
 from app.pre_item import PreItem
+from app.constants import (
+    REF_QUESTION_ITEM, ALL_PLACE_HOLDER_ITEMS
+)
 
 class PreItemRelations:
     def __init__(self, items: list[PreItem] | dict[str, PreItem]):
@@ -43,3 +46,19 @@ class PreItemRelations:
     def get_siblings(self, item: PreItem):
         siblings = [other for other in self.items.values() if item.is_my_sibling(other)]
         return siblings
+    
+    def get_all_by_type(self, part_type: str):
+        return [obj for obj in self.items.values() if obj.part_type == part_type]
+    
+    def get_all_by_types(self, part_types: list[str] | set[str]):
+        return [obj for obj in self.items.values() if obj.part_type in part_types]
+
+    def find_first_place_holder_by_question_seq(self, seq: int):
+        question_item = next((obj for obj in self.items.values() if obj.seq == seq and obj.part_type == REF_QUESTION_ITEM), None)
+        return next((obj for obj in self.items.values() if obj.is_my_parent(question_item) and obj.part_type in ALL_PLACE_HOLDER_ITEMS), None)
+
+    def find_children_by_types(self, parent: PreItem, types: list[str]):
+        return [obj for obj in self.items.values() if obj.is_my_parent(parent) and obj.part_type in types]
+
+    def find_child(self, seq: int, types):
+        return ((obj for obj in self.items.values() if obj.seq == seq and obj.part_type in types), None)

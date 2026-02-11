@@ -310,11 +310,11 @@ class ItemManager:
             for pre_item in self.stat.items:
                 if pre_item.part_type == REF_ANSWER_PART_ITEM:
                     pir.remove_item(pre_item.uid)
+            self.stat.answer_items = pir.items.copy()
         for pre_item in self.stat.items:
             if contains_answer and pre_item.part_type in BEHAVE_ANSWER_ITEMS:
-                pir.add_item(pre_item)
+                self.stat.answer_items[pre_item.uid] = pre_item
             items.append(pre_item.to_dict())
-        self.stat.answer_items = pir.items.copy()
         for pre_item in self.stat.answer_items.values():
             asnwers[pre_item.uid] = pre_item.to_dict()
         data = {
