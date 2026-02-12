@@ -22,7 +22,12 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_BOUNDARY_SINGLE",
+                "correct_answer": "indefinite\n\nnoun\n\npreposition\n\nan irregular\n\npronouns\n\nverbs\n\nadverbs\n\npast participle",
+                "style": "INPUT_STYLE_BOUNDARY_CIRCLE"
+            }
         },
         {
             "part_type": "REF_PART_ITEM",
@@ -33,7 +38,12 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "I\n\nan\n\nlesson\n\nyoung\n\nfrom / in\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks / think\n\nwrong\n\nI / he\n\nI think he's in the wrong class.",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
         },
         {
             "part_type": "REF_PART_ITEM",
@@ -44,7 +54,12 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": true,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -55,7 +70,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -66,7 +81,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -77,7 +92,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -88,7 +103,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -99,7 +114,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -110,7 +125,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -121,7 +136,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "REF_QUESTION_ITEM",
@@ -132,7 +147,7 @@
             "z_order": 1,
             "w": 30,
             "h": 30,
-            "visible": true
+            "visible": false
         },
         {
             "part_type": "WORD_BOUNDARY_ITEM",
@@ -421,6 +436,1244 @@
             "h": 36.0,
             "visible": false,
             "caption": "Gone is the past simple / past participle of the verb go."
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 1,
+            "x": 626.0,
+            "y": 1387.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::QS1",
+            "seq": 1,
+            "x": 657.0,
+            "y": 1369.0,
+            "z_order": 1,
+            "w": 76.0,
+            "h": 36.0,
+            "visible": false,
+            "caption": "a verb"
+        },
+        {
+            "part_type": "TAIL_SAMPLE_ITEM",
+            "parent_id": "U2::P2::QS1",
+            "seq": 1,
+            "x": 738.0,
+            "y": 1365.0,
+            "z_order": 1,
+            "w": 67.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "have"
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 1,
+            "x": 632.0,
+            "y": 1425.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q1",
+            "seq": 1,
+            "x": 653.0,
+            "y": 1410.0,
+            "z_order": 1,
+            "w": 129.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a pronoun"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q1",
+            "seq": 1,
+            "x": 782.0,
+            "y": 1401.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "I",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 2,
+            "x": 1017.0,
+            "y": 1385.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q2",
+            "seq": 1,
+            "x": 1038.0,
+            "y": 1366.0,
+            "z_order": 1,
+            "w": 229.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "an indefinite a  \narticle"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q2",
+            "seq": 1,
+            "x": 1266.0,
+            "y": 1359.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "an",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 3,
+            "x": 1017.0,
+            "y": 1423.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q3",
+            "seq": 1,
+            "x": 1041.0,
+            "y": 1403.0,
+            "z_order": 1,
+            "w": 89.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a noun"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q3",
+            "seq": 1,
+            "x": 1135.0,
+            "y": 1397.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "lesson",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 4,
+            "x": 632.0,
+            "y": 1478.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q4",
+            "seq": 1,
+            "x": 656.0,
+            "y": 1458.0,
+            "z_order": 1,
+            "w": 143.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "an adjective"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q4",
+            "seq": 1,
+            "x": 801.0,
+            "y": 1453.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "young",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 5,
+            "x": 631.0,
+            "y": 1517.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q5",
+            "seq": 1,
+            "x": 655.0,
+            "y": 1497.0,
+            "z_order": 1,
+            "w": 156.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a preposition"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q5",
+            "seq": 1,
+            "x": 815.0,
+            "y": 1492.0,
+            "z_order": 1,
+            "w": 176.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "from / in",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 6,
+            "x": 1019.0,
+            "y": 1474.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q6",
+            "seq": 1,
+            "x": 1043.0,
+            "y": 1454.0,
+            "z_order": 1,
+            "w": 219.0,
+            "h": 40.0,
+            "visible": false,
+            "caption": "an indefinite article"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q6",
+            "seq": 1,
+            "x": 1266.0,
+            "y": 1452.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "a",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 7,
+            "x": 634.0,
+            "y": 1569.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q7",
+            "seq": 1,
+            "x": 658.0,
+            "y": 1549.0,
+            "z_order": 1,
+            "w": 120.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "an adverb"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q7",
+            "seq": 1,
+            "x": 783.0,
+            "y": 1544.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "quietly",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 8,
+            "x": 632.0,
+            "y": 1609.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q8",
+            "seq": 1,
+            "x": 656.0,
+            "y": 1585.0,
+            "z_order": 1,
+            "w": 269.0,
+            "h": 35.0,
+            "visible": false,
+            "caption": "an irregular past simple"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q8",
+            "seq": 1,
+            "x": 665.0,
+            "y": 1616.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "spoke",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 9,
+            "x": 1021.0,
+            "y": 1565.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q9",
+            "seq": 1,
+            "x": 1045.0,
+            "y": 1545.0,
+            "z_order": 1,
+            "w": 239.0,
+            "h": 40.0,
+            "visible": false,
+            "caption": "a regular past simple"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q9",
+            "seq": 1,
+            "x": 1284.0,
+            "y": 1541.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "asked",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 10,
+            "x": 1014.0,
+            "y": 1604.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q10",
+            "seq": 1,
+            "x": 1038.0,
+            "y": 1584.0,
+            "z_order": 1,
+            "w": 109.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a phrase"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q10",
+            "seq": 1,
+            "x": 1149.0,
+            "y": 1578.0,
+            "z_order": 1,
+            "w": 326.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "This morning",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 11,
+            "x": 626.0,
+            "y": 1690.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q11",
+            "seq": 1,
+            "x": 659.0,
+            "y": 1671.0,
+            "z_order": 1,
+            "w": 89.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a noun"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q11",
+            "seq": 1,
+            "x": 749.0,
+            "y": 1666.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "class",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 12,
+            "x": 627.0,
+            "y": 1731.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q12",
+            "seq": 1,
+            "x": 647.0,
+            "y": 1706.0,
+            "z_order": 1,
+            "w": 89.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a verb"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q12",
+            "seq": 1,
+            "x": 740.0,
+            "y": 1702.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "thinks / think",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 13,
+            "x": 628.0,
+            "y": 1755.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q13",
+            "seq": 1,
+            "x": 652.0,
+            "y": 1740.0,
+            "z_order": 1,
+            "w": 149.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "an adjective"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q13",
+            "seq": 1,
+            "x": 808.0,
+            "y": 1736.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "wrong",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 14,
+            "x": 1019.0,
+            "y": 1687.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q14",
+            "seq": 1,
+            "x": 1043.0,
+            "y": 1667.0,
+            "z_order": 1,
+            "w": 129.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a pronoun"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q14",
+            "seq": 1,
+            "x": 1174.0,
+            "y": 1660.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "I / he",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 15,
+            "x": 1019.0,
+            "y": 1718.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2::Q15",
+            "seq": 1,
+            "x": 1043.0,
+            "y": 1702.0,
+            "z_order": 1,
+            "w": 129.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "a sentence"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P2::Q15",
+            "seq": 1,
+            "x": 1176.0,
+            "y": 1698.0,
+            "z_order": 1,
+            "w": 206.0,
+            "h": 33.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "I think he's in the wrong class.",
+                "options": "I\n\nan\n\nlesson\n\nyoung\n\nfrom\n\na\n\nquietly\n\nspoke\n\nasked\n\nThis morning\n\nclass\n\nthinks\n\nwrong\n\nI\n\nI think he's in the wrong class."
+            }
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 1,
+            "x": 238.0,
+            "y": 1315.0,
+            "z_order": 1,
+            "w": 456.0,
+            "h": 37.0,
+            "visible": false,
+            "caption": "Find the answers for each sentence."
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 2,
+            "x": 255.0,
+            "y": 1383.0,
+            "z_order": 1,
+            "w": 328.0,
+            "h": 47.0,
+            "visible": false,
+            "caption": "I have an English lesson now."
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 3,
+            "x": 258.0,
+            "y": 1464.0,
+            "z_order": 1,
+            "w": 272.0,
+            "h": 70.0,
+            "visible": false,
+            "caption": "There's a young man  \nfrom Rome in the class."
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 4,
+            "x": 253.0,
+            "y": 1554.0,
+            "z_order": 1,
+            "w": 299.0,
+            "h": 103.0,
+            "visible": false,
+            "caption": "This morning, he asked a  \nquestion, and he spoke  \nvery quietly."
+        },
+        {
+            "part_type": "REF_GROUP_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 1,
+            "x": 177.0,
+            "y": 1408.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "REF_GROUP_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 2,
+            "x": 174.0,
+            "y": 1487.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "REF_GROUP_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 3,
+            "x": 176.0,
+            "y": 1600.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "GROUP_REGION_ITEM",
+            "parent_id": "U2::P2::G1",
+            "seq": 1,
+            "x": 244.0,
+            "y": 1358.0,
+            "z_order": 1,
+            "w": 1286.0,
+            "h": 86.0,
+            "visible": false
+        },
+        {
+            "part_type": "GROUP_REGION_ITEM",
+            "parent_id": "U2::P2::G2",
+            "seq": 1,
+            "x": 235.0,
+            "y": 1457.0,
+            "z_order": 1,
+            "w": 1271.0,
+            "h": 89.0,
+            "visible": false
+        },
+        {
+            "part_type": "GROUP_REGION_ITEM",
+            "parent_id": "U2::P2::G3",
+            "seq": 1,
+            "x": 225.0,
+            "y": 1531.0,
+            "z_order": 1,
+            "w": 1309.0,
+            "h": 137.0,
+            "visible": false
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 5,
+            "x": 254.0,
+            "y": 1694.0,
+            "z_order": 1,
+            "w": 343.0,
+            "h": 47.0,
+            "visible": false,
+            "caption": "I think he's in the wrong class."
+        },
+        {
+            "part_type": "REF_GROUP_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 4,
+            "x": 177.0,
+            "y": 1715.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": false
+        },
+        {
+            "part_type": "GROUP_REGION_ITEM",
+            "parent_id": "U2::P2::G4",
+            "seq": 1,
+            "x": 236.0,
+            "y": 1660.0,
+            "z_order": 1,
+            "w": 1285.0,
+            "h": 138.0,
+            "visible": false
+        },
+        {
+            "part_type": "PART_REGION_ITEM",
+            "parent_id": "U2::P1",
+            "seq": 1,
+            "x": 182.0,
+            "y": 1055.0,
+            "z_order": 1,
+            "w": 1304.0,
+            "h": 237.0,
+            "visible": false
+        },
+        {
+            "part_type": "PART_REGION_ITEM",
+            "parent_id": "U2::P2",
+            "seq": 1,
+            "x": 191.0,
+            "y": 1296.0,
+            "z_order": 1,
+            "w": 1327.0,
+            "h": 498.0,
+            "visible": false
+        },
+        {
+            "part_type": "PART_REGION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 1,
+            "x": 187.0,
+            "y": 1813.0,
+            "z_order": 1,
+            "w": 1205.0,
+            "h": 279.0,
+            "visible": false
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 1,
+            "x": 257.0,
+            "y": 1918.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q1",
+            "seq": 1,
+            "x": 278.0,
+            "y": 1899.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "on"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q1",
+            "seq": 1,
+            "x": 392.0,
+            "y": 1899.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "preposition",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 2,
+            "x": 256.0,
+            "y": 1956.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q2",
+            "seq": 1,
+            "x": 277.0,
+            "y": 1937.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "the"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q2",
+            "seq": 1,
+            "x": 393.0,
+            "y": 1937.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "definite article",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 3,
+            "x": 255.0,
+            "y": 1989.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q3",
+            "seq": 1,
+            "x": 276.0,
+            "y": 1970.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "way"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q3",
+            "seq": 1,
+            "x": 392.0,
+            "y": 1970.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "noun",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 4,
+            "x": 258.0,
+            "y": 2026.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q4",
+            "seq": 1,
+            "x": 279.0,
+            "y": 2007.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "spoke"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q4",
+            "seq": 1,
+            "x": 392.0,
+            "y": 2007.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "verb (past tense)",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 5,
+            "x": 259.0,
+            "y": 2057.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q5",
+            "seq": 1,
+            "x": 280.0,
+            "y": 2038.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "to"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q5",
+            "seq": 1,
+            "x": 392.0,
+            "y": 2038.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "preposition",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 6,
+            "x": 827.0,
+            "y": 1913.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q6",
+            "seq": 1,
+            "x": 848.0,
+            "y": 1894.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "a"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q6",
+            "seq": 1,
+            "x": 947.0,
+            "y": 1893.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "indefinite article",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 7,
+            "x": 828.0,
+            "y": 1946.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q7",
+            "seq": 1,
+            "x": 849.0,
+            "y": 1927.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "little"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q7",
+            "seq": 1,
+            "x": 947.0,
+            "y": 1927.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "adjective",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 8,
+            "x": 829.0,
+            "y": 1985.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q8",
+            "seq": 1,
+            "x": 850.0,
+            "y": 1966.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "boy"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q8",
+            "seq": 1,
+            "x": 947.0,
+            "y": 1966.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "noun",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 9,
+            "x": 829.0,
+            "y": 2018.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q9",
+            "seq": 1,
+            "x": 850.0,
+            "y": 1999.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "she"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q9",
+            "seq": 1,
+            "x": 947.0,
+            "y": 1999.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "pronoun",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "REF_QUESTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 10,
+            "x": 822.0,
+            "y": 2050.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::Q10",
+            "seq": 1,
+            "x": 843.0,
+            "y": 2031.0,
+            "z_order": 1,
+            "w": 103.0,
+            "h": 38.0,
+            "visible": false,
+            "caption": "said"
+        },
+        {
+            "part_type": "TAIL_ITEM",
+            "parent_id": "U2::P3::Q10",
+            "seq": 1,
+            "x": 947.0,
+            "y": 2031.0,
+            "z_order": 1,
+            "w": 178.0,
+            "h": 30.0,
+            "visible": false,
+            "input": {
+                "input_type": "INPUT_SELECT_WORDS_SHARED",
+                "correct_answer": "verb (past tense)",
+                "options": "preposition\n\ndefinite article\n\nnoun\n\nverb (past tense)\n\npreposition\n\nindefinite article\n\nadjective\n\nnoun\n\npronoun\n\nverb (past tense)"
+            }
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 1,
+            "x": 237.0,
+            "y": 1819.0,
+            "z_order": 1,
+            "w": 1058.0,
+            "h": 49.0,
+            "visible": true,
+            "caption": "What are the parts of speech for the other words in the text at the top of the page?"
+        },
+        {
+            "part_type": "REF_QUESTION_SAMPLE_ITEM",
+            "parent_id": "U2::P3",
+            "seq": 1,
+            "x": 256.0,
+            "y": 1879.0,
+            "z_order": 1,
+            "w": 30,
+            "h": 30,
+            "visible": true
+        },
+        {
+            "part_type": "CAPTION_ITEM",
+            "parent_id": "U2::P3::QS1",
+            "seq": 1,
+            "x": 280.0,
+            "y": 1865.0,
+            "z_order": 1,
+            "w": 55.0,
+            "h": 39.0,
+            "visible": false,
+            "caption": "hill"
+        },
+        {
+            "part_type": "TAIL_SAMPLE_ITEM",
+            "parent_id": "U2::P3::QS1",
+            "seq": 1,
+            "x": 394.0,
+            "y": 1858.0,
+            "z_order": 1,
+            "w": 74.0,
+            "h": 34.0,
+            "visible": false,
+            "caption": "noun"
         }
     ]
 }

@@ -470,7 +470,7 @@
             "z_order": 1,
             "w": 522.0,
             "h": 144.0,
-            "visible": true,
+            "visible": false,
             "caption": "1 indefinite\n\n2 noun\n\n3 preposition\n\n4 an irregular\n\n5 pronouns\n\n6 verbs\n\n7 adverbs\n\n8 past participle"
         }
     ]
