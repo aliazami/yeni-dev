@@ -165,7 +165,7 @@ class EditorScene(QGraphicsScene):
                     self.saveRequested.emit()
                 elif reply == QMessageBox.StandardButton.No:
                     pass
-            old_background, new_background, ui_items = self.mgr.open_image()
+            old_background, new_background, ui_items = self.mgr.open_image(open_last_file=shift_key)
             self.recreate_scene(old_background, new_background, ui_items)
             self.update_doc_title()
             self.mgr.stat.check_doc_is_ok()

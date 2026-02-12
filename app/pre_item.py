@@ -2,7 +2,7 @@ import re
 from PySide6.QtCore import QPointF, QRectF
 from app.constants import (
     UI_SETTINGS,
-    REF_PART_ITEM, REF_QUESTION_ITEM, BEHAVE_FIXED_SIZE,
+    REF_PART_ITEM, ALL_REF_ITEMS, BEHAVE_FIXED_SIZE,
     KEY_PRE_ITEM, BEHAVE_INITIAL_VISIBLE, ITEM_SIGN,
     BEHAVE_SQUARE, BEHAVE_READABLE, BEHAVE_INPUT_ITEMS, BEHAVE_SAMPLE_INPUT_ITEMS
 )
@@ -203,7 +203,7 @@ class PreItem:
     @property
     def initial_pos(self):
         pos = QPointF(0, 0)
-        if self.part_type in [REF_PART_ITEM, REF_QUESTION_ITEM]:
+        if self.part_type in ALL_REF_ITEMS:
           pos = QPointF(-1 * self.width / 2, -1 * self.height / 2)
         return pos
         

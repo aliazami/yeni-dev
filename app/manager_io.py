@@ -6,8 +6,11 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QMessageBox,
 )
-from app.manager_stat import ManagerStat
 from app.components.background import Background
+from app.settings import get_settings, set_settings
+
+IO_LAST_IMAGE_FILE = "SETTINGS_LAST_FILE"
+
 class ManagerIO:
 
     def __init__(self):
@@ -41,17 +44,18 @@ class ManagerIO:
     
     @property
     def answers_json_path(self):
-        return os.path.join(self._image_folder, "answers.json")    
-    
+        return os.path.join(self._image_folder, "answers.json")
+
     @property
     def page_id(self):
         return self._image_stem or "<?>"
     
-
     
-    def open_image(self, file_path=None, image_name=None):
+    def open_image(self, file_path=None, image_name=None, open_last_file=False):
         _file_path = None
         result = (None, None, None, None)
+        if open_last_file:
+            file_path = get_settings(IO_LAST_IMAGE_FILE)
         if not file_path and not image_name and self._image_folder:
             image_name, ok = QInputDialog.getText(None, "Enter page number", "Enter page number:")
             if not ok:
@@ -77,6 +81,7 @@ class ManagerIO:
             self._background = Background(_file_path)
             # re-create stat if image is going to change
             data_json, answer_json = self._load_json()
+            set_settings(IO_LAST_IMAGE_FILE, _file_path)
             result = (old_background, self._background, data_json, answer_json)
     
         return result
@@ -103,4 +108,8 @@ class ManagerIO:
                         print(f"Error Loading Answers: {e}")
             except Exception as e:
                 QMessageBox.critical(self, "Load Error", str(e))
-        return data_json, answer_json 
+        return data_json, answer_json
+    
+
+
+ 

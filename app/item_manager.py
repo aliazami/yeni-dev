@@ -324,8 +324,8 @@ class ItemManager:
         }
         return data, asnwers
 
-    def open_image(self):
-        old_background, new_background, data_json, answer_json = self.io.open_image()
+    def open_image(self, open_last_file=False):
+        old_background, new_background, data_json, answer_json = self.io.open_image(open_last_file=open_last_file)
         ui_items = []
         if new_background:
             self._clear()
