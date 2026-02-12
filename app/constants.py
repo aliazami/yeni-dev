@@ -2,12 +2,14 @@
 from PySide6.QtCore import Qt
 from enum import Enum, auto
 
+
 class SceneMode(Enum):
     SELECT = auto()
     ADD_ITEM = auto()
     DRAWING_RECT = auto()
     EDIT_RECT = auto()
     DEEP_COPY = auto()
+
 
 INPUT_TRUE_FALSE = "INPUT_TRUE_FALSE"
 INPUT_KEYBOARD = "INPUT_KEYBOARD"
@@ -36,16 +38,16 @@ ALL_INPUT_STYLES = {
     INPUT_TRUE_FALSE: {
         INPUT_STYLE_TICK_CROSS,
     },
-    INPUT_BOUNDARY_SINGLE : {
+    INPUT_BOUNDARY_SINGLE: {
         INPUT_STYLE_BOUNDARY_CIRCLE,
         INPUT_STYLE_BOUNDARY_UNDER_LINE,
         INPUT_STYLE_BOUNDARY_CROSS_OUT,
     },
-    INPUT_BOUNDARY_MULTI : {
+    INPUT_BOUNDARY_MULTI: {
         INPUT_STYLE_BOUNDARY_CIRCLE,
         INPUT_STYLE_BOUNDARY_UNDER_LINE,
         INPUT_STYLE_BOUNDARY_CROSS_OUT,
-    }    
+    },
 }
 
 # --- Constants ---
@@ -71,7 +73,8 @@ TAIL_ITEM = "TAIL_ITEM"
 TAIL_SAMPLE_ITEM = "TAIL_SAMPLE_ITEM"
 BOX_SAMPLE_ITEM = "BOX_SAMPLE_ITEM"
 CAPTION_ITEM = "CAPTION_ITEM"
-RECTANGLE_ITEM = "RECTANGLE_ITEM"
+GROUP_REGION_ITEM = "GROUP_REGION_ITEM"
+PART_REGION_ITEM = "PART_REGION_ITEM"
 
 ALL_ITEMS = {
     REF_UNIT_ITEM,
@@ -90,7 +93,8 @@ ALL_ITEMS = {
     TAIL_ITEM,
     TAIL_SAMPLE_ITEM,
     CAPTION_ITEM,
-    RECTANGLE_ITEM,
+    GROUP_REGION_ITEM,
+    PART_REGION_ITEM,
 }
 
 ITEM_SIGN = {
@@ -108,10 +112,11 @@ ITEM_SIGN = {
     GAP_ITEM: "<G>",
     GAP_SAMPLE_ITEM: "<GS>",
     TAIL_ITEM: "<T>",
-    TAIL_SAMPLE_ITEM: "<TS>",    
+    TAIL_SAMPLE_ITEM: "<TS>",
     CAPTION_ITEM: "c",
     BLOCK_ITEM: "b",
-    RECTANGLE_ITEM: "R"
+    GROUP_REGION_ITEM: "GR",
+    PART_REGION_ITEM: "PR",
 }
 
 ALL_REF_ITEMS = {
@@ -123,7 +128,7 @@ ALL_REF_ITEMS = {
     REF_OPTION_ITEM,
     REF_ANSWER_PART_ITEM,
     REF_ANSWER_QUESTION_ITEM,
-    REF_GROUP_ITEM, 
+    REF_GROUP_ITEM,
 }
 
 ALL_PLACE_HOLDER_ITEMS = {
@@ -132,43 +137,100 @@ ALL_PLACE_HOLDER_ITEMS = {
     TAIL_ITEM,
 }
 
+ALL_REGION_ITEMS = {
+    PART_REGION_ITEM,
+    GROUP_REGION_ITEM,
+}
+
 ITEM_CHILD_TYPES = {
     REF_UNIT_ITEM: {REF_PART_ITEM, REF_ANSWER_PART_ITEM},
-    REF_PART_ITEM: {REF_QUESTION_ITEM, REF_QUESTION_SAMPLE_ITEM, REF_OPTION_ITEM, REF_GROUP_ITEM, CAPTION_ITEM, RECTANGLE_ITEM},
-    REF_QUESTION_ITEM: {WORD_BOUNDARY_ITEM, GAP_ITEM, TAIL_ITEM, BOX_ITEM, CAPTION_ITEM},
-    REF_QUESTION_SAMPLE_ITEM: {WORD_BOUNDARY_ITEM, GAP_SAMPLE_ITEM, TAIL_SAMPLE_ITEM, BOX_SAMPLE_ITEM, CAPTION_ITEM},
+    REF_PART_ITEM: {
+        REF_QUESTION_ITEM,
+        REF_QUESTION_SAMPLE_ITEM,
+        REF_OPTION_ITEM,
+        REF_GROUP_ITEM,
+        CAPTION_ITEM,
+        GROUP_REGION_ITEM,
+        PART_REGION_ITEM,
+    },
+    REF_QUESTION_ITEM: {
+        WORD_BOUNDARY_ITEM,
+        GAP_ITEM,
+        TAIL_ITEM,
+        BOX_ITEM,
+        CAPTION_ITEM,
+    },
+    REF_QUESTION_SAMPLE_ITEM: {
+        WORD_BOUNDARY_ITEM,
+        GAP_SAMPLE_ITEM,
+        TAIL_SAMPLE_ITEM,
+        BOX_SAMPLE_ITEM,
+        CAPTION_ITEM,
+    },
     REF_OPTION_ITEM: {WORD_BOUNDARY_ITEM, GAP_ITEM, TAIL_ITEM, BOX_ITEM, CAPTION_ITEM},
-    REF_GROUP_ITEM: {RECTANGLE_ITEM},
+    REF_GROUP_ITEM: {GROUP_REGION_ITEM},
     REF_ANSWER_PART_ITEM: {BLOCK_ITEM, REF_ANSWER_QUESTION_ITEM},
-    REF_ANSWER_QUESTION_ITEM: {CAPTION_ITEM}
+    REF_ANSWER_QUESTION_ITEM: {CAPTION_ITEM},
 }
 
 INPUT_CHILD_TYPES = {
     INPUT_TRUE_FALSE: {REF_PART_ITEM, REF_QUESTION_ITEM, BOX_ITEM},
     INPUT_KEYBOARD: {REF_PART_ITEM, REF_QUESTION_ITEM, GAP_ITEM, TAIL_ITEM},
     INPUT_SELECT_WORDS_SHARED: {REF_PART_ITEM, REF_QUESTION_ITEM, GAP_ITEM, TAIL_ITEM},
-    INPUT_SELECT_WORDS_NON_SHARED: {REF_PART_ITEM, REF_QUESTION_ITEM, GAP_ITEM, TAIL_ITEM},
+    INPUT_SELECT_WORDS_NON_SHARED: {
+        REF_PART_ITEM,
+        REF_QUESTION_ITEM,
+        GAP_ITEM,
+        TAIL_ITEM,
+    },
     INPUT_NUMBERS: {REF_PART_ITEM, REF_QUESTION_ITEM, GAP_ITEM, TAIL_ITEM, BOX_ITEM},
     INPUT_BOUNDARY_SINGLE: {REF_PART_ITEM, REF_QUESTION_ITEM},
     INPUT_BOUNDARY_MULTI: {REF_PART_ITEM, REF_QUESTION_ITEM},
 }
 
 BEHAVE_INITIAL_VISIBLE = {REF_UNIT_ITEM, REF_PART_ITEM, REF_ANSWER_PART_ITEM}
-BEHAVE_RECTANGLE = {WORD_BOUNDARY_ITEM, GAP_ITEM, TAIL_ITEM, GAP_SAMPLE_ITEM, TAIL_SAMPLE_ITEM, CAPTION_ITEM, BLOCK_ITEM, RECTANGLE_ITEM}
+
+BEHAVE_REGION = {GROUP_REGION_ITEM, PART_REGION_ITEM}
+BEHAVE_RECTANGLE = {
+    WORD_BOUNDARY_ITEM,
+    GAP_ITEM,
+    TAIL_ITEM,
+    GAP_SAMPLE_ITEM,
+    TAIL_SAMPLE_ITEM,
+    CAPTION_ITEM,
+    BLOCK_ITEM,
+    GROUP_REGION_ITEM,
+    PART_REGION_ITEM,
+}
 BEHAVE_CENTER_NUMBER = {*ALL_REF_ITEMS}
-BEHAVE_TOP_LEFT_CAPTION = {WORD_BOUNDARY_ITEM, BOX_ITEM, BOX_SAMPLE_ITEM, CAPTION_ITEM, GAP_ITEM, TAIL_ITEM, GAP_SAMPLE_ITEM, TAIL_SAMPLE_ITEM, BLOCK_ITEM, RECTANGLE_ITEM}
+BEHAVE_TOP_LEFT_CAPTION = {
+    WORD_BOUNDARY_ITEM,
+    BOX_ITEM,
+    BOX_SAMPLE_ITEM,
+    CAPTION_ITEM,
+    GAP_ITEM,
+    TAIL_ITEM,
+    GAP_SAMPLE_ITEM,
+    TAIL_SAMPLE_ITEM,
+    BLOCK_ITEM,
+    GROUP_REGION_ITEM,
+    PART_REGION_ITEM,
+}
 BEHAVE_REPEATABLE_INSERT = ALL_ITEMS
 BEHAVE_HAS_NO_PARENT = {REF_UNIT_ITEM}
 BEHAVE_FIXED_SIZE = {*ALL_REF_ITEMS}
 BEHAVE_SQUARE = {BOX_ITEM, BOX_SAMPLE_ITEM}
 BEHAVE_READABLE = {CAPTION_ITEM, BLOCK_ITEM, TAIL_SAMPLE_ITEM, WORD_BOUNDARY_ITEM}
-BEHAVE_ANSWER_ITEMS = {REF_ANSWER_PART_ITEM, REF_ANSWER_QUESTION_ITEM, BLOCK_ITEM, CAPTION_ITEM}
+BEHAVE_ANSWER_ITEMS = {
+    REF_ANSWER_PART_ITEM,
+    REF_ANSWER_QUESTION_ITEM,
+    BLOCK_ITEM,
+    CAPTION_ITEM,
+}
 BEHAVE_INPUT_ITEMS = {GAP_ITEM, TAIL_ITEM, BOX_ITEM}
 BEHAVE_SAMPLE_INPUT_ITEMS = {GAP_SAMPLE_ITEM, TAIL_SAMPLE_ITEM, BOX_SAMPLE_ITEM}
 
-ITEM_Z_ORDER = {
-    CAPTION_ITEM: 1
-}
+ITEM_Z_ORDER = {CAPTION_ITEM: 1}
 
 UI_SETTINGS = {
     "colors": {
@@ -182,7 +244,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#B0E9F5",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },    
+    },
     REF_QUESTION_ITEM: {
         "size": 30,
         "bg_color_active": "#00D4FF",
@@ -218,7 +280,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#FFC7B3",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },    
+    },
     REF_ANSWER_PART_ITEM: {
         "size": 30,
         "bg_color_active": "#FF7A59",
@@ -227,7 +289,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#FFC7B3",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },    
+    },
     REF_UNIT_ITEM: {
         "size": 50,
         "bg_color_active": "#7D2EA8",
@@ -252,15 +314,23 @@ UI_SETTINGS = {
         "border_color_active": "#2A741480",
         "border_color_inactive": "#88FA8480",
         "font_color_active": "#000",
-        "font_color_inactive": "#000",        
+        "font_color_inactive": "#000",
     },
-    RECTANGLE_ITEM: {
+    GROUP_REGION_ITEM: {
         "bg_color_active": "#6F59FF80",
         "bg_color_inactive": "#A4AFFB80",
         "border_color_active": "#6F59FF80",
         "border_color_inactive": "#A4AFFB80",
         "font_color_active": "#000",
-        "font_color_inactive": "#000",     
+        "font_color_inactive": "#000",
+    },
+    PART_REGION_ITEM: {
+        "bg_color_active": "#6F59FF80",
+        "bg_color_inactive": "#A4AFFB80",
+        "border_color_active": "#6F59FF80",
+        "border_color_inactive": "#A4AFFB80",
+        "font_color_active": "#000",
+        "font_color_inactive": "#000",
     },    
     BOX_ITEM: {
         "size": 20,
@@ -290,7 +360,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#88FA8480",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },     
+    },
     TAIL_ITEM: {
         "width": 50,
         "height": 20,
@@ -300,7 +370,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#88FA8480",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },   
+    },
     TAIL_SAMPLE_ITEM: {
         "width": 50,
         "height": 20,
@@ -310,7 +380,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#88FA8480",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    },       
+    },
     WORD_BOUNDARY_ITEM: {
         "bg_color_active": "#6F59FF80",
         "bg_color_inactive": "#A4AFFB80",
@@ -318,7 +388,7 @@ UI_SETTINGS = {
         "border_color_inactive": "#A4AFFB80",
         "font_color_active": "#000",
         "font_color_inactive": "#000",
-    }
+    },
 }
 
 Z_ORDER_BACKGROUND = -10

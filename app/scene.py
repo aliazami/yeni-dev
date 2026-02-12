@@ -145,7 +145,11 @@ class EditorScene(QGraphicsScene):
         elif event.key() == Qt.Key.Key_2:
             self.mgr.show_descendants()
             self.update_scene()
-            event.accept()            
+            event.accept()
+        elif event.key() == Qt.Key.Key_3:
+            self.mgr.show_regions()
+            self.update_scene()
+            event.accept()                
         elif event.key() == Qt.Key.Key_H:
             self.helpRequested.emit()
             event.accept()
@@ -153,6 +157,7 @@ class EditorScene(QGraphicsScene):
             self.mgr.select_input_type()
             event.accept()
         elif event.key() == Qt.Key.Key_Exclam:
+            self.mgr.stat.check_doc_is_ok()
             self.mgr.get_error()
             event.accept()            
         elif event.key() == Qt.Key.Key_O:

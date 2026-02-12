@@ -35,6 +35,7 @@ from app.helpers.pre_item_relations import PreItemRelations
 from app.helpers.reader import read_gap_caption
 from app.helpers.utils import is_gap_in_caption
 from app.helpers.text_recognition_helper import reorder_numbered_text
+from app.helpers.answer_expansion import answer_expansion
 
 class ItemManager:
     def __init__(self):
@@ -133,7 +134,11 @@ class ItemManager:
             return
         if item.part_type == REF_PART_ITEM:
             if part_answers := self.stat.get_part_answers(item):
-                answers[REF_ANSWER_PART_ITEM] = "\n\n".join(part_answers)
+                expanded_answers = []
+                for part_answer in part_answers:
+                    expanded_answers.append(" / ".join(answer_expansion(part_answer)))
+                answers["EXPANDED_ANSWERS"] = "\n\n".join(expanded_answers)
+                answers["RAW_ANSWERS"] = "\n\n".join(part_answers)
         dialog = InputSelectDialog(input_types, input_obj=item.input, answers=answers, parent=None)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             input_type, correct_answer, options, input_style  = dialog.get_data()
@@ -232,6 +237,14 @@ class ItemManager:
         if not item:
             return
         self.stat.show_descendants(item)
+
+    def show_regions(self):
+        item = self._current_item
+        if not item:
+            return
+        self.stat.show_regions(item)
+
+
 
     def request_redraw_rect(self):
         if self._current_item and self._current_item.part_type in BEHAVE_RECTANGLE:

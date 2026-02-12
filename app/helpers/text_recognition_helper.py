@@ -1,5 +1,7 @@
 import re
 
+PREFIX_NUMBER_PATTERN = r'\*\*\d+\*\* '
+
 def reorder_numbered_text(s: str) -> str:
     """
     Reorders numbered text blocks if numbering is continuous from 1..N.
@@ -44,3 +46,18 @@ def reorder_numbered_text(s: str) -> str:
         ordered_parts.append(f"{n} {blocks[n]}")
 
     return "\n\n".join(ordered_parts)
+
+def add_prefix_numbers(input_text: str):
+    lines = []
+    if "\n\n" in input_text:
+        for index, line in enumerate(input_text.split("\n\n")):
+            if re.match(PREFIX_NUMBER_PATTERN, line):
+                lines.append(line)
+            else:
+                lines.append(f"**{index + 1}** {line}")
+        return "\n\n".join(lines)
+    return input_text
+
+def remove_prefix_numbers(output_text: str):
+    return re.sub(PREFIX_NUMBER_PATTERN, "", output_text)
+

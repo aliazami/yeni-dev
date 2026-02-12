@@ -3,7 +3,8 @@ from app.models import Input
 from app.constants import (
     REF_PART_ITEM, REF_QUESTION_ITEM,
     INPUT_TRUE_FALSE, WORD_BOUNDARY_ITEM, INPUT_NUMBERS, INPUT_BOUNDARY_MULTI, INPUT_BOUNDARY_SINGLE,
-    BOX_ITEM, GAP_ITEM, TAIL_ITEM, CAPTION_ITEM
+    INPUT_SELECT_WORDS_NON_SHARED, INPUT_SELECT_WORDS_SHARED,
+    BOX_ITEM, GAP_ITEM, TAIL_ITEM, CAPTION_ITEM, PART_REGION_ITEM, BEHAVE_READABLE
 )
 from app.helpers.utils import get_answer_from_line, get_answer_lines
 from app.helpers.pre_item_relations import PreItemRelations
@@ -12,6 +13,13 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
     pir = PreItemRelations(descendants)
     if part_item.part_type != REF_PART_ITEM:
         raise Exception("required a part_item")
+    if not pir.find_children_by_types(part_item, PART_REGION_ITEM):
+        part_item.input.error = f"No part region. ({part_item.uid})"
+        return
+    for obj in pir.get_descendants(part_item):
+        if obj.part_type in BEHAVE_READABLE and not obj.caption_text:
+            part_item.input.error = f"No caption ({obj.uid})"
+            return        
     if part_item.input:
         questions = pir.get_all_by_type(REF_QUESTION_ITEM)
         boxes = pir.get_all_by_type(BOX_ITEM)
@@ -73,6 +81,9 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
             if part_item.input.input_type in [INPUT_NUMBERS] and any([not answer.isdigit() for answer in correct_answers]):
                 part_item.input.error = f"At least one answer is not a digit in INPUT_NUMBERS ({part_item.uid})"
                 return
+            
+            if part_item.input.input_type in [INPUT_SELECT_WORDS_NON_SHARED, INPUT_SELECT_WORDS_SHARED]:
+                pass
 
         for i in range(len(correct_answers)):
             place_holder = pir.find_first_place_holder_by_question_seq(i + 1)

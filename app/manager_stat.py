@@ -1,6 +1,7 @@
 from app.constants import (
     ITEM_CHILD_TYPES, REF_UNIT_ITEM, BEHAVE_INITIAL_VISIBLE, REF_ANSWER_PART_ITEM,
-    BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, CAPTION_ITEM, ALL_REF_ITEMS
+    BEHAVE_HAS_NO_PARENT, REF_PART_ITEM, CAPTION_ITEM, ALL_REF_ITEMS,
+    BEHAVE_REGION, ALL_REGION_ITEMS,
 )
 from app.pre_item import PreItem
 from app.models import Delta
@@ -46,7 +47,7 @@ class ManagerStat:
         ascendants = self.get_ascendants(item)
         siblings = self.get_siblings(item)
         children = self.get_children(item)
-        visible_items = ascendants + siblings + children
+        visible_items = [obj for obj in ascendants + siblings + children if obj.part_type not in ALL_REGION_ITEMS] 
         for other in self.items:
             other.is_visible = other.part_type in BEHAVE_INITIAL_VISIBLE or other in visible_items
             other.is_active = False
@@ -54,13 +55,19 @@ class ManagerStat:
         item.is_active = True
 
     def show_descendants(self, item: PreItem):
-        descendants = self.get_descendants(item)
+        descendants = [obj for obj in self.get_descendants(item) if obj.part_type not in ALL_REGION_ITEMS] 
         for other in self.items:
             other.is_visible = other.part_type in BEHAVE_INITIAL_VISIBLE or other in descendants
             other.is_active = False
         item.is_visible = True
         item.is_active = True    
 
+    def show_regions(self, item: PreItem):
+        for child in self.get_descendants(item):
+            child.is_visible = child.part_type in BEHAVE_REGION
+            child.is_active = False
+        item.is_visible = True
+        item.is_active = True    
 
     def get_ascendants(self, parent_item: PreItem):
         ascendants = [obj for obj in self.items if parent_item.is_my_ascendant(obj)]
@@ -192,6 +199,9 @@ class ManagerStat:
             items.extend((get_answer_from_line(line) for line in answer_lines))
             seq += 1
         return items
+    
+    def export_doc(self):
+        pass
 
 def get_next_str(value: str) -> str:
     """Return next integer or alphabet character."""

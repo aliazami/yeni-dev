@@ -1,4 +1,6 @@
 # app/dialogs.py
+import re
+import random
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
@@ -13,6 +15,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QKeySequence, QShortcut, QFont
 from app.models import Input
+from app.helpers.text_recognition_helper import add_prefix_numbers, remove_prefix_numbers
+from app.helpers.answer_expansion import answer_expansion
 from app.constants import (
     ALL_INPUT_STYLES,
     INPUT_SELECT_WORDS_SHARED,
@@ -25,7 +29,8 @@ from app.constants import (
 # ==========================================
 
 EMPTY = "<none>"
-COPY_ANSWERS = "COPY_ANSWERS"
+OPTION_SINGLE_RANDOM = "SINGLE_RANDOM"
+OPTION_MULTI_ANSWERS = "MULTI_ANSWERS"
 
 
 
@@ -109,7 +114,8 @@ class InputSelectDialog(QDialog):
         self.combo_input_style.setEnabled(False)        
         self.combo_options = QComboBox()
         self.combo_options.addItem(EMPTY)
-        self.combo_options.addItem(COPY_ANSWERS)
+        self.combo_options.addItem(OPTION_SINGLE_RANDOM)
+        self.combo_options.addItem(OPTION_MULTI_ANSWERS)
         self.combo_options.currentTextChanged.connect(self.combo_options_change)
 
         for input_type in input_types:
@@ -117,7 +123,6 @@ class InputSelectDialog(QDialog):
         if answers:
             for key in answers.keys():
                 self.combo_answers.addItem(key)
-                self.combo_options.addItem(key)
             self.combo_answers.setEnabled(True)
             self.combo_answers.currentTextChanged.connect(self.combo_answers_change)
             self.combo_answers.setCurrentIndex(0)
@@ -130,7 +135,8 @@ class InputSelectDialog(QDialog):
    
         if input_obj:
             self.combo_input_type.setCurrentText(input_obj.input_type)
-            self.text_correct_answer.setMarkdown(input_obj.correct_answer)
+            number_prefixed = add_prefix_numbers(input_obj.correct_answer)
+            self.text_correct_answer.setMarkdown(number_prefixed)
             self.text_options.setMarkdown(input_obj.options)
             if input_obj.style:
                 self.combo_input_style.setCurrentText(input_obj.style)
@@ -152,25 +158,34 @@ class InputSelectDialog(QDialog):
         layout.addWidget(QLabel("input style"))
         layout.addWidget(self.combo_input_style)                
         layout.addWidget(self.buttons)
+        self.check_form()
 
     def check_form(self):
-        check = True
-        if self.combo_input_type.currentText() == EMPTY or self.combo_answers.currentText() == EMPTY:
-            check = False
+        check = bool(self.text_correct_answer.get_plain_text())
+        if check and self.combo_input_type.currentText() in [INPUT_SELECT_WORDS_SHARED, INPUT_SELECT_WORDS_NON_SHARED]:
+            check = bool(self.text_options.get_plain_text())
         self.ok_button.setEnabled(check)
 
     def combo_options_change(self, selected_key):
-        if selected_key == COPY_ANSWERS:
-            self.text_options.setMarkdown(self.text_correct_answer.get_mark_down())
-        elif ans_value := self.answers.get(selected_key):
+        ans_value = None
+        non_prefixed_answers = remove_prefix_numbers(self.text_correct_answer.get_mark_down())
+        if selected_key == OPTION_MULTI_ANSWERS:
+            ans_value = "\n\n".join(re.split(r'[\n\n| / ]', non_prefixed_answers))
+        elif selected_key == OPTION_SINGLE_RANDOM:
+            answer_lines = non_prefixed_answers.split("\n\n")
+            ans_value = "\n\n".join([random.choice(line.split(" / ")) for line in answer_lines])
+        elif existing_value := self.answers.get(selected_key):
+            ans_value = existing_value
+        if ans_value:
             self.text_options.setMarkdown(ans_value)
-        
+
         self.check_form()
 
     def combo_answers_change(self, selected_key):
         if not self.answers.get(selected_key):
             return
-        self.text_correct_answer.setMarkdown(self.answers[selected_key])
+        number_prefixed = add_prefix_numbers(self.answers[selected_key])
+        self.text_correct_answer.setMarkdown(number_prefixed)
         self.check_form()
 
     def combo_input_type_change(self, selected_key):
@@ -193,7 +208,8 @@ class InputSelectDialog(QDialog):
 
     def get_data(self):
         input_type = self.combo_input_type.currentText()
-        correct_answer = self.text_correct_answer.get_mark_down()
+        number_prefixed = self.text_correct_answer.get_mark_down()
+        correct_answer = remove_prefix_numbers(number_prefixed)
         options = self.text_options.get_mark_down()
         combo_input_style = self.combo_input_style.currentText()
         input_style = combo_input_style if combo_input_style != EMPTY else ""
