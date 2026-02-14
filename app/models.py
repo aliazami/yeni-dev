@@ -4,6 +4,7 @@ from app.constants import (
     INPUT_TRUE_FALSE, INPUT_NUMBERS, INPUT_SELECT_WORDS_SHARED, ALL_INPUT_TYPES, INPUT_KEYBOARD
 )
 
+from app.helpers.utils import get_answer_from_line, get_answer_lines
 
 
 def can_build(parts: list[str], target: str) -> bool:
@@ -80,6 +81,11 @@ class Input:
     @property
     def input_type(self):
         return self._input_type
+    
+    @property
+    def stripped_correct_answer(self):
+        correct_answers_lines = get_answer_lines(self.correct_answer)
+        return [get_answer_from_line(answer) for answer in correct_answers_lines]        
 
     def copy(self):
         new = Input(self.input_type)

@@ -96,9 +96,10 @@ class MainWindow(QMainWindow):
 
     def save_file(self):
         data_path = self.scene.mgr.io.json_path
+        exp_data_path = self.scene.mgr.io.exp_json_path
         answers_path = self.scene.mgr.io.answers_json_path
         if data_path and answers_path:
-            self._write_to_file(data_path, answers_path)
+            self._write_to_file(data_path, exp_data_path, answers_path)
         else:
             QMessageBox.warning(None, "Error", "No image is loaded")
 
@@ -109,13 +110,17 @@ class MainWindow(QMainWindow):
         if file_path:
             self._write_to_file(file_path)
 
-    def _write_to_file(self, data_path, answers_path):
+    def _write_to_file(self, data_path, exp_data_path, answers_path):
         try:
-            data, answers = self.scene.serialize_scene()
+            data, exp_data, answers = self.scene.serialize_scene()
             if data:
                 with open(data_path, "w") as f:
                     json.dump(data, f, indent=4)
                 print(f"Data Saved to {data_path}")
+            if exp_data_path:
+                with open(exp_data_path, "w") as f:
+                    json.dump(exp_data, f, indent=4)
+                print(f"Exported Data Saved to {exp_data_path}")                
             if answers:
                 with open(answers_path, "w") as f:
                     json.dump(answers, f, indent=4)

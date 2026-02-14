@@ -291,7 +291,7 @@ class PreItem:
         self.ui._refresh_ui()
 
     # ======= item serialization =======
-    def to_dict(self) -> dict | None:
+    def to_dict(self):
         item_dict = {
             "part_type": self.part_type,
             "parent_id": self.parent_id,

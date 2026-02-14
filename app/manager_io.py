@@ -31,7 +31,12 @@ class ManagerIO:
     @property
     def json_name(self):
         if self.is_loaded:
-            return self._image_stem + ".json"        
+            return self._image_stem + ".json"
+
+    @property
+    def exp_json_name(self):
+        if self.is_loaded:
+            return self._image_stem + "_exp.json"             
     
     @property
     def image_path(self):
@@ -41,6 +46,10 @@ class ManagerIO:
     @property
     def json_path(self):
         return os.path.join(self._image_folder, self.json_name)
+    
+    @property
+    def exp_json_path(self):
+        return os.path.join(self._image_folder, self.exp_json_name)    
     
     @property
     def answers_json_path(self):

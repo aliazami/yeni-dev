@@ -36,6 +36,7 @@ from app.helpers.reader import read_gap_caption
 from app.helpers.utils import is_gap_in_caption
 from app.helpers.text_recognition_helper import reorder_numbered_text
 from app.helpers.answer_expansion import answer_expansion
+from app.helpers.export_doc import export_doc
 
 class ItemManager:
     def __init__(self):
@@ -335,7 +336,8 @@ class ItemManager:
             "page": self.io.page_id,
             "items": items,
         }
-        return data, asnwers
+        exp_data = export_doc(self.stat.items, self.io.page_id)
+        return data, exp_data, asnwers
 
     def open_image(self, open_last_file=False):
         old_background, new_background, data_json, answer_json = self.io.open_image(open_last_file=open_last_file)

@@ -120,9 +120,9 @@ class EditorScene(QGraphicsScene):
 
     # --- UPDATED Serialize to include Rect Size ---
     def serialize_scene(self):
-        data, asnwers = self.mgr.to_dict()
+        data, exp_data, answers = self.mgr.to_dict()
         self.mgr.stat.signal_clear_dirty()
-        return data, asnwers
+        return data, exp_data, answers
 
     def align_items(self, direction):
         move_data = align_items_helper(self.selectedItems(), direction)

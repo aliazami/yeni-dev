@@ -9,16 +9,22 @@ from app.constants import (
 
 class PreItemChildrenTypes:
     def __init__(self, parent_item: PreItem, items: list[PreItem]):
-        self._parent_item = parent_item
+        self.parent_item = parent_item
         self._items = items
 
     @property
     def descendants(self):
-        return (obj for obj in self._items if self._parent_item.is_my_descendant(obj))
+        return (obj for obj in self._items if self.parent_item.is_my_descendant(obj))
     
     @property
     def children(self):    
-        return (obj for obj in self.descendants if self._parent_item.is_my_child(obj))
+        return (obj for obj in self.descendants if self.parent_item.is_my_child(obj))
+    
+    def get_sub_pict(self, item: PreItem):
+        if item not in self._items:
+            raise Exception(f"{item.uid} is not in my items")
+        descendants = (obj for obj in self._items if item.is_my_descendant(obj))
+        return PreItemChildrenTypes(item, descendants)
 
     @property
     def child_answer_parts(self):
@@ -87,6 +93,10 @@ class PreItemChildrenTypes:
     @property
     def child_part_regions(self):
         return [obj for obj in self.children if obj.part_type == PART_REGION_ITEM]
+    
+    @property
+    def child_place_holders(self):
+        return self.child_boxes or self.child_gaps or self.child_tails
 
     # descendants
     @property
@@ -156,3 +166,7 @@ class PreItemChildrenTypes:
     @property
     def desc_part_regions(self):
         return [obj for obj in self.descendants if obj.part_type == PART_REGION_ITEM]
+
+    @property
+    def desc_place_holders(self):
+        return self.desc_boxes or self.desc_gaps or self.desc_tails
