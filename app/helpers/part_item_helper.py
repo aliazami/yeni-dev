@@ -1,7 +1,7 @@
 from app.pre_item import PreItem
 from app.models import Input
 from app.constants import (
-    REF_PART_ITEM, REF_QUESTION_ITEM,
+    REF_PART_ITEM, REF_QUESTION_ITEM, REF_GROUP_ITEM,
     INPUT_TRUE_FALSE, WORD_BOUNDARY_ITEM, INPUT_NUMBERS, INPUT_BOUNDARY_MULTI, INPUT_BOUNDARY_SINGLE,
     INPUT_SELECT_WORDS_NON_SHARED, INPUT_SELECT_WORDS_SHARED,
     BOX_ITEM, GAP_ITEM, TAIL_ITEM, CAPTION_ITEM, PART_REGION_ITEM, BEHAVE_READABLE
@@ -95,6 +95,16 @@ def check_part_item(part_item: PreItem, descendants: list[PreItem]):
 
         part_item.input.error = ""
         return
+    
+def group_checker(part_item: PreItem, pir: PreItemRelations):
+    group_items = pir.find_children_by_types(REF_GROUP_ITEM)
+    if not group_items:
+        return True
+    question_items = pir.find_children_by_types(REF_QUESTION_ITEM)
+    caption_items = pir.find_children_by_types(CAPTION_ITEM)
+    gap_items = pir.find_children_by_types(GAP_ITEM)
+    tail_items = pir.find_children_by_types(TAIL_ITEM)
+    word_boundary_items = pir.find_children_by_types(WORD_BOUNDARY_ITEM)
     
 
             
